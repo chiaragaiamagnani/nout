@@ -40,27 +40,27 @@
 #'
 #'
 #'
-critWMW = function(m,n,exact=F,alpha=0.1){
+critWMW = function(m, n, alpha=0.1){
   # Aggiungi argomento exact: T-> per n<=20 do qwilcox for every m
   # if F, no changes in the function
   if(n>=10^3){
-    crit = sapply(1:m, function(k) qnorm(alpha, mean=((m-k+1)*n/2-0.5),
+    crit = sapply(1:m, function(k) stats::qnorm(alpha, mean=((m-k+1)*n/2-0.5),
                                          sd = sqrt((m-k+1)*n*((m-k+1)+n+1)/12),
                                          lower.tail = F))
   }
   else{
     if(m>10){
       mm=m-10
-      crit2 = sapply(1:mm, function(k) qnorm(alpha, mean=((m-k+1)*n/2-0.5),
+      crit2 = sapply(1:mm, function(k) stats::qnorm(alpha, mean=((m-k+1)*n/2-0.5),
                                              sd = sqrt((m-k+1)*n*((m-k+1)+n+1)/12),
                                              lower.tail = F))
 
-      crit1 = sapply((mm+1):m, function(k) qwilcox(p=alpha, m=m-k+1, n=n,
+      crit1 = sapply((mm+1):m, function(k) stats::qwilcox(p=alpha, m=m-k+1, n=n,
                                                    lower.tail = FALSE))
       crit=c(crit2, crit1)
     }
     else{
-      crit = sapply(1:m, function(k) qwilcox(p=alpha, m=m-k+1, n=n,
+      crit = sapply(1:m, function(k) stats::qwilcox(p=alpha, m=m-k+1, n=n,
                                              lower.tail = FALSE))
     }
   }
@@ -96,11 +96,11 @@ critWMW = function(m,n,exact=F,alpha=0.1){
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
 #' crit = critWMW(m=length(Sy), n=length(Sx))
-#' d_mannwhitney(S_Y=Sy, S_X=Sx)
+#' d_mannwhitney(S_Y=Sy, S_X=Sx, crit = crit)
 #'
 d_mannwhitney = function(S_Y,S_X,crit){
 
-  if(class(crit)!="crit.vals.info"){
+  if (!inherits(crit, "crit.vals.info")) {
     stop("Error: crit class not correct")
   }
 
