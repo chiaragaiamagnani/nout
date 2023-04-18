@@ -4,6 +4,4 @@
 .httr-oauth
 .DS_Store
 Rplots.pdf
-R\totest.R
-R\plotWMWdistrib.R
-mynotes\totest.R
+mynotes\*
