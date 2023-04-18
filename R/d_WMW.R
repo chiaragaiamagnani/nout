@@ -113,7 +113,7 @@ d_mannwhitney = function(S_Y,S_X,crit){
     stop("Error: length of S_Y differs from m")
   }
 
-  if(length(S_x)!=n){
+  if(length(S_X)!=n){
     stop("Error: length of S_X differs from n")
   }
 

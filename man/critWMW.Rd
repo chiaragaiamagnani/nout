@@ -4,7 +4,7 @@
 \alias{critWMW}
 \title{critWMW}
 \usage{
-critWMW(m, n, alpha = 0.1)
+critWMW(m, n, exact = F, alpha = 0.1)
 }
 \arguments{
 \item{m}{: number of observations in the test set}

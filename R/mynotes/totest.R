@@ -40,7 +40,7 @@ S_Y = c(1,3,6)
 (true.val = totest(S_X, S_Y))
 d_Simes(S_Y, S_X)
 d_StoreySimes(S_Y, S_X)
-crit = compute_critWMW(m=length(S_Y),n=length(S_X),alpha=0.1)
+crit = critWMW(m=length(S_Y),n=length(S_X),alpha=0.1)
 d_mannwhitney(S_Y,S_X,crit)
 
 
@@ -50,7 +50,7 @@ S_Y = c(1,3,6,2)
 (true.val = totest(S_X, S_Y))
 d_Simes(S_Y, S_X)
 d_StoreySimes(S_Y, S_X)
-crit = compute_critWMW(m=length(S_Y),n=length(S_X),alpha=0.1)
+crit = critWMW(m=length(S_Y),n=length(S_X),alpha=0.1)
 d_mannwhitney (S_Y,S_X,crit)
 
 
@@ -62,7 +62,7 @@ S_Y = c(1,3,6,2)
 (true.val = totest(S_X, S_Y))
 d_Simes(S_Y, S_X)
 d_StoreySimes(S_Y, S_X)
-crit = compute_critWMW(m=length(S_Y),n=length(S_X),alpha=0.1)
+crit = critWMW(m=length(S_Y),n=length(S_X),alpha=0.1)
 d_mannwhitney(S_Y,S_X,crit)
 
 
