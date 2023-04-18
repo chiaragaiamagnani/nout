@@ -20,7 +20,6 @@
 #' \eqn{(X_1,\ldots,X_n)} and \eqn{(Y_1,\ldots,Y_k)}, the Wilcoxon-Mann-Whitney
 #' statistic is computed as \deqn{ U(n,k) = \sum_{i = 1}^{n}\sum_{j = 1}^{k} \mathbb{1}\{X_i > Y_j\}}
 #' and it has mean \eqn{kn/2} and variance \eqn{kn(k+n+1)/12}.
-#'
 #' When \eqn{n<1000} and \eqn{m<10} the value of the Wilcoxon-Mann-Whitney statistic
 #' is exactly computed with the R function ***qwilcox***; otherwise, we use
 #' the normal approximation using continuity correction \deqn{ U(n,k) \sim N(kn/2-1/2, kn(k+n+1)/12)}.
