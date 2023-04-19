@@ -78,6 +78,25 @@ for(b in 1:B){
 
 
 
+# ITM
+set.seed(321)
+Nsim = 10^6
+u = runif(Nsim)
+x = sqrt(u)
+hist(x, freq=F, xlab='X')
+curve(x^2,0,1, lwd=2, xlab = "", ylab = "", add = T)
+
+
+
+draw = rep(0,Nsim)
+for(i in 1:Nsim){
+  x = runif(n=1)
+  y = runif(n=1)
+  draw[i] = max(x,y)
+}
+
+hist(draw, freq=F, xlab='X')
+curve(x^2,0,1, lwd=2, xlab = "", ylab = "", add = T)
 
 
 
