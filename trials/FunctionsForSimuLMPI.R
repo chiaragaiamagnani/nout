@@ -30,6 +30,41 @@ d_StoreyBH = function(S_Y, S_X, alpha = 0.1, lambda=0.5){
 
 
 
+# version 2
+#
+# d_StoreyBH = function(S_Y, S_X, alpha = 0.1, lambda=0.5){
+#   m = length(S_Y)
+#   n = length(S_X)
+#   pval = sort(sapply(1:m, function(i) (1+sum(S_X >= S_Y[i]))/(n+1)), decreasing=FALSE)
+#   pi0Sto = (1+sum(pval>lambda))/(m*(1-lambda))
+#   d =  sum(stats::p.adjust(pval,"BH")<=alpha/pi0Sto)
+#   return(d)
+# }
+
+
+
+# version 2 StoreySimes
+#
+# d_StoreySimes = function(S_Y, S_X, alpha = 0.1, lambda=0.5){
+#   m = length(S_Y)
+#   n = length(S_X)
+#   pval = sort(sapply(1:m, function(i) (1+sum(S_X >= S_Y[i]))/(n+1)), decreasing=FALSE)
+#
+#   simes.pval = sapply(1:m, function(i)
+#     min(pval[i:m]/seq(from=m-i+1, to=1, by=-1)))
+#
+#   # Building the levels of the Simes test with Storey estimator
+#   pi.not = sapply(1:m, function(i)
+#     (1+sum(pval[i:m]>lambda))/((m-i+1)*(1-lambda)))
+#   coeff = seq(from = m, to = 1, by = -1)
+#   thr = alpha/(coeff*pi.not)
+#
+#   d = sum(cumsum(simes.pval < thr) == 1:m)
+#
+#   return(d)
+# }
+
+
 
 scores_from_mixture = function(k, raw_scores, theta){
 
