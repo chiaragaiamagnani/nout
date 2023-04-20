@@ -42,8 +42,10 @@ for(b in 1:B){
   d_StoBH[b] = d_StoreyBH(S_X=S_cal, S_Y=S_te, alpha=alpha)
 }
 
-
-discov = as.data.frame(cbind("d_BH"=d_BH, "d_StoBH"=d_StoBH, "d_Simes"=d_Simes, "d_StoSimes"=d_StoSimes, "d_WMW"=d_WMW))
+# discov = as.data.frame(cbind("d_BH"=d_BH, "d_StoBH"=d_StoBH, "d_Simes"=d_Simes,
+#                              "d_StoSimes"=d_StoSimes, "d_WMW"=d_WMW))
+discov = as.data.frame(cbind("d_BH"=d_BH>0, "d_StoBH"=d_StoBH>0, "d_Simes"=d_Simes>0,
+                             "d_StoSimes"=d_StoSimes>0, "d_WMW"=d_WMW>0))
 colnames(discov) = c("BH", "BHSto", "CTSim", "CTSimSto", "CTWMW")
 boxplot(discov)
 (res = apply(discov, MARGIN = 2, FUN = mean))
