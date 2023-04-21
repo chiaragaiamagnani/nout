@@ -11,12 +11,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 The aim is to compare the performance of three closed testing procedures, which respectively use Simes local test with and without Storey estimator for the proportion of true null hypotheses and Wilcoxon-Mann-Whitney local test.
 <!-- The aim is to verify if using Wilcoxon-Mann-Whitney test as local test makes the closed testing procedure Locally Most Powerful among Invariant tests (LMPI). -->
+We consider a null distribution $F$ from which inliers come, while outliers come from the alternative distribution $F^k$ with $k>0$. If $k\in\mathbb{N}_{>0}$ we know that $F^k$ is the distribution of the random variable defined as the maximum of $k$ observations drawn from $F$. So, we consider a sample drawn from the mixture distribution $$G = (1-\theta) F+\theta F^k$$ where $\theta\in[0,1]$ is the proportion of outliers.
 
-We consider a null distribution $F$ from which inliers come and we consider outliers which come from the alternative distribution $$F^k$$ with $k>0$, especially if $k\in\mathbb{N}_{>0}$ we know that $F^k$ is the distribution of the random variable defined as the maximum of $k$ observations drawn from $F$. So, we consider a sample drawn from the mixture distribution $$G = (1-\theta) F+\theta F^k$$ where $\theta\in[0,1]$ is the proportion of inliers.
-
-Since we deal with conformal $p$-values, we are interested not really in the sample distribution, but rather in the scores sample distribution.
-In our simulation study we draw $n$ observations for the train set, $l$ for the calibration set and $mk$ for the test set. All observations are drawn from a $d$-multivariate standard normal distribution with $d=3$ and using the algorithm of ***isolation forest*** trained on the training samples we compute the scores for the calibration and test samples. In order to generate scores associated to outlier observations, we consider the $m$ blocks of $k$ observations which create the test set. For each block $i$ with $i=1,\ldots,m$, we draw from a Bernoulli random variable with success probability equal to $\theta$. If the value is 1 then the $i$-th observation of the test set is inlier and we randomly sample its score value from the $k$ scores of the $i$-th block, otherwise it is an outlier and its score value will be the maximum of the scores of the $i$-th block.
-
+Since we deal with conformal $p$-values, we are interested not really in the sample distribution, but rather in the scores distribution.
+In our simulation study we draw $n$ observations for the train set, $l$ for the calibration set and $mk$ for the test set. All observations are drawn from a $d$-multivariate standard normal distribution with $d=3$ and using the algorithm of ***isolation forest*** trained on the training samples we compute the scores for the calibration and test samples. Outlier observations are for simplicity the first $m_1$ observations of the test set and we consider the first $m_1$ blocks of $k$ observations in the test set. For each $i$ with $i=1,\ldots,m_1$, the score related to 
+observation $i$ will be the maximum of the scores of the $i$-th block. For the last $m_0$ blocks, which correspond to inliers, the scores are randomly sampled from the $k$ scores of the $i$-th block with $i=m_1+1,\ldots,m$.
 
 <!-- ### Simes closed testing -->
 
@@ -64,86 +63,81 @@ library(mvtnorm)
 library(nout)
 library(isotree)
 
+# scores_from_mixture = function(k, raw_scores, m1){
+# 
+#   if(theta>1 || theta<0){
+#     stop("Error: argument theta should in [0,1] interval")
+#   }
+# 
+#   ll = length(raw_scores)
+#   if(ll<k){
+#     stop("Error: length of raw_scores is smaller than k.")
+#   }
+# 
+#   quotient = ll%/%k # is m
+#   remainder = ll%%k
+# 
+#   if(remainder != 0){
+#     cat("Warning: length of raw_scores is not a multiple of k. Last ",
+#         remainder, "elements of raw_scores will not be used.")
+#   }
+# 
+#   usable.raw_scores = raw_scores[1:(ll-remainder)]
+# 
+#   #m1 = ifelse((theta*m)%%1!=0, round(theta*m), theta*m)
+# 
+#   scores = rep(0, times = quotient)
+#   outlier = rep(0, times = quotient)
+#   
+#   if(m1==0){
+#     for(i in 0:(m-1)){
+#       scores[i+1] = sample(usable.raw_scores[(i*k+1):(i*k+k)], size=1)
+#     }
+#   }
+#   
+#   if(m1==m){
+#     for(i in 0:(m-1)){
+#       scores[i+1] = max(usable.raw_scores[(i*k+1):(i*k+k)])
+#       outlier[i+1]=T
+#     }
+#   }
+#   
+#   if(0<m1 & m1<m){
+#     for(i in 0:(m1-1)){
+#       scores[i+1] = max(usable.raw_scores[(i*k+1):(i*k+k)])
+#       outlier[i+1]=T
+#     }
+#   
+#     for(i in m1:(m-1)){
+#       scores[i+1] = sample(usable.raw_scores[(i*k+1):(i*k+k)], size=1)
+#     }
+#   }
+# 
+#   return(list("scores"=scores, "outlier"=outlier))
+# }
 
 
-d_benjhoch = function(S_Y, S_X, alpha = 0.1){
-  m = length(S_Y)
-  n = length(S_X)
-  pval = sapply(1:m, function(i) (1+sum(S_X >= S_Y[i]))/(n+1))
-  d =  sum(stats::p.adjust(pval,"BH")<=alpha)
-  return(d)
-}
 
+scores_from_mixture = function(k, raw_scores, m1){
+  m = length(raw_scores)
+  scores = rep(0, times = m)
 
+  if(m1==0)  scores = raw_scores
 
-
-
-
-d_StoreyBH = function(S_Y, S_X, alpha = 0.1, lambda=0.5){
-  m = length(S_Y)
-  n = length(S_X)
-  pval = sort(sapply(1:m, function(i) (1+sum(S_X >= S_Y[i]))/(n+1)), decreasing=FALSE)
-  pi0Sto = (1+sum(pval>lambda))/(m*(1-lambda))
-  d =  sum(stats::p.adjust(pval,"BH")<=alpha/pi0Sto)
-  return(d)
-}
-
-
-
-
-
-scores_from_mixture = function(k, raw_scores, theta){
-
-  if(theta>1 || theta<0){
-    stop("Error: argument theta should in [0,1] interval")
-  }
-
-  ll = length(raw_scores)
-  if(ll<k){
-    stop("Error: length of raw_scores is smaller than k.")
-  }
-
-  quotient = ll%/%k # is m
-  remainder = ll%%k
-
-  if(remainder != 0){
-    cat("Warning: length of raw_scores is not a multiple of k. Last ",
-        remainder, "elements of raw_scores will not be used.")
-  }
-
-  usable.raw_scores = raw_scores[1:(ll-remainder)]
-
-  m1 = ifelse((theta*m)%%1!=0, round(theta*m), theta*m)
-
-  scores = rep(0, times = quotient)
-  outlier = rep(0, times = quotient)
-  
-  if(m1==0){
-    for(i in 0:(m-1)){
-      scores[i+1] = sample(usable.raw_scores[(i*k+1):(i*k+k)], size=1)
-    }
-  }
-  
   if(m1==m){
-    for(i in 0:(m-1)){
-      scores[i+1] = max(usable.raw_scores[(i*k+1):(i*k+k)])
-      outlier[i+1]=T
-    }
-  }
-  
-  if(0<m1 & m1<m){
-    for(i in 0:(m1-1)){
-      scores[i+1] = max(usable.raw_scores[(i*k+1):(i*k+k)])
-      outlier[i+1]=T
-    }
-  
-    for(i in m1:(m-1)){
-      scores[i+1] = sample(usable.raw_scores[(i*k+1):(i*k+k)], size=1)
-    }
+    scores = sapply(0:(m1-1), function(i) max(usable.raw_scores[(i*k+1):(i*k+k)]))
   }
 
-  return(list("scores"=scores, "outlier"=outlier))
+  if(0<m1 & m1<m){
+    scores.out = sapply(0:(m1-1), function(i) max(usable.raw_scores[(i*k+1):(i*k+k)]))
+    scores.in = raw_scores[(k*m1+1):m] # qua errore!!
+    scores = c(scores.out, scores.in)
+  }
+
+  return("scores"=scores)
 }
+
+
 
 
 
@@ -157,21 +151,22 @@ simuLMPI = function(B=10^4, n, l, m, d = 3, k = 2, theta, alpha = m/(l+1)){
                                      scoring_metric = "depth", output_score = TRUE)
 
   crit=critWMW(m=m, n=n, alpha=alpha)
-
+  m1 = ifelse((theta*m)%%1!=0, round(theta*m), theta*m)
+  m0 = m-m1
+  
   d_WMW = rep(0,B)
   d_Simes = rep(0,B)
   d_StoSimes = rep(0,B)
   d_BH = rep(0,B)
   d_StoBH = rep(0,B)
-
+  
   for(b in 1:B){
     cal = mvtnorm::rmvnorm(n=l, mean=rep(0,d))
-    te = mvtnorm::rmvnorm(n=k*m, mean=rep(0,d))
+    te = mvtnorm::rmvnorm(n=k*m1+m0, mean=rep(0,d))
 
     S_cal = isotree::predict.isolation_forest(iso.fo$model, cal, type = "score")
     rawS_te = isotree::predict.isolation_forest(iso.fo$model, te, type = "score")
-    gen.te.score = scores_from_mixture(k=k, raw_scores=rawS_te, theta=theta)
-    S_te = gen.te.score$scores
+    S_te = scores_from_mixture(k=k, raw_scores=rawS_te, m1=m1)
 
     d_WMW[b] = d_mannwhitney(S_X=S_cal, S_Y=S_te, crit=crit)
     d_Simes[b] = d_Simes(S_X=S_cal, S_Y=S_te, alpha=alpha)
@@ -256,7 +251,7 @@ points(x = thetas, y = store_res$mean.discov[,5], col = 5)
 legend("topleft", pch = 1, legend = colnames(store_res$mean.discov), col = c(1,2,3,4,5))
 
 
-plot(x = thetas, y = store_res$mean.powerGlobalNull[,1], col = 1, ylab = "d", 
+plot(x = thetas, y = store_res$mean.powerGlobalNull[,1], col = 1, ylab = "power", 
      xlab = expression(theta), ylim=c(0,m),
      main = "Mean of the power on B replications")
 points(x = thetas, y = store_res$mean.powerGlobalNull[,2], col = 2)
@@ -322,7 +317,7 @@ points(x = thetas, y = store_res$mean.discov[,5], col = 5)
 legend("topleft", pch = 1, legend = colnames(store_res$mean.discov), col = c(1,2,3,4,5))
 
 
-plot(x = thetas, y = store_res$mean.powerGlobalNull[,1], col = 1, ylab = "d", 
+plot(x = thetas, y = store_res$mean.powerGlobalNull[,1], col = 1, ylab = "power", 
      xlab = expression(theta), ylim=c(0,m),
      main = "Mean of the power on B replications")
 points(x = thetas, y = store_res$mean.powerGlobalNull[,2], col = 2)
@@ -390,7 +385,7 @@ points(x = thetas, y = store_res$mean.discov[,5], col = 5)
 legend("topleft", pch = 1, legend = colnames(store_res$mean.discov), col = c(1,2,3,4,5))
 
 
-plot(x = thetas, y = store_res$mean.powerGlobalNull[,1], col = 1, ylab = "d", 
+plot(x = thetas, y = store_res$mean.powerGlobalNull[,1], col = 1, ylab = "power", 
      xlab = expression(theta), ylim=c(0,m),
      main = "Mean of the power on B replications")
 points(x = thetas, y = store_res$mean.powerGlobalNull[,2], col = 2)
@@ -458,7 +453,7 @@ points(x = thetas, y = store_res$mean.discov[,5], col = 5)
 legend("topleft", pch = 1, legend = colnames(store_res$mean.discov), col = c(1,2,3,4,5))
 
 
-plot(x = thetas, y = store_res$mean.powerGlobalNull[,1], col = 1, ylab = "d", 
+plot(x = thetas, y = store_res$mean.powerGlobalNull[,1], col = 1, ylab = "power", 
      xlab = expression(theta), ylim=c(0,m),
      main = "Mean of the power on B replications")
 points(x = thetas, y = store_res$mean.powerGlobalNull[,2], col = 2)
