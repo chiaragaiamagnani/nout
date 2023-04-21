@@ -4,7 +4,7 @@
 \alias{critWMW}
 \title{critWMW}
 \usage{
-critWMW(m, n, alpha = 0.1)
+critWMW(m, n, alpha = 0.1, m.exact = 10, exact = F)
 }
 \arguments{
 \item{m}{: number of observations in the test set}
@@ -12,6 +12,15 @@ critWMW(m, n, alpha = 0.1)
 \item{n}{: number of observations in the calibration set}
 
 \item{alpha}{: significance level of the local test. Default value is set equal to 0.1}
+
+\item{m.exact}{: maximum value of the sample size of the second sample for which the critical
+values of the Wilcoxon-Mann-Whitney statistic are exactly computed using \emph{\strong{qwilcox}} function.
+Default value is set equal to 10.}
+
+\item{exact}{: logical value. If TRUE, exact computation of critical values is performed for
+all values of \eqn{k\in\{1,\ldots,m\}} when \eqn{n\leq 20}. Otherwise, exact computation of
+critical values is performed for all values of \eqn{k\in\{1,\ldots,m.exact\}} when \eqn{n<1000}.
+Default value is FALSE.}
 }
 \value{
 A R object of class \emph{crit.vals.info}, which is a list consisting
@@ -31,11 +40,10 @@ the normal approximation using continuity correction \deqn{ U(n,k) \sim N(kn/2-1
 }
 }
 \description{
-Given the number of observations in the calibration set (n) and the number
-of observations in the test set (m), it returns the vector of critical
-values of the test statistic Wilcoxon-Mann-Whitney letting the size of
-the second sample vary between 1 and m, while the size of the first sample
-is kept fixed equal to n.
+Given the number of observations in the calibration set (\eqn{n}) and the number
+of observations in the test set (\eqn{m}), it returns the vector of critical
+values \eqn{U(n,k)} of the Wilcoxon-Mann-Whitney test statistic letting \eqn{k} vary between
+\eqn{1} and \eqn{m}, while the size of the first sample is kept fixed equal to \eqn{n}.
 }
 \examples{
 critWMW(m=100,n=2000)
