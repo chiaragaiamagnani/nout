@@ -47,7 +47,7 @@ d_StoreySimes = function(S_Y, S_X, alpha = 0.1, lambda=0.5){
   coeff = seq(from = m, to = 1, by = -1)
   thr = alpha/(coeff*pi.not)
 
-  d = sum(cumsum(simes.pval < thr) == 1:m)
+  d = sum(cumsum(simes.pval <= thr) == 1:m)
 
   return(d)
 }
