@@ -4,24 +4,45 @@ library(nout)
 library(isotree)
 
 
-
-d_benjhoch = function(S_Y, S_X, alpha = 0.1){
-  m = length(S_Y)
-  n = length(S_X)
-  pval = sapply(1:m, function(i) (1+sum(S_X >= S_Y[i]))/(n+1))
-  d =  sum(stats::p.adjust(pval,"BH")<=alpha)
-  return(d)
-}
-
-
-d_StoreyBH = function(S_Y, S_X, alpha = 0.1, lambda=0.5){
-  m = length(S_Y)
-  n = length(S_X)
-  pval = sort(sapply(1:m, function(i) (1+sum(S_X >= S_Y[i]))/(n+1)), decreasing=FALSE)
-  pi0Sto = (1+sum(pval>lambda))/(m*(1-lambda))
-  d =  sum(stats::p.adjust(pval,"BH")<=alpha/pi0Sto)
-  return(d)
-}
+# scores_from_mixture = function(k, raw_scores, theta){
+#
+#   if(theta>1 || theta<0){
+#     stop("Error: argument theta should in [0,1] interval")
+#   }
+#
+#   ll = length(raw_scores)
+#   if(ll<k){
+#     stop("Error: length of raw_scores is smaller than k.")
+#   }
+#
+#   quotient = ll%/%k
+#   remainder = ll%%k
+#
+#   if(remainder != 0){
+#     cat("Warning: length of raw_scores is not a multiple of k. Last ",
+#         remainder, "elements of raw_scores will not be used.")
+#   }
+#
+#   usable.raw_scores = raw_scores[1:(ll-remainder)]
+#   success = replicate(quotient, rbinom(1,1,theta))
+#
+#   scores = rep(0, times = quotient)
+#   outlier = rep(0, times = quotient)
+#
+#   for(i in 0:(quotient-1)){
+#     # if TRUE draw from the alternative distribution
+#     if(success[i+1]==T){
+#       scores[i+1] = max(usable.raw_scores[(i*k+1):(i*k+k)])
+#       outlier[i+1]=T
+#     }
+#     # if FALSE draw from the null distribution
+#     if(success[i+1]==F){
+#       scores[i+1] = sample(usable.raw_scores[(i*k+1):(i*k+k)], size=1)
+#     }
+#   }
+#
+#   return(list("scores"=scores, "outlier"=outlier))
+# }
 
 
 
@@ -36,7 +57,7 @@ scores_from_mixture = function(k, raw_scores, theta){
     stop("Error: length of raw_scores is smaller than k.")
   }
 
-  quotient = ll%/%k
+  quotient = ll%/%k # is m
   remainder = ll%%k
 
   if(remainder != 0){
@@ -45,29 +66,23 @@ scores_from_mixture = function(k, raw_scores, theta){
   }
 
   usable.raw_scores = raw_scores[1:(ll-remainder)]
-  success = replicate(quotient, rbinom(1,1,theta))
+
+  m1 = ifelse((theta*m)%%1!=0, round(theta*m), theta*m)
 
   scores = rep(0, times = quotient)
   outlier = rep(0, times = quotient)
 
-  for(i in 0:(quotient-1)){
-    # if TRUE draw from the alternative distribution
-    if(success[i+1]==T){
-      scores[i+1] = max(usable.raw_scores[(i*k+1):(i*k+k)])
-      outlier[i+1]=T
-    }
-    # if FALSE draw from the null distribution
-    if(success[i+1]==F){
-      scores[i+1] = sample(usable.raw_scores[(i*k+1):(i*k+k)], size=1)
-    }
+  for(i in 1:m1){
+    scores[i+1] = max(usable.raw_scores[(i*k+1):(i*k+k)])
+    outlier[i+1]=T
+  }
+
+  for(i in (m1+1):m){
+    scores[i+1] = sample(usable.raw_scores[(i*k+1):(i*k+k)], size=1)
   }
 
   return(list("scores"=scores, "outlier"=outlier))
 }
-
-
-
-
 
 
 simuLMPI = function(B=10^4, n, l, m, d = 3, k = 2, theta, alpha = m/(n+1)){
@@ -107,6 +122,26 @@ simuLMPI = function(B=10^4, n, l, m, d = 3, k = 2, theta, alpha = m/(n+1)){
 
   return(list("results"=res, "discoveries"=discov, "theta"=theta, "alpha"=alpha))
 }
+
+
+
+
+
+
+
+
+library(nout)
+B=10^3
+n = 19
+l = 19
+m = 2
+d = 3
+k = 15
+alpha = m/(l+1)
+m1s = seq(from=0, to=m, by=1)
+thetas = m1s/m
+
+
 
 
 
