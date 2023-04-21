@@ -1,14 +1,23 @@
 #' critWMW
 #'
-#' @description Given the number of observations in the calibration set (n) and the number
-#' of observations in the test set (m), it returns the vector of critical
-#' values of the test statistic Wilcoxon-Mann-Whitney letting the size of
-#' the second sample vary between 1 and m, while the size of the first sample
-#' is kept fixed equal to n.
+#' @description Given the number of observations in the calibration set (\eqn{n}) and the number
+#' of observations in the test set (\eqn{m}), it returns the vector of critical
+#' values \eqn{U(n,k)} of the Wilcoxon-Mann-Whitney test statistic letting \eqn{k} vary between
+#'  \eqn{1} and \eqn{m}, while the size of the first sample is kept fixed equal to \eqn{n}.
+#'
 #'
 #' @param m : number of observations in the test set
 #' @param n : number of observations in the calibration set
 #' @param alpha : significance level of the local test. Default value is set equal to 0.1
+#' @param m.exact : maximum value of the sample size of the second sample for which the critical
+#' values of the Wilcoxon-Mann-Whitney statistic are exactly computed using ***qwilcox*** function.
+#' Default value is set equal to 10.
+#' @param exact : logical value. If TRUE, exact computation of critical values is performed for
+#' all values of \eqn{k\in\{1,\ldots,m\}} when \eqn{n\leq 20}. Otherwise, exact computation of
+#' critical values is performed for all values of \eqn{k\in\{1,\ldots,m.exact\}} when \eqn{n<1000}.
+#' Default value is FALSE.
+#'
+#'
 #'
 #' @return A R object of class *crit.vals.info*, which is a list consisting
 #' of the following elements: \itemize{
@@ -40,32 +49,69 @@
 #'
 #'
 #'
-critWMW = function(m, n, alpha=0.1){
-  # Aggiungi argomento exact: T-> per n<=20 do qwilcox for every m
-  # if F, no changes in the function
-  if(n>=10^3){
-    crit = sapply(1:m, function(k) stats::qnorm(alpha, mean=((m-k+1)*n/2-0.5),
-                                         sd = sqrt((m-k+1)*n*((m-k+1)+n+1)/12),
-                                         lower.tail = F))
-  }
-  else{
-    if(m>10){
-      mm=m-10
-      crit2 = sapply(1:mm, function(k) stats::qnorm(alpha, mean=((m-k+1)*n/2-0.5),
-                                             sd = sqrt((m-k+1)*n*((m-k+1)+n+1)/12),
-                                             lower.tail = F))
+critWMW = function(m, n, alpha=0.1, m.exact=10, exact=F){
 
-      crit1 = sapply((mm+1):m, function(k) stats::qwilcox(p=alpha, m=m-k+1, n=n,
-                                                   lower.tail = FALSE))
-      crit=c(crit2, crit1)
+  # exact=F
+  if(exact==F){
+    if(n>=10^3){
+      crit = sapply(1:m, function(k) stats::qnorm(alpha, mean=((m-k+1)*n/2-0.5),
+                                                  sd = sqrt((m-k+1)*n*((m-k+1)+n+1)/12),
+                                                  lower.tail = F))
     }
     else{
+      if(m>m.exact){
+        mm=m-m.exact
+        crit2 = sapply(1:mm, function(k) stats::qnorm(alpha, mean=((m-k+1)*n/2-0.5),
+                                                      sd = sqrt((m-k+1)*n*((m-k+1)+n+1)/12),
+                                                      lower.tail = F))
+
+        crit1 = sapply((mm+1):m, function(k) stats::qwilcox(p=alpha, m=m-k+1, n=n,
+                                                            lower.tail = FALSE))
+        crit=c(crit2, crit1)
+      }
+      else{
+        crit = sapply(1:m, function(k) stats::qwilcox(p=alpha, m=m-k+1, n=n,
+                                                      lower.tail = FALSE))
+      }
+    }
+    res = list("m" = m, "n" = n, "crit.vals" = crit, "alpha" = alpha)
+    class(res) = "crit.vals.info"
+  }
+
+  # exact=T
+  else{
+    if(n>=10^3){
+      crit = sapply(1:m, function(k) stats::qnorm(alpha, mean=((m-k+1)*n/2-0.5),
+                                                  sd = sqrt((m-k+1)*n*((m-k+1)+n+1)/12),
+                                                  lower.tail = F))
+    }
+
+    if(n>20 & n<10^3){
+      if(m>m.exact){
+        mm=m-m.exact
+        crit2 = sapply(1:mm, function(k) stats::qnorm(alpha, mean=((m-k+1)*n/2-0.5),
+                                                      sd = sqrt((m-k+1)*n*((m-k+1)+n+1)/12),
+                                                      lower.tail = F))
+
+        crit1 = sapply((mm+1):m, function(k) stats::qwilcox(p=alpha, m=m-k+1, n=n,
+                                                            lower.tail = FALSE))
+        crit=c(crit2, crit1)
+      }
+      else{
+        crit = sapply(1:m, function(k) stats::qwilcox(p=alpha, m=m-k+1, n=n,
+                                                      lower.tail = FALSE))
+      }
+    }
+
+    if(n<=20){
       crit = sapply(1:m, function(k) stats::qwilcox(p=alpha, m=m-k+1, n=n,
-                                             lower.tail = FALSE))
+                                                    lower.tail = FALSE))
     }
   }
+
   res = list("m" = m, "n" = n, "crit.vals" = crit, "alpha" = alpha)
   class(res) = "crit.vals.info"
+
   return(res)
 }
 
@@ -85,7 +131,7 @@ critWMW = function(m, n, alpha=0.1){
 #'
 #' @return An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
 #' the number of true discoveries in closed testing procedure using
-#' Wilcoxon-Mann-Whitney local test. The selection set, i.e. the set of hypothesis
+#' Wilcoxon-Mann-Whitney local test applied to conformal *p*-values. The selection set, i.e. the set of hypothesis
 #' indices that we are interested in is \eqn{[m]=:\{1,...,m\}} by default.
 #'
 #' @export
