@@ -83,7 +83,7 @@ d_StoreyBH = function(S_Y, S_X, alpha = 0.1, lambda=0.5){
   m = length(S_Y)
   n = length(S_X)
   pval = sort(sapply(1:m, function(i) (1+sum(S_X >= S_Y[i]))/(n+1)), decreasing=FALSE)
-  pi0Sto = sapply(1:m, function(i) (1+sum(pval>lambda))/(m*(1-lambda)))
+  pi0Sto = (1+sum(pval>lambda))/(m*(1-lambda))
   d =  sum(stats::p.adjust(pval,"BH")<=alpha/pi0Sto)
   return(d)
 }
@@ -103,7 +103,7 @@ scores_from_mixture = function(k, raw_scores, theta){
     stop("Error: length of raw_scores is smaller than k.")
   }
 
-  quotient = ll%/%k
+  quotient = ll%/%k # is m
   remainder = ll%%k
 
   if(remainder != 0){
@@ -112,19 +112,32 @@ scores_from_mixture = function(k, raw_scores, theta){
   }
 
   usable.raw_scores = raw_scores[1:(ll-remainder)]
-  success = replicate(quotient, rbinom(1,1,theta))
+
+  m1 = ifelse((theta*m)%%1!=0, round(theta*m), theta*m)
 
   scores = rep(0, times = quotient)
   outlier = rep(0, times = quotient)
-
-  for(i in 0:(quotient-1)){
-    # if TRUE draw from the alternative distribution
-    if(success[i+1]==T){
+  
+  if(m1==0){
+    for(i in 0:(m-1)){
+      scores[i+1] = sample(usable.raw_scores[(i*k+1):(i*k+k)], size=1)
+    }
+  }
+  
+  if(m1==m){
+    for(i in 0:(m-1)){
       scores[i+1] = max(usable.raw_scores[(i*k+1):(i*k+k)])
       outlier[i+1]=T
     }
-    # if FALSE draw from the null distribution
-    if(success[i+1]==F){
+  }
+  
+  if(0<m1 & m1<m){
+    for(i in 0:(m1-1)){
+      scores[i+1] = max(usable.raw_scores[(i*k+1):(i*k+k)])
+      outlier[i+1]=T
+    }
+  
+    for(i in m1:(m-1)){
       scores[i+1] = sample(usable.raw_scores[(i*k+1):(i*k+k)], size=1)
     }
   }
@@ -137,7 +150,7 @@ scores_from_mixture = function(k, raw_scores, theta){
 
 
 
-simuLMPI = function(B=10^4, n, l, m, d = 3, k = 2, theta, alpha = m/(n+1)){
+simuLMPI = function(B=10^4, n, l, m, d = 3, k = 2, theta, alpha = m/(l+1)){
 
   train = mvtnorm::rmvnorm(n=n, mean=rep(0,d))
   iso.fo = isotree::isolation.forest(train, ndim=d, ntrees=10, nthreads=1, 
@@ -167,12 +180,19 @@ simuLMPI = function(B=10^4, n, l, m, d = 3, k = 2, theta, alpha = m/(n+1)){
     d_StoBH[b] = d_StoreyBH(S_X=S_cal, S_Y=S_te, alpha=alpha)
   }
 
-  discov = as.data.frame(cbind("d_BH"=d_BH>0, "d_StoBH"=d_StoBH>0, "d_Simes"=d_Simes>0,
-                               "d_StoSimes"=d_StoSimes>0, "d_WMW"=d_WMW>0))
+  discov = as.data.frame(cbind("d_BH"=d_BH, "d_StoBH"=d_StoBH, "d_Simes"=d_Simes,
+                               "d_StoSimes"=d_StoSimes, "d_WMW"=d_WMW))
   colnames(discov) = c("BH", "BHSto", "CTSim", "CTSimSto", "CTWMW")
-  res = apply(discov, MARGIN = 2, FUN = mean)
+  mean.discov = apply(discov, MARGIN = 2, FUN = mean)
+  
+  powerGlobalNull = as.data.frame(cbind("d_BH"=d_BH>0, "d_StoBH"=d_StoBH>0, "d_Simes"=d_Simes>0,
+                               "d_StoSimes"=d_StoSimes>0, "d_WMW"=d_WMW>0))
+  colnames(powerGlobalNull) = c("BH", "BHSto", "CTSim", "CTSimSto", "CTWMW")
+  mean.powerGlobalNull = apply(powerGlobalNull, MARGIN = 2, FUN = mean)
 
-  return(list("results"=res, "discoveries"=discov, "theta"=theta, "alpha"=alpha))
+  return(list("discoveries"=discov, "mean.discoveries" = mean.discov,
+              "powerGlobalNull"=powerGlobalNull, "mean.powerGlobalNull"=mean.powerGlobalNull, 
+              "theta"=theta, "alpha"=alpha))
 }
 
 
@@ -191,35 +211,59 @@ simuLMPI = function(B=10^4, n, l, m, d = 3, k = 2, theta, alpha = m/(n+1)){
 set.seed(321)
 
 # Initializing parameters
-B=10^4
+B=10^5
 n = 19
 l = 19
 m = 2
 d = 3
 k = 2
-alpha = m/(n+1)
-thetas = c(0, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5, 0.7, 0.9, 0.95, 0.99, 1)
+alpha = m/(l+1)
+m1s = seq(from=0, to=m, by=1)
+thetas = m1s/m
 
 # Results
 res = lapply(thetas, function(theta) simuLMPI(B=B, n=n, l=l, m=m, d = d, 
-                                              k = k, theta, alpha = m/(n+1)))
+                                              k = k, theta, alpha = m/(l+1)))
 
 # Storing results
-store_res = matrix(nrow=length(thetas), ncol = 5)
+store_res = list("mean.discov" = matrix(nrow=length(thetas), ncol = 5), 
+                 "mean.powerGlobalNull" = matrix(nrow=length(thetas), ncol = 5))
 row.names = rep(NA, times=length(thetas))
 for(i in 1:length(thetas)){
   row.names[i] = paste("theta =",thetas[i])
 }
-rownames(store_res) = row.names  
-colnames(store_res) = c("BH", "StoBH", "Simes", "StoSimes", "WMW")
+rownames(store_res$mean.discov) = row.names  
+colnames(store_res$mean.discov) = c("BH", "StoBH", "Simes", "StoSimes", "WMW")
+rownames(store_res$mean.powerGlobalNull) = row.names  
+colnames(store_res$mean.powerGlobalNull) = c("BH", "StoBH", "Simes", "StoSimes", "WMW")
+
 
 for(i in 1:length(res)){
-  store_res[i,] = res[[i]]$results
+  store_res$mean.discov[i,] = res[[i]]$mean.discov
+  store_res$mean.powerGlobalNull[i,] = res[[i]]$mean.powerGlobalNull
 }
 
-store_res
+store_res$mean.discov
+store_res$mean.powerGlobalNull
+
+plot(x = thetas, y = store_res$mean.discov[,1], col = 1, ylab = "d", 
+     xlab = expression(theta), ylim=c(0,m),
+     main = "Mean of the number of discoveries on B replications")
+points(x = thetas, y = store_res$mean.discov[,2], col = 2)
+points(x = thetas, y = store_res$mean.discov[,3], col = 3)
+points(x = thetas, y = store_res$mean.discov[,4], col = 4)
+points(x = thetas, y = store_res$mean.discov[,5], col = 5)
+legend("topleft", pch = 1, legend = colnames(store_res$mean.discov), col = c(1,2,3,4,5))
 
 
+plot(x = thetas, y = store_res$mean.powerGlobalNull[,1], col = 1, ylab = "d", 
+     xlab = expression(theta), ylim=c(0,m),
+     main = "Mean of the power on B replications")
+points(x = thetas, y = store_res$mean.powerGlobalNull[,2], col = 2)
+points(x = thetas, y = store_res$mean.powerGlobalNull[,3], col = 3)
+points(x = thetas, y = store_res$mean.powerGlobalNull[,4], col = 4)
+points(x = thetas, y = store_res$mean.powerGlobalNull[,5], col = 5)
+legend("topleft", pch = 1, legend = colnames(store_res$mean.powerGlobalNull), col = c(1,2,3,4,5))
 
 
 ```
@@ -233,34 +277,59 @@ store_res
 set.seed(321)
 
 # Initializing parameters
-B=10^4
+B=10^5
 n = 19
 l = 19
 m = 2
 d = 3
 k = 3
 alpha = m/(n+1)
-thetas = c(0, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5, 0.7, 0.9, 0.95, 0.99, 1)
+m1s = seq(from=0, to=m, by=1)
+thetas = m1s/m
 
 # Results
 res = lapply(thetas, function(theta) simuLMPI(B=B, n=n, l=l, m=m, d = d, 
-                                              k = k, theta, alpha = m/(n+1)))
+                                              k = k, theta, alpha = m/(l+1)))
 
 # Storing results
-store_res = matrix(nrow=length(thetas), ncol = 5)
+store_res = list("mean.discov" = matrix(nrow=length(thetas), ncol = 5), 
+                 "mean.powerGlobalNull" = matrix(nrow=length(thetas), ncol = 5))
 row.names = rep(NA, times=length(thetas))
 for(i in 1:length(thetas)){
   row.names[i] = paste("theta =",thetas[i])
 }
-rownames(store_res) = row.names  
-colnames(store_res) = c("BH", "StoBH", "Simes", "StoSimes", "WMW")
+rownames(store_res$mean.discov) = row.names  
+colnames(store_res$mean.discov) = c("BH", "StoBH", "Simes", "StoSimes", "WMW")
+rownames(store_res$mean.powerGlobalNull) = row.names  
+colnames(store_res$mean.powerGlobalNull) = c("BH", "StoBH", "Simes", "StoSimes", "WMW")
+
 
 for(i in 1:length(res)){
-  store_res[i,] = res[[i]]$results
+  store_res$mean.discov[i,] = res[[i]]$mean.discov
+  store_res$mean.powerGlobalNull[i,] = res[[i]]$mean.powerGlobalNull
 }
 
-store_res
+store_res$mean.discov
+store_res$mean.powerGlobalNull
 
+plot(x = thetas, y = store_res$mean.discov[,1], col = 1, ylab = "d", 
+     xlab = expression(theta), ylim=c(0,m),
+     main = "Mean of the number of discoveries on B replications")
+points(x = thetas, y = store_res$mean.discov[,2], col = 2)
+points(x = thetas, y = store_res$mean.discov[,3], col = 3)
+points(x = thetas, y = store_res$mean.discov[,4], col = 4)
+points(x = thetas, y = store_res$mean.discov[,5], col = 5)
+legend("topleft", pch = 1, legend = colnames(store_res$mean.discov), col = c(1,2,3,4,5))
+
+
+plot(x = thetas, y = store_res$mean.powerGlobalNull[,1], col = 1, ylab = "d", 
+     xlab = expression(theta), ylim=c(0,m),
+     main = "Mean of the power on B replications")
+points(x = thetas, y = store_res$mean.powerGlobalNull[,2], col = 2)
+points(x = thetas, y = store_res$mean.powerGlobalNull[,3], col = 3)
+points(x = thetas, y = store_res$mean.powerGlobalNull[,4], col = 4)
+points(x = thetas, y = store_res$mean.powerGlobalNull[,5], col = 5)
+legend("topleft", pch = 1, legend = colnames(store_res$mean.powerGlobalNull), col = c(1,2,3,4,5))
 
 
 
@@ -277,34 +346,58 @@ store_res
 set.seed(321)
 
 # Initializing parameters
-B=10^4
+B=10^5
 n = 19
 l = 19
 m = 2
 d = 3
 k = 5
-alpha = m/(n+1)
-thetas = c(0, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5, 0.7, 0.9, 0.95, 0.99, 1)
-
+alpha = m/(l+1)
+m1s = seq(from=0, to=m, by=1)
+thetas = m1s/m
 # Results
 res = lapply(thetas, function(theta) simuLMPI(B=B, n=n, l=l, m=m, d = d, 
-                                              k = k, theta, alpha = m/(n+1)))
+                                              k = k, theta, alpha = m/(l+1)))
 
 # Storing results
-store_res = matrix(nrow=length(thetas), ncol = 5)
+store_res = list("mean.discov" = matrix(nrow=length(thetas), ncol = 5), 
+                 "mean.powerGlobalNull" = matrix(nrow=length(thetas), ncol = 5))
 row.names = rep(NA, times=length(thetas))
 for(i in 1:length(thetas)){
   row.names[i] = paste("theta =",thetas[i])
 }
-rownames(store_res) = row.names  
-colnames(store_res) = c("BH", "StoBH", "Simes", "StoSimes", "WMW")
+rownames(store_res$mean.discov) = row.names  
+colnames(store_res$mean.discov) = c("BH", "StoBH", "Simes", "StoSimes", "WMW")
+rownames(store_res$mean.powerGlobalNull) = row.names  
+colnames(store_res$mean.powerGlobalNull) = c("BH", "StoBH", "Simes", "StoSimes", "WMW")
+
 
 for(i in 1:length(res)){
-  store_res[i,] = res[[i]]$results
+  store_res$mean.discov[i,] = res[[i]]$mean.discov
+  store_res$mean.powerGlobalNull[i,] = res[[i]]$mean.powerGlobalNull
 }
 
-store_res
+store_res$mean.discov
+store_res$mean.powerGlobalNull
 
+plot(x = thetas, y = store_res$mean.discov[,1], col = 1, ylab = "d", 
+     xlab = expression(theta), ylim=c(0,m),
+     main = "Mean of the number of discoveries on B replications")
+points(x = thetas, y = store_res$mean.discov[,2], col = 2)
+points(x = thetas, y = store_res$mean.discov[,3], col = 3)
+points(x = thetas, y = store_res$mean.discov[,4], col = 4)
+points(x = thetas, y = store_res$mean.discov[,5], col = 5)
+legend("topleft", pch = 1, legend = colnames(store_res$mean.discov), col = c(1,2,3,4,5))
+
+
+plot(x = thetas, y = store_res$mean.powerGlobalNull[,1], col = 1, ylab = "d", 
+     xlab = expression(theta), ylim=c(0,m),
+     main = "Mean of the power on B replications")
+points(x = thetas, y = store_res$mean.powerGlobalNull[,2], col = 2)
+points(x = thetas, y = store_res$mean.powerGlobalNull[,3], col = 3)
+points(x = thetas, y = store_res$mean.powerGlobalNull[,4], col = 4)
+points(x = thetas, y = store_res$mean.powerGlobalNull[,5], col = 5)
+legend("topleft", pch = 1, legend = colnames(store_res$mean.powerGlobalNull), col = c(1,2,3,4,5))
 
 
 
@@ -321,35 +414,58 @@ store_res
 set.seed(321)
 
 # Initializing parameters
-B=10^4
+B=10^5
 n = 19
 l = 19
 m = 2
 d = 3
 k = 10
-alpha = m/(n+1)
-thetas = c(0, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5, 0.7, 0.9, 0.95, 0.99, 1)
-
+alpha = m/(l+1)
+m1s = seq(from=0, to=m, by=1)
+thetas = m1s/m
 # Results
 res = lapply(thetas, function(theta) simuLMPI(B=B, n=n, l=l, m=m, d = d, 
-                                              k = k, theta, alpha = m/(n+1)))
+                                              k = k, theta, alpha = m/(l+1)))
 
 # Storing results
-store_res = matrix(nrow=length(thetas), ncol = 5)
+store_res = list("mean.discov" = matrix(nrow=length(thetas), ncol = 5), 
+                 "mean.powerGlobalNull" = matrix(nrow=length(thetas), ncol = 5))
 row.names = rep(NA, times=length(thetas))
 for(i in 1:length(thetas)){
   row.names[i] = paste("theta =",thetas[i])
 }
-rownames(store_res) = row.names  
-colnames(store_res) = c("BH", "StoBH", "Simes", "StoSimes", "WMW")
+rownames(store_res$mean.discov) = row.names  
+colnames(store_res$mean.discov) = c("BH", "StoBH", "Simes", "StoSimes", "WMW")
+rownames(store_res$mean.powerGlobalNull) = row.names  
+colnames(store_res$mean.powerGlobalNull) = c("BH", "StoBH", "Simes", "StoSimes", "WMW")
+
 
 for(i in 1:length(res)){
-  store_res[i,] = res[[i]]$results
+  store_res$mean.discov[i,] = res[[i]]$mean.discov
+  store_res$mean.powerGlobalNull[i,] = res[[i]]$mean.powerGlobalNull
 }
 
-store_res
+store_res$mean.discov
+store_res$mean.powerGlobalNull
+
+plot(x = thetas, y = store_res$mean.discov[,1], col = 1, ylab = "d", 
+     xlab = expression(theta), ylim=c(0,m),
+     main = "Mean of the number of discoveries on B replications")
+points(x = thetas, y = store_res$mean.discov[,2], col = 2)
+points(x = thetas, y = store_res$mean.discov[,3], col = 3)
+points(x = thetas, y = store_res$mean.discov[,4], col = 4)
+points(x = thetas, y = store_res$mean.discov[,5], col = 5)
+legend("topleft", pch = 1, legend = colnames(store_res$mean.discov), col = c(1,2,3,4,5))
 
 
+plot(x = thetas, y = store_res$mean.powerGlobalNull[,1], col = 1, ylab = "d", 
+     xlab = expression(theta), ylim=c(0,m),
+     main = "Mean of the power on B replications")
+points(x = thetas, y = store_res$mean.powerGlobalNull[,2], col = 2)
+points(x = thetas, y = store_res$mean.powerGlobalNull[,3], col = 3)
+points(x = thetas, y = store_res$mean.powerGlobalNull[,4], col = 4)
+points(x = thetas, y = store_res$mean.powerGlobalNull[,5], col = 5)
+legend("topleft", pch = 1, legend = colnames(store_res$mean.powerGlobalNull), col = c(1,2,3,4,5))
 
 
 ```
@@ -360,47 +476,6 @@ store_res
 
 
 
-
-
-
-### K=15
-
-```{r}
-set.seed(321)
-
-# Initializing parameters
-B=10^3
-n = 19
-l = 19
-m = 2
-d = 3
-k = 15
-alpha = m/(n+1)
-thetas = c(0, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3, 0.5, 0.7, 0.9, 0.95, 0.99, 1)
-
-# Results
-res = lapply(thetas, function(theta) simuLMPI(B=B, n=n, l=l, m=m, d = d, 
-                                              k = k, theta, alpha = m/(n+1)))
-
-# Storing results
-store_res = matrix(nrow=length(thetas), ncol = 5) 
-row.names = rep(NA, times=length(thetas))
-for(i in 1:length(thetas)){
-  row.names[i] = paste("theta =",thetas[i])
-}
-rownames(store_res) = row.names  
-colnames(store_res) = c("BH", "StoBH", "Simes", "StoSimes", "WMW")
-
-for(i in 1:length(res)){
-  store_res[i,] = res[[i]]$results
-}
-
-store_res
-
-
-
-
-```
 
 
 
