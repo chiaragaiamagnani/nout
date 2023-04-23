@@ -265,7 +265,7 @@ legend("topleft", pch = 19, col = c(1,2,5),
 
 
 
-### K=3
+### K=5
 
 ```{r}
 set.seed(321)
@@ -276,7 +276,7 @@ n = 19
 l = 19
 m = 2
 d = 3
-k = 3
+k = 5
 alpha = m/(n+1)
 m1s = seq(from=0, to=m, by=1)
 thetas = m1s/m
