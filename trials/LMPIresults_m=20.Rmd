@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 The aim is to compare the performance of three closed testing procedures, which respectively use Simes local test with and without Storey estimator for the proportion of true null hypotheses and Wilcoxon-Mann-Whitney local test.
 <!-- The aim is to verify if using Wilcoxon-Mann-Whitney test as local test makes the closed testing procedure Locally Most Powerful among Invariant tests (LMPI). -->
 
-We consider a null distribution $F$ from which inliers come and we consider outliers which come from the alternative distribution $$F^k$$ with $k>0$, especially if $k\in\mathbb{N}_{>0}$ we know that $F^k$ is the distribution of the random variable defined as the maximum of $k$ observations drawn from $F$. So, we consider a sample drawn from the mixture distribution $$G = (1-\theta) F+\theta F^k$$ where $\theta\in[0,1]$ is the proportion of inliers.
+We consider a null distribution $F$ from which inliers come and we consider outliers which come from the alternative distribution $F^k$ with $k>0$, especially if $k\in\mathbb{N}_{>0}$ we know that $F^k$ is the distribution of the random variable defined as the maximum of $k$ observations drawn from $F$. So, we consider a sample drawn from the mixture distribution $$G = (1-\theta) F+\theta F^k$$ where $\theta\in[0,1]$ is the proportion of inliers.
 
 Since we deal with conformal $p$-values, we are interested not really in the sample distribution, but rather in the scores sample distribution.
 In our simulation study we draw $n$ observations for the train set, $l$ for the calibration set and $mk$ for the test set. All observations are drawn from a $d$-multivariate standard normal distribution with $d=3$ and using the algorithm of ***isolation forest*** trained on the training samples we compute the scores for the calibration and test samples. In order to generate scores associated to outlier observations, we consider the $m$ blocks of $k$ observations which create the test set. For each block $i$ with $i=1,\ldots,m$, we draw from a Bernoulli random variable with success probability equal to $\theta$. If the value is 1 then the $i$-th observation of the test set is inlier and we randomly sample its score value from the $k$ scores of the $i$-th block, otherwise it is an outlier and its score value will be the maximum of the scores of the $i$-th block.
@@ -193,7 +193,7 @@ legend("topleft", pch = 19, col = c(1,2,5),
 
 
 plot(x = thetas, y = store_res$mean.powerGlobalNull[,1], col = 1, ylab = "power", 
-     xlab = expression(theta), ylim=c(0,m), pch = 19, xaxt = "n",
+     xlab = expression(theta), ylim=c(0,1), pch = 19, xaxt = "n",
      main = "Mean of the power on B replications")
 points(x = thetas, y = store_res$mean.powerGlobalNull[,2], col = 2, pch=19)
 points(x = thetas, y = store_res$mean.powerGlobalNull[,5], col = 5, pch=19)
