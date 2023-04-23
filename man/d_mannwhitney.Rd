@@ -16,7 +16,7 @@ d_mannwhitney(S_Y, S_X, crit)
 \value{
 An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
 the number of true discoveries in closed testing procedure using
-Wilcoxon-Mann-Whitney local test. The selection set, i.e. the set of hypothesis
+Wilcoxon-Mann-Whitney local test applied to conformal \emph{p}-values. The selection set, i.e. the set of hypothesis
 indices that we are interested in is \eqn{[m]=:\{1,...,m\}} by default.
 }
 \description{
