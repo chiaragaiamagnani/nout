@@ -59,9 +59,8 @@ observation $i$ will be the maximum of the scores of the $i$-th block. For the l
 
 ```{r}
 
-library(mvtnorm)
+library(Cairo)
 library(nout)
-library(isotree)
 
 # scores_from_mixture = function(k, raw_scores, m1){
 # 
@@ -240,19 +239,23 @@ store_res$mean.discov
 store_res$mean.powerGlobalNull
 
 plot(x = thetas, y = store_res$mean.discov[,1], col = 1, ylab = "d", 
-     xlab = expression(theta), ylim=c(0,m), pch=19,
+     xlab = expression(theta), ylim=c(0,m), pch=19, xaxt = "n",
      main = "Mean of the number of discoveries on B replications")
 points(x = thetas, y = store_res$mean.discov[,2], col = 2, pch=19)
 points(x = thetas, y = store_res$mean.discov[,5], col = 5, pch=19)
+axis(side = 1, at = thetas)
 legend("topleft", pch = 19, col = c(1,2,5), 
        legend =c("BH and Simes CT", "StoreyBH and StoreySimes CT", "WMW CT"))
 
 
 plot(x = thetas, y = store_res$mean.powerGlobalNull[,1], col = 1, ylab = "power", 
-     xlab = expression(theta), ylim=c(0,m), pch = 19,
+     xlab = expression(theta), ylim=c(0,1), pch = 19, xaxt = "n",
      main = "Mean of the power on B replications")
 points(x = thetas, y = store_res$mean.powerGlobalNull[,2], col = 2, pch=19)
 points(x = thetas, y = store_res$mean.powerGlobalNull[,5], col = 5, pch=19)
+abline(h=alpha, col = "darkgreen")
+text(x=0.05, y=alpha+0.1, labels = paste("\u03B1","=", alpha), col = "darkgreen")
+axis(side = 1, at = thetas)
 legend("topleft", pch = 19, col = c(1,2,5),
        legend = c("BH and Simes CT", "StoreyBH and StoreySimes CT", "WMW CT"))
 
@@ -303,22 +306,28 @@ for(i in 1:length(res)){
 store_res$mean.discov
 store_res$mean.powerGlobalNull
 
+
 plot(x = thetas, y = store_res$mean.discov[,1], col = 1, ylab = "d", 
-     xlab = expression(theta), ylim=c(0,m), pch=19,
+     xlab = expression(theta), ylim=c(0,m), pch=19, xaxt = "n",
      main = "Mean of the number of discoveries on B replications")
 points(x = thetas, y = store_res$mean.discov[,2], col = 2, pch=19)
 points(x = thetas, y = store_res$mean.discov[,5], col = 5, pch=19)
+axis(side = 1, at = thetas)
 legend("topleft", pch = 19, col = c(1,2,5), 
        legend =c("BH and Simes CT", "StoreyBH and StoreySimes CT", "WMW CT"))
 
 
 plot(x = thetas, y = store_res$mean.powerGlobalNull[,1], col = 1, ylab = "power", 
-     xlab = expression(theta), ylim=c(0,m), pch = 19,
+     xlab = expression(theta), ylim=c(0,1), pch = 19, xaxt = "n",
      main = "Mean of the power on B replications")
 points(x = thetas, y = store_res$mean.powerGlobalNull[,2], col = 2, pch=19)
 points(x = thetas, y = store_res$mean.powerGlobalNull[,5], col = 5, pch=19)
+abline(h=alpha, col = "darkgreen")
+text(x=0.05, y=alpha+0.1, labels = paste("\u03B1","=", alpha), col = "darkgreen")
+axis(side = 1, at = thetas)
 legend("topleft", pch = 19, col = c(1,2,5),
        legend = c("BH and Simes CT", "StoreyBH and StoreySimes CT", "WMW CT"))
+
 
 
 ```
@@ -368,20 +377,25 @@ for(i in 1:length(res)){
 store_res$mean.discov
 store_res$mean.powerGlobalNull
 
+
 plot(x = thetas, y = store_res$mean.discov[,1], col = 1, ylab = "d", 
-     xlab = expression(theta), ylim=c(0,m), pch=19,
+     xlab = expression(theta), ylim=c(0,m), pch=19, xaxt = "n",
      main = "Mean of the number of discoveries on B replications")
 points(x = thetas, y = store_res$mean.discov[,2], col = 2, pch=19)
 points(x = thetas, y = store_res$mean.discov[,5], col = 5, pch=19)
+axis(side = 1, at = thetas)
 legend("topleft", pch = 19, col = c(1,2,5), 
        legend =c("BH and Simes CT", "StoreyBH and StoreySimes CT", "WMW CT"))
 
 
 plot(x = thetas, y = store_res$mean.powerGlobalNull[,1], col = 1, ylab = "power", 
-     xlab = expression(theta), ylim=c(0,m), pch = 19,
+     xlab = expression(theta), ylim=c(0,1), pch = 19, xaxt = "n",
      main = "Mean of the power on B replications")
 points(x = thetas, y = store_res$mean.powerGlobalNull[,2], col = 2, pch=19)
 points(x = thetas, y = store_res$mean.powerGlobalNull[,5], col = 5, pch=19)
+abline(h=alpha, col = "darkgreen")
+text(x=0.05, y=alpha+0.1, labels = paste("\u03B1","=", alpha), col = "darkgreen")
+axis(side = 1, at = thetas)
 legend("topleft", pch = 19, col = c(1,2,5),
        legend = c("BH and Simes CT", "StoreyBH and StoreySimes CT", "WMW CT"))
 
