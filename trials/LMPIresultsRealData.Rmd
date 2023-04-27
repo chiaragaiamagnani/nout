@@ -13,7 +13,7 @@ The aim is to compare on real datasets the performance of three closed testing p
 
 
 ## R functions and libraries
-```{r}
+```{r warning=FALSE, message=FALSE}
 library(nout)
 library(R.matlab)
 library(isotree)
@@ -21,9 +21,8 @@ library(farff)
 library(tictoc)
 
 
-
-
-sim_realdata = function(B, dataset, m1, m, n, l, in_index, out_index=NULL, alpha=m/(l+1), lambda = 0.5){
+sim_realdata = function(B, dataset, m1, m, n, l, in_index, 
+                        out_index=NULL, alpha=m/(l+1), lambda = 0.5){
 
   m0=m-m1
   if(m1!=0 & is.null(out_index)){
@@ -124,7 +123,7 @@ sim_realdata = function(B, dataset, m1, m, n, l, in_index, out_index=NULL, alpha
 
 
 
-In the following we set the calibration set and the test set size, respectively $l$ and $m$, so that the nominal level $\alpha$ is proportional to $\frac{m}{l+1}$. The train set size is equal to $n$ and the number of iterations is $B=10^3$.
+In the following we set the calibration set and the test set size, respectively $l$ and $m$, so that the nominal level $\alpha$ is proportional to $\frac{m}{l+1}$. The train set size is equal to $n$ and the number of iterations is $B=10^5$.
 
 
 
@@ -135,7 +134,7 @@ The dataset is available at http://odds.cs.stonybrook.edu/shuttle-dataset
 set.seed(321)
 
 # Initializing parameters
-B=10^3
+B=10^5
 n = 199
 l = 199
 m = 20
@@ -180,7 +179,7 @@ plot(x = m1s, y = store_res$mean.discov[,1], col = 1, ylab = "d",
      main = "Mean of the number of discoveries on B replications")
 points(x = m1s, y = store_res$mean.discov[,2], col = 2, pch=19)
 points(x = m1s, y = store_res$mean.discov[,5], col = 5, pch=19)
-legend("bottomleft", pch = 19, col = c(1,2,5),
+legend("topleft", pch = 19, col = c(1,2,5),
        legend =c("BH and Simes CT", "StoreyBH and StoreySimes CT", "WMW CT"))
 
 
@@ -210,7 +209,7 @@ The dataset is available at  https://www.kaggle.com/mlg-ulb/creditcardfraud.
 set.seed(321)
 
 # Initializing parameters
-B=10^3
+B=10^5
 n = 199
 l = 199
 m = 20
@@ -254,7 +253,7 @@ plot(x = m1s, y = store_res$mean.discov[,1], col = 1, ylab = "d",
      main = "Mean of the number of discoveries on B replications")
 points(x = m1s, y = store_res$mean.discov[,2], col = 2, pch=19)
 points(x = m1s, y = store_res$mean.discov[,5], col = 5, pch=19)
-legend("bottomleft", pch = 19, col = c(1,2,5),
+legend("topleft", pch = 19, col = c(1,2,5),
        legend =c("BH and Simes CT", "StoreyBH and StoreySimes CT", "WMW CT"))
 
 
@@ -279,7 +278,7 @@ The dataset is available at http://odds.cs.stonybrook.edu/forestcovercovertype-d
 set.seed(321)
 
 # Initializing parameters
-B=10^3
+B=10^5
 n = 199
 l = 199
 m = 20
@@ -324,7 +323,7 @@ plot(x = m1s, y = store_res$mean.discov[,1], col = 1, ylab = "d",
      main = "Mean of the number of discoveries on B replications")
 points(x = m1s, y = store_res$mean.discov[,2], col = 2, pch=19)
 points(x = m1s, y = store_res$mean.discov[,5], col = 5, pch=19)
-legend("bottomleft", pch = 19, col = c(1,2,5),
+legend("topleft", pch = 19, col = c(1,2,5),
        legend =c("BH and Simes CT", "StoreyBH and StoreySimes CT", "WMW CT"))
 
 
@@ -350,7 +349,7 @@ The dataset is available at http://odds.cs.stonybrook.edu/mammography-dataset/.
 set.seed(321)
 
 # Initializing parameters
-B=10^3
+B=10^5
 n = 199
 l = 199
 m = 20
@@ -394,7 +393,7 @@ plot(x = m1s, y = store_res$mean.discov[,1], col = 1, ylab = "d",
      main = "Mean of the number of discoveries on B replications")
 points(x = m1s, y = store_res$mean.discov[,2], col = 2, pch=19)
 points(x = m1s, y = store_res$mean.discov[,5], col = 5, pch=19)
-legend("bottomleft", pch = 19, col = c(1,2,5),
+legend("topleft", pch = 19, col = c(1,2,5),
        legend =c("BH and Simes CT", "StoreyBH and StoreySimes CT", "WMW CT"))
 
 
@@ -419,7 +418,7 @@ The dataset is available at http://odds.cs.stonybrook.edu/pendigits-dataset.
 set.seed(321)
 
 # Initializing parameters
-B=10^3
+B=10^5
 n = 199
 l = 199
 m = 20
@@ -464,7 +463,7 @@ plot(x = m1s, y = store_res$mean.discov[,1], col = 1, ylab = "d",
      main = "Mean of the number of discoveries on B replications")
 points(x = m1s, y = store_res$mean.discov[,2], col = 2, pch=19)
 points(x = m1s, y = store_res$mean.discov[,5], col = 5, pch=19)
-legend("bottomleft", pch = 19, col = c(1,2,5),
+legend("topleft", pch = 19, col = c(1,2,5),
        legend =c("BH and Simes CT", "StoreyBH and StoreySimes CT", "WMW CT"))
 
 

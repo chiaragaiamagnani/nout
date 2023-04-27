@@ -220,7 +220,6 @@ sim_realdata = function(B, dataset, m1, m, n, l, in_index, out_index=NULL, alpha
 
 
 
-132
 library(nout)
 B=10^3
 n = 19
