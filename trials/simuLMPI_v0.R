@@ -105,5 +105,6 @@ boxplot(Ierr)
 (power = apply(pow, MARGIN = 2, FUN = mean))
 (typeIerr = apply(Ierr, MARGIN = 2, FUN = mean))
 
+:)
 
 
