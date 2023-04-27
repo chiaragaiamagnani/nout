@@ -120,22 +120,25 @@ simuLMPI = function(B=10^4, n, l, m, d = 3, k = 2, theta, alpha = m/(l+1)){
 
 
 
-sim_realdata = function(B, dataset, m1, m, n, l, in_index, out_index=NULL, alpha, lambda = 0.5){
+sim_realdata = function(B, dataset, m1, m, n, l, in_index, out_index=NULL, alpha=m/(l+1), lambda = 0.5){
 
+  m0=m-m1
   if(m1!=0 & is.null(out_index)){
     stop("Error: arg out_index must be initialized.")
   }
 
-  if(m!=(m1+m0)){
-    stop("Error: equation m=m1+m0 must be verified.")
-  }
+  # if(m!=(m1+m0)){
+  #   stop("Error: equation m=m1+m0 must be verified.")
+  # }
 
-  if(!is.null(out_index)){
+  if(m1!=0){
     tr_ind = sample(in_index, size = n)
     tr = dataset[tr_ind,]
     iso.fo = isolation.forest(tr, ndim=ncol(dataset), ntrees=10, nthreads=1,
                               scoring_metric = "depth", output_score = TRUE)
     in_index2 = setdiff(in_index, tr_ind)
+
+    crit=critWMW(m=m, n=n, alpha=alpha)
 
     d_WMW = rep(0,B)
     d_Simes = rep(0,B)
@@ -144,7 +147,7 @@ sim_realdata = function(B, dataset, m1, m, n, l, in_index, out_index=NULL, alpha
     d_StoBH = rep(0,B)
 
     for(b in 1:B){
-      cal_ind = sample(setdiff(in_index2, tr_ind), size = l)
+      cal_ind = sample(in_index2, size = l)
       in_index3 = setdiff(in_index2, cal_ind)
       tein_ind = sample(in_index3, size = m0)
       teout_ind = sample(out_index, size = m1)
@@ -154,8 +157,6 @@ sim_realdata = function(B, dataset, m1, m, n, l, in_index, out_index=NULL, alpha
 
       S_cal = predict.isolation_forest(iso.fo$model, cal, type = "score")
       S_te = predict.isolation_forest(iso.fo$model, te, type = "score")
-
-      crit=critWMW(m=m, n=n, alpha=alpha)
 
       d_WMW[b] = d_mannwhitney(S_X=S_cal, S_Y=S_te, crit=crit)
       d_Simes[b] = d_Simes(S_X=S_cal, S_Y=S_te, alpha=alpha)
@@ -172,6 +173,8 @@ sim_realdata = function(B, dataset, m1, m, n, l, in_index, out_index=NULL, alpha
                               scoring_metric = "depth", output_score = TRUE)
     in_index2 = setdiff(in_index, tr_ind)
 
+    crit=critWMW(m=m, n=n, alpha=alpha)
+
     d_WMW = rep(0,B)
     d_Simes = rep(0,B)
     d_StoSimes = rep(0,B)
@@ -179,17 +182,15 @@ sim_realdata = function(B, dataset, m1, m, n, l, in_index, out_index=NULL, alpha
     d_StoBH = rep(0,B)
 
     for(b in 1:B){
-      cal_ind = sample(setdiff(in_index2, tr_ind), size = l)
+      cal_ind = sample(in_index2, size = l)
       in_index3 = setdiff(in_index2, cal_ind)
       te_ind = sample(in_index3, size = m0)
 
       cal = dataset[cal_ind,]
-      te = dataset[c(tein_ind, teout_ind),]
+      te = dataset[te_ind,]
 
       S_cal = predict.isolation_forest(iso.fo$model, cal, type = "score")
       S_te = predict.isolation_forest(iso.fo$model, te, type = "score")
-
-      crit=critWMW(m=m, n=n, alpha=alpha)
 
       d_WMW[b] = d_mannwhitney(S_X=S_cal, S_Y=S_te, crit=crit)
       d_Simes[b] = d_Simes(S_X=S_cal, S_Y=S_te, alpha=alpha)
@@ -211,13 +212,9 @@ sim_realdata = function(B, dataset, m1, m, n, l, in_index, out_index=NULL, alpha
 
   return(list("discoveries"=discov, "mean.discoveries" = mean.discov,
               "powerGlobalNull"=powerGlobalNull, "mean.powerGlobalNull"=mean.powerGlobalNull,
-              "theta"=theta, "alpha"=alpha))
+              "m1"=m1, "alpha"=alpha))
 
 }
-
-
-
-
 
 
 
