@@ -1,5 +1,6 @@
 library(nout)
 library(R.matlab)
+library(isotree)
 set.seed(321)
 
 # Initializing parameters
@@ -16,7 +17,7 @@ in_ind = which(dataset[,ncol(dataset)]==0)
 out_ind = which(dataset[,ncol(dataset)]==1)
 
 res = lapply(m1s,
-             function(m1) sim_realdata(B=1, in_index=in_ind, out_index=out_ind,
+             function(m1) sim_realdata(B=10, in_index=in_ind, out_index=out_ind,
                                        dataset=dataset,
                                        alpha=alpha,l=l, n=n, m=m, m1=m))
 
@@ -51,7 +52,7 @@ legend("bottomleft", pch = 19, col = c(1,2,5),
 
 
 plot(x = m1s, y = store_res$mean.powerGlobalNull[,1], col = 1, ylab = "power",
-     xlab = expression(theta), ylim=c(0,m), pch = 19,
+     xlab = expression(theta), ylim=c(0,1), pch = 19,
      main = "Mean of the power on B replications")
 points(x = m1s, y = store_res$mean.powerGlobalNull[,2], col = 2, pch=19)
 points(x = m1s, y = store_res$mean.powerGlobalNull[,5], col = 5, pch=19)
