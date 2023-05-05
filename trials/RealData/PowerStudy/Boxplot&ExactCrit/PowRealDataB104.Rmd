@@ -49,14 +49,16 @@ sim_realdata = function(B, dataset, m1, m, n, l, in_index,
                               scoring_metric = "depth", output_score = TRUE)
     in_index2 = setdiff(in_index, tr_ind)
 
-    crit=critWMW(m=m, n=l, alpha=alpha)
+    crit=critWMW2(m=m, n=l, alpha=alpha, exact = T)
 
     d_WMW = rep(0,B)
     d_Simes = rep(0,B)
     d_StoSimes = rep(0,B)
     d_BH = rep(0,B)
     d_StoBH = rep(0,B)
-
+    uniques_cal = rep(0,B)
+    uniques_te = rep(0,B)
+    
     for(b in 1:B){
       cal_ind = sample(in_index2, size = l)
       in_index3 = setdiff(in_index2, cal_ind)
@@ -68,7 +70,9 @@ sim_realdata = function(B, dataset, m1, m, n, l, in_index,
 
       S_cal = predict.isolation_forest(iso.fo$model, cal, type = "score")
       S_te = predict.isolation_forest(iso.fo$model, te, type = "score")
-
+      
+      uniques_cal[b] = unique(S_cal) == length(S_cal)
+      uniques_te[b] = unique(S_te) == length(S_te)
       d_WMW[b] = d_mannwhitney(S_X=S_cal, S_Y=S_te, crit=crit)
       d_Simes[b] = d_Simes(S_X=S_cal, S_Y=S_te, alpha=alpha)
       d_StoSimes[b] = d_StoreySimes(S_X=S_cal, S_Y=S_te, alpha=alpha)
@@ -84,13 +88,15 @@ sim_realdata = function(B, dataset, m1, m, n, l, in_index,
                               scoring_metric = "depth", output_score = TRUE)
     in_index2 = setdiff(in_index, tr_ind)
 
-    crit=critWMW(m=m, n=l, alpha=alpha)
+    crit=critWMW2(m=m, n=l, alpha=alpha, exact = T)
 
     d_WMW = rep(0,B)
     d_Simes = rep(0,B)
     d_StoSimes = rep(0,B)
     d_BH = rep(0,B)
     d_StoBH = rep(0,B)
+    uniques_cal = rep(0,B)
+    uniques_te = rep(0,B)
 
     for(b in 1:B){
       cal_ind = sample(in_index2, size = l)
@@ -102,7 +108,9 @@ sim_realdata = function(B, dataset, m1, m, n, l, in_index,
 
       S_cal = predict.isolation_forest(iso.fo$model, cal, type = "score")
       S_te = predict.isolation_forest(iso.fo$model, te, type = "score")
-
+      
+      uniques_cal[b] = unique(S_cal) == length(S_cal)
+      uniques_te[b] = unique(S_te) == length(S_te)
       d_WMW[b] = d_mannwhitney(S_X=S_cal, S_Y=S_te, crit=crit)
       d_Simes[b] = d_Simes(S_X=S_cal, S_Y=S_te, alpha=alpha)
       d_StoSimes[b] = d_StoreySimes(S_X=S_cal, S_Y=S_te, alpha=alpha)
@@ -122,8 +130,8 @@ sim_realdata = function(B, dataset, m1, m, n, l, in_index,
   mean.powerGlobalNull = apply(powerGlobalNull, MARGIN = 2, FUN = mean)
 
   return(list("discoveries"=discov, "mean.discoveries" = mean.discov,
-              "powerGlobalNull"=powerGlobalNull, "mean.powerGlobalNull"=mean.powerGlobalNull,
-              "m1"=m1, "alpha"=alpha))
+              "powerGlobalNull"=powerGlobalNull, "mean.powerGlobalNull"=mean.powerGlobalNull, 
+              "uniques_te"=uniques_te, "uniques_cal"=uniques_cal, "m1"=m1, "alpha"=alpha))
 }
 
 
