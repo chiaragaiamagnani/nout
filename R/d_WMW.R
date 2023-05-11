@@ -171,7 +171,7 @@ d_mannwhitney = function(S_Y,S_X,crit){
   # (consider the k smallest U_i)
   U = sapply(1:m, function(k) sum(U_i[k:m]))
 
-  d = sum(cumsum(U > critical_vals) == 1:m)
+  d = sum(cumsum(U >= critical_vals) == 1:m)
 
   return(d)
 }

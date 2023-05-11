@@ -2,7 +2,7 @@
 title: "Comparison between different local tests: Simes, Simes with Storey and Wilcoxon-Mann-Whitney"
 subtitle: "m=20"
 output: pdf_document
-date: "21-04-2023"
+date: "`r Sys.Date()`"
 ---
 
 ```{r setup, include=FALSE}

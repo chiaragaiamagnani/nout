@@ -1,5 +1,5 @@
 ---
-title: "Power study on real data"
+title: "Power study on Shuttle dataset"
 output: pdf_document
 date: "`r Sys.Date()`"
 ---
@@ -7,19 +7,6 @@ date: "`r Sys.Date()`"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
-
-
-## Digits dataset
-
-The aim is to compare on Digits dataset (available at  http://odds.cs.stonybrook.edu/pendigits-dataset) the performance of three closed testing procedures, which respectively use Simes local test with and without Storey estimator for the proportion of true null hypotheses and Wilcoxon-Mann-Whitney local test.
-
-Digits dataset consists of $6870$ observations, among which $n_{inliers}=6714$ items are inliers and the remaining $n_{outliers}=156$ are outliers.
-We will denote by $n,l,m$ respectively the train set, the calibration set and the test set size. And reproducing the same setting as in [1], we have that $n+l=n_{inliers}/2$, $l=min\{2000,n/2\}$ and $m=min\{2000, n/3\}$. 
-In the case of Digits dataset we obtain
-$$n+l=6714/2, \hspace{2mm} l=n/3,  \hspace{2mm} m=n/3$$
-from which $n=2517.75, \hspace{2mm} l=839.25, \hspace{2mm} m=839.25$. Arbitrarily, we choose to set 
-$$n=1258, \hspace{2mm} l=2099, \hspace{2mm} m=420$$ in order to have exact control of  type I errors at the significance level $\alpha=m/(l+1)=0.2.$
 
 
 ## R functions and libraries
@@ -212,220 +199,6 @@ sim_realdata = function(B, dataset, m1, m, n, l, in_index,
 
 ```
 
-Load the data and set the parameters as described above.
-
-```{r warning=FALSE, message=FALSE}
-set.seed(321)
-
-# Initializing parameters
-n = 2518
-l = 2099
-m = 420
-alpha = m/(l+1)
-
-data = readMat("G:\\Il mio Drive\\PHD\\Progetto di ricerca\\Conformal Inference Project\\Simulazioni\\7. Applicazioni dati reali\\Dataset digits\\pendigits.mat")
-dataset = cbind(data$X, data$y); colnames(dataset)[ncol(dataset)] = "y"
-in_ind = which(dataset[,ncol(dataset)]==0)
-out_ind = which(dataset[,ncol(dataset)]==1)
-
-
-```
-
-
-We fixed the train set on which we train the isolation forest algorithm and we generate $B=1000$ calibration and test sets. For each $b=1,\ldots,B$ we compute the number of discoveries obtained by Benjamini-Hochberg procedure with and without Storey's estimator for the proportion of true null hypotheses, by closed testing using Simes local test with and without Storey estimator and by closed testing using Wilcoxon-Mann-Whitney local test.
-
-
-
-### All inliers
-We now set the proportion of inliers equal to $1$, so that the number of outliers $m_1=0$.
-```{r warning=FALSE, message=FALSE}
-B=10^4
-m1=0
-
-tic()
-res = sim_realdata(B=B, in_index=in_ind, out_index=out_ind, dataset=dataset,
-                   alpha=alpha,l=l, n=n, m=m, m1=m1)
-toc()
-
-
-boxplot(res$discoveries, main="Digits | Distribution of the number of discoveries")
-points(x=1:5, y=res$mean.discoveries, pch=19, col="red")
-res$mean.discoveries
-
-boxplot(res$powerGlobalNull, main="Digits | Distribution of the power")
-points(x=1:5, y=res$mean.powerGlobalNull, pch=19, col="red")
-res$mean.powerGlobalNull
-
-hist(as.integer(res$powerGlobalNull[[1]]), xlab="", 
-     main="Distribution of the power for BH and Simes CT")
-hist(as.integer(res$powerGlobalNull[[2]]), xlab="", 
-     main="Distribution of the power for BH and Simes CT with Storey")
-hist(as.integer(res$powerGlobalNull[[5]]), xlab="", 
-     main="Distribution of the power for Wilcoxon-Mann-Whitney CT")
-
-resDigits_exact0 = res
-save(resDigits_exact0,
-     file="C:/Users/c.magnani9/Documents/nout/trials/RealData/PowerStudy/Boxplot&ExactCrit/resDigits_exact0")
-
-
-```
-
-
-
-
-### 10% outliers
-We now set the proportion of inliers equal to $0.9$. Referring to Digits dataset we have that the number of inliers is $m_0=378$ and the number of outliers is $m_1=42$.
-
-```{r warning=FALSE, message=FALSE}
-B=10^4
-m1=round(0.1*m)
-
-tic()
-res = sim_realdata(B=B, in_index=in_ind, out_index=out_ind, dataset=dataset,
-                   alpha=alpha,l=l, n=n, m=m, m1=m1)
-toc()
-
-
-boxplot(res$discoveries, main="Digits | Distribution of the number of discoveries")
-points(x=1:5, y=res$mean.discoveries, pch=19, col="red")
-res$mean.discoveries
-
-boxplot(res$powerGlobalNull, main="Digits | Distribution of the power")
-points(x=1:5, y=res$mean.powerGlobalNull, pch=19, col="red")
-res$mean.powerGlobalNull
-
-hist(as.integer(res$powerGlobalNull[[1]]), xlab="", 
-     main="Distribution of the power for BH and Simes CT")
-hist(as.integer(res$powerGlobalNull[[2]]), xlab="", 
-     main="Distribution of the power for BH and Simes CT with Storey")
-hist(as.integer(res$powerGlobalNull[[5]]), xlab="", 
-     main="Distribution of the power for Wilcoxon-Mann-Whitney CT")
-
-resDigits_exact10 = res
-save(resDigits_exact10,
-     file="C:/Users/c.magnani9/Documents/nout/trials/RealData/PowerStudy/Boxplot&ExactCrit/resDigits_exact10")
-
-```
-
-
-
-
-
-
-
-
-
-## Credit Card Fraud Detection dataset
-
-The aim is to compare on Digits dataset (available at  https://www.kaggle.com/mlg-ulb/creditcardfraud) the performance of three closed testing procedures, which respectively use Simes local test with and without Storey estimator for the proportion of true null hypotheses and Wilcoxon-Mann-Whitney local test.
-
-Credit card dataset consists of $284807$ observations, among which $n_{inliers}=284315$ items are inliers and the remaining $n_{outliers}=492$ are outliers.
-We will denote by $n,l,m$ respectively the train set, the calibration set and the test set size. And reproducing the same setting as in [1], we have that $n+l=n_{inliers}/2$, $l=min\{2000,n/2\}$ and $m=min\{2000, n/3\}$. 
-In the case of Digits dataset we obtain
-$$n+l=284315/2, \hspace{2mm} l=2000,  \hspace{2mm} m=2000$$
-from which $n=140157.5, \hspace{2mm} l=2000, \hspace{2mm} m=2000$. Arbitrarily, we choose to set 
-$$n=132158, \hspace{2mm} l=9999, \hspace{2mm} m=2000$$ in order to have exact control of  type I errors at the significance level $\alpha=m/(l+1)=0.2.$
-
-Load the data and set the parameters ad described above.
-
-```{r warning=FALSE, message=FALSE}
-set.seed(321)
-
-# Initializing parameters
-n = 132158
-l = 9999
-m = 2000
-alpha = m/(l+1)
-
-dataset = read.csv("G:\\Il mio Drive\\PHD\\Progetto di ricerca\\Conformal Inference Project\\Simulazioni\\7. Applicazioni dati reali\\Dataset creditcard\\creditcard.csv")
-out_ind = which(dataset$Class==1)
-in_ind = which(dataset$Class==0)
-
-```
-
-
-We fixed the train set on which we train the isolation forest algorithm and we generate $B=1000$ calibration and test sets. For each $b=1,\ldots,B$ we compute the number of discoveries obtained by Benjamini-Hochberg procedure with and without Storey's estimator for the proportion of true null hypotheses, by closed testing using Simes local test with and without Storey estimator and by closed testing using Wilcoxon-Mann-Whitney local test.
-
-
-
-### All inliers
-We now set the proportion of inliers equal to $1$, so that the number of outliers $m_1=0$.
-```{r warning=FALSE, message=FALSE}
-B=10^4
-m1=0
-
-tic()
-res = sim_realdata(B=B, in_index=in_ind, out_index=out_ind, dataset=dataset,
-                   alpha=alpha,l=l, n=n, m=m, m1=m1)
-toc()
-
-
-boxplot(res$discoveries, main="CreditCard | Distribution of the number of discoveries")
-points(x=1:5, y=res$mean.discoveries, pch=19, col="red")
-res$mean.discoveries
-
-boxplot(res$powerGlobalNull, main="CreditCard | Distribution of the power")
-points(x=1:5, y=res$mean.powerGlobalNull, pch=19, col="red")
-res$mean.powerGlobalNull
-
-hist(as.integer(res$powerGlobalNull[[1]]), xlab="", 
-     main="Distribution of the power for BH and Simes CT")
-hist(as.integer(res$powerGlobalNull[[2]]), xlab="", 
-     main="Distribution of the power for BH and Simes CT with Storey")
-hist(as.integer(res$powerGlobalNull[[5]]), xlab="", 
-     main="Distribution of the power for Wilcoxon-Mann-Whitney CT")
-
-resCredit_exact0 = res
-save(resCredit_exact0,
-     file="C:/Users/c.magnani9/Documents/nout/trials/RealData/PowerStudy/Boxplot&ExactCrit/resCredit_exact0")
-
-```
-
-
-
-
-### 10% outliers
-We now set the proportion of inliers equal to $0.9$. Referring to Digits dataset we have that the number of inliers is $m_0=1800$ and the number of outliers is $m_1=200$.
-
-```{r warning=FALSE, message=FALSE}
-B=10^4
-m1=round(0.1*m)
-
-tic()
-res = sim_realdata(B=B, in_index=in_ind, out_index=out_ind, dataset=dataset,
-                   alpha=alpha,l=l, n=n, m=m, m1=m1)
-toc()
-
-
-boxplot(res$discoveries, main="CreditCard | Distribution of the number of discoveries")
-points(x=1:5, y=res$mean.discoveries, pch=19, col="red")
-res$mean.discoveries
-
-boxplot(res$powerGlobalNull, main="CreditCard | Distribution of the power")
-points(x=1:5, y=res$mean.powerGlobalNull, pch=19, col="red")
-res$mean.powerGlobalNull
-
-hist(as.integer(res$powerGlobalNull[[1]]), xlab="", 
-     main="Distribution of the power for BH and Simes CT")
-hist(as.integer(res$powerGlobalNull[[2]]), xlab="", 
-     main="Distribution of the power for BH and Simes CT with Storey")
-hist(as.integer(res$powerGlobalNull[[5]]), xlab="", 
-     main="Distribution of the power for Wilcoxon-Mann-Whitney CT")
-
-resCredit_exact10 = res
-save(resCredit_exact10,
-     file="C:/Users/c.magnani9/Documents/nout/trials/RealData/PowerStudy/Boxplot&ExactCrit/resCredit_exact10")
-
-```
-
-
-
-
-
-
-
-
-
 
 ## Statlog (Shuttle) dataset
 
@@ -538,16 +311,9 @@ save(resShuttle_exact10,
 
 
 
+
 ### References 
 [1] Bates, S., E. Candes, L. Lei, Y. Romano, and M. Sesia (2023). Testing for outliers with conformal p-values.
 \textit{Annals of Statistics}, {\bf 51}, 149–178.
-
-
-
-
-
-
-
-
 
 

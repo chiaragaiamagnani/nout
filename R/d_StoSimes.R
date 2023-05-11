@@ -49,7 +49,7 @@ d_StoreySimes = function(S_Y, S_X, alpha = 0.1, lambda=0.5){
 
   d = sum(cumsum(simes.pval <= thr) == 1:m)
 
-  return(d)
+  return(list("d"=d, "pi.not"=pi.not[1]))
 }
 
 
