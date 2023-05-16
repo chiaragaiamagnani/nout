@@ -20,7 +20,7 @@ An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for the
 number of true discoveries in closed testing procedure using Simes local
 test with Storey estimator for the proportion of true null hypotheses applied to conformal \emph{p}-values.
 The selection set, i.e. the set of hypothesis indices that we are
-interested in is \eqn{[m]=:\{1,...,m\}} by default.
+interested in is \eqn{[m]=:{1,...,m}} by default.
 Then, Storey estimator is computed as
 \deqn{\hat\pi_0 = \frac{1+\sum_{i=1}^m \mathbb{1}\{p_i>\lambda\}}{m(1-\lambda)}}
 where \eqn{\lambda\in(0,1)} and \eqn{p_i} is the \emph{p}-value related
