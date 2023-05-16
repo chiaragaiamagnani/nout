@@ -133,7 +133,7 @@ SIM_realdata = function(B, dataset, n1, n, m, l, in_index, out_index=NULL,
 
 ## Digits dataset
 
-The aim is to compare on Digits dataset (available at  http://odds.cs.stonybrook.edu/pendigits-dataset) the performance of three closed testing procedures, which respectively use Simes local test with and without Storey estimator for the proportion of true null hypotheses and Wilcoxon-Mann-Whitney local test.
+The aim is to compare on Digits dataset (available at http://odds.cs.stonybrook.edu/pendigits-dataset) the performance of three closed testing procedures, which respectively use Simes local test with and without Storey estimator for the proportion of true null hypotheses and Wilcoxon-Mann-Whitney local test.
 
 Digits dataset consists of $6870$ observations, among which $n_{inliers}=6714$ items are inliers and the remaining $n_{outliers}=156$ are outliers.
 We will denote by $n,l,m$ respectively the train set, the calibration set and the test set size. And reproducing the same setting as in [1], we have that $m+n=n_{inliers}/2$, $m=min\{2000,l/2\}$ and $n=min\{2000, l/3\}$. 
@@ -234,7 +234,7 @@ save(resDigits_exact10,
 
 ## Credit Card Fraud Detection dataset
 
-The aim is to compare on Digits dataset (available at  https://www.kaggle.com/mlg-ulb/creditcardfraud) the performance of three closed testing procedures, which respectively use Simes local test with and without Storey estimator for the proportion of true null hypotheses and Wilcoxon-Mann-Whitney local test.
+The aim is to compare on Digits dataset (available at https://www.kaggle.com/mlg-ulb/creditcardfraud) the performance of three closed testing procedures, which respectively use Simes local test with and without Storey estimator for the proportion of true null hypotheses and Wilcoxon-Mann-Whitney local test.
 
 Credit card dataset consists of $284807$ observations, among which $n_{inliers}=284315$ items are inliers and the remaining $n_{outliers}=492$ are outliers.
 
