@@ -1,5 +1,5 @@
 ---
-title: "Power analysis on Cover dataset"
+title: "Power analysis on ALOI dataset"
 author: "Significance level 0.2"
 output: pdf_document
 date: '`r Sys.Date()`'

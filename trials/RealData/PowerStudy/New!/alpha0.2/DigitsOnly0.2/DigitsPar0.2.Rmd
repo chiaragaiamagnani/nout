@@ -83,7 +83,7 @@ tr_ind = sample(in_ind, size = l)
 in_ind2 = setdiff(in_ind, tr_ind)
 tr = dataset[tr_ind,]
 n_cpus = parallel::detectCores()
-iso.fo = isotree::isolation.forest(tr, ndim = ncol(dataset), ntrees = 150, sample_size = 256,
+iso.fo = isotree::isolation.forest(tr, ndim = ncol(dataset), ntrees = 200, sample_size = 256,
                                    nthreads = n_cpus, scoring_metric = "depth", 
                                    output_score = TRUE)
 isofo.model = iso.fo$model
