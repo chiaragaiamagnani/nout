@@ -219,7 +219,7 @@ m = 20
 alpha = m/(l+1)
 m1s = seq(from=0, to=m, by=1)
 
-dataset = read.csv("G:\\Il mio Drive\\PHD\\Progetto di ricerca\\Conformal Inference Project\\Simulazioni\\7. Applicazioni dati reali\\Dataset creditcard\\creditcard.csv")
+dataset = read_csv("G:\\Il mio Drive\\PHD\\Progetto di ricerca\\Conformal Inference Project\\Simulazioni\\7. Applicazioni dati reali\\Dataset creditcard\\creditcard.csv")
 in_ind = which(dataset[,ncol(dataset)]==0)
 out_ind = which(dataset[,ncol(dataset)]==1)
 
