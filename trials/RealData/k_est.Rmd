@@ -1,0 +1,235 @@
+---
+title: "Estimating the order $k$ of the Lehmann's alternative from the data"
+date: '`r Sys.Date()`'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+We consider Lehmann's alternative with $(1-\theta)F+\theta F^k$ and we estimate the value of $k$ from the dat through Monte Carlo simulation.
+
+
+```{r warning=FALSE, message=FALSE}
+
+library(foreign)
+library(readr)
+library(R.matlab)
+library(doSNOW)
+library(foreach)
+library(nout)
+library(isotree)
+
+
+```
+
+
+
+## Digits dataset
+
+```{r warning=FALSE, message=FALSE}
+data = readMat("~/nout/trials/RealData/Datasets/Dataset digits/pendigits.mat")
+
+dataset = cbind(data$X, data$y); colnames(dataset)[ncol(dataset)] = "y"
+in_ind = which(dataset[,ncol(dataset)]==0)
+out_ind = which(dataset[,ncol(dataset)]==1)
+
+# Initializing parameters
+set.seed(321)
+
+B=10^4
+
+ ress = foreach(b = 1:B, .combine=c) %dopar% {
+   inlier = sample(in_ind, size = 1)
+   outlier = sample(out_ind, size = 1)
+   
+   greater.logi = inlier<outlier
+   
+   return(greater.logi)
+}
+
+greater.prob = mean(ress)
+
+(k=greater.prob/(1-greater.prob))
+
+
+```
+
+
+
+
+
+## Credit Card dataset
+
+```{r warning=FALSE, message=FALSE}
+dataset = read_csv("~/nout/trials/RealData/Datasets/Dataset creditcard/creditcard.csv")
+in_ind = which(dataset[,ncol(dataset)]==0)
+out_ind = which(dataset[,ncol(dataset)]==1)
+
+# Initializing parameters
+set.seed(321)
+
+B=10^4
+
+ ress = foreach(b = 1:B, .combine=c) %dopar% {
+   inlier = sample(in_ind, size = 1)
+   outlier = sample(out_ind, size = 1)
+   
+   greater.logi = inlier<outlier
+   
+   return(greater.logi)
+}
+
+greater.prob = mean(ress)
+
+(k=greater.prob/(1-greater.prob))
+
+
+```
+
+
+
+
+## Shuttle (Statlog) dataset
+
+```{r warning=FALSE, message=FALSE}
+data = readMat("~/nout/trials/RealData/Datasets/Dataset shuttle/shuttle.mat")
+dataset = cbind(data$X, data$y); colnames(dataset)[ncol(dataset)] = "y"
+in_ind = which(dataset[,ncol(dataset)]==0)
+out_ind = which(dataset[,ncol(dataset)]==1)
+
+# Initializing parameters
+set.seed(321)
+
+B=10^4
+
+ ress = foreach(b = 1:B, .combine=c) %dopar% {
+   inlier = sample(in_ind, size = 1)
+   outlier = sample(out_ind, size = 1)
+   
+   greater.logi = inlier<outlier
+   
+   return(greater.logi)
+}
+
+greater.prob = mean(ress)
+
+(k=greater.prob/(1-greater.prob))
+
+
+```
+
+
+
+
+
+
+## Cover type dataset
+
+```{r warning=FALSE, message=FALSE}
+data = readMat("~/nout/trials/RealData/Datasets/Dataset cover type/cover.mat")
+dataset = cbind(data$X, data$y); colnames(dataset)[ncol(dataset)] = "y"
+in_ind = which(dataset[,ncol(dataset)]==0)
+out_ind = which(dataset[,ncol(dataset)]==1)
+
+# Initializing parameters
+set.seed(321)
+
+B=10^4
+
+ ress = foreach(b = 1:B, .combine=c) %dopar% {
+   inlier = sample(in_ind, size = 1)
+   outlier = sample(out_ind, size = 1)
+   
+   greater.logi = inlier<outlier
+   
+   return(greater.logi)
+}
+
+greater.prob = mean(ress)
+
+(k=greater.prob/(1-greater.prob))
+
+
+```
+
+
+
+
+
+
+## Mammography dataset
+
+```{r warning=FALSE, message=FALSE}
+data = readMat("~/nout/trials/RealData/Datasets/Dataset mammography/mammography.mat")
+dataset = cbind(data$X, data$y); colnames(dataset)[ncol(dataset)] = "y"
+in_ind = which(dataset[,ncol(dataset)]==0)
+out_ind = which(dataset[,ncol(dataset)]==1)
+
+# Initializing parameters
+set.seed(321)
+
+B=10^4
+
+ ress = foreach(b = 1:B, .combine=c) %dopar% {
+   inlier = sample(in_ind, size = 1)
+   outlier = sample(out_ind, size = 1)
+   
+   greater.logi = inlier<outlier
+   
+   return(greater.logi)
+}
+
+greater.prob = mean(ress)
+
+(k=greater.prob/(1-greater.prob))
+
+
+```
+
+
+
+
+
+
+## ALOI dataset
+
+```{r warning=FALSE, message=FALSE}
+dataset = read.arff("~/nout/trials/RealData/Datasets/Dataset ALOI/ALOI_withoutdupl.arff")
+in_ind = which(dataset[,dataset$outlier]=="no")
+out_ind = which(dataset[,dataset$outlier]=="yes")
+
+# Initializing parameters
+set.seed(321)
+
+B=10^4
+
+
+ ress = foreach(b = 1:B, .combine=c) %dopar% {
+   inlier = sample(in_ind, size = 1)
+   outlier = sample(out_ind, size = 1)
+   
+   greater.logi = inlier<outlier
+   
+   return(greater.logi)
+}
+ 
+ 
+ ress = foreach(b = 1:B, .combine=c) %dopar% {
+   inlier = sample(in_ind, size = 1)
+   outlier = sample(out_ind, size = 1)
+   
+   greater.logi = inlier<outlier
+   
+   return(greater.logi)
+}
+
+greater.prob = mean(ress)
+
+(k=greater.prob/(1-greater.prob))
+
+
+```
+
+
