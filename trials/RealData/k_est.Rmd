@@ -193,9 +193,9 @@ greater.prob = mean(ress)
 
 
 
-## ALOI dataset
+<!-- ## ALOI dataset -->
 
-```{r warning=FALSE, message=FALSE}
+```{r warning=FALSE, message=FALSE, echo=FALSE, eval=FALSE}
 dataset = read.arff("~/nout/trials/RealData/Datasets/Dataset ALOI/ALOI_withoutdupl.arff")
 in_ind = which(dataset[,dataset$outlier]=="no")
 out_ind = which(dataset[,dataset$outlier]=="yes")
