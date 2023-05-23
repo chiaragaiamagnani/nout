@@ -102,7 +102,6 @@ legend("topleft", pch = 19, col = c("blue", "#808000","#BDB76B", "#DC143C", "#FF
 
 
 
-
 pow_WMW = vector()
 pow_BH = vector()
 pow_StoBH = vector()
@@ -129,6 +128,45 @@ points(x = n1_vec, y = pow_Simes, col = "#DC143C", type = "b", lty = 2, pch=19)
 points(x = n1_vec, y = pow_StoSimes, col = "#FFA07A", type = "b", lty = 2, pch=19)
 legend("topleft", pch = 19, col = c("blue", "#808000","#BDB76B", "#DC143C", "#FFA07A"),
        legend =c("WMW", "BH", "StoreyBH", "Simes", "StoreySimes"))
+
+
+
+
+load("~/nout/trials/RealData/PowerStudy/New!/alpha0.2/DigitsOnly0.2/Lehmann k=4/resDigits_alpha02_k4_alln1s")
+pow_WMW = vector()
+pow_BH = vector()
+pow_StoBH = vector()
+pow_Simes = vector()
+pow_StoSimes = vector()
+
+for(i in 1:length(resDigits_alpha02_k4_alln1s)){
+  pow_WMW[i] = resDigits_alpha02_k4_alln1s[[i]]$mean.powerGlobalNull[5]
+  pow_BH[i] = resDigits_alpha02_k4_alln1s[[i]]$mean.powerGlobalNull[1]
+  pow_StoBH[i] = resDigits_alpha02_k4_alln1s[[i]]$mean.powerGlobalNull[2]
+  pow_StoSimes[i] = resDigits_alpha02_k4_alln1s[[i]]$mean.powerGlobalNull[4]
+  pow_Simes[i] = resDigits_alpha02_k4_alln1s[[i]]$mean.powerGlobalNull[3]
+}
+
+
+n=50
+prop.out = seq(0, 1, by=0.02)
+n1_vec = round(prop.out*n)
+
+win.graph()
+plot(x = n1_vec, y = pow_WMW, col = "blue", ylab = "power",
+     xlab = "n1", ylim=c(0,1), type = "b", lty = 2, pch=19,
+     main = "Mean power")
+points(x = n1_vec, y = pow_BH, col = "#808000", type = "b", lty = 2, pch=19)
+points(x = n1_vec, y = pow_StoBH, col = "#BDB76B", type = "b", lty = 2, pch=19)
+points(x = n1_vec, y = pow_Simes, col = "#DC143C", type = "b", lty = 2, pch=19)
+points(x = n1_vec, y = pow_StoSimes, col = "#FFA07A", type = "b", lty = 2, pch=19)
+legend("topleft", pch = 19, col = c("blue", "#808000","#BDB76B", "#DC143C", "#FFA07A"),
+       legend =c("WMW", "BH", "StoreyBH", "Simes", "StoreySimes"))
+
+
+
+
+
 
 
 
