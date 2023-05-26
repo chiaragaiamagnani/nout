@@ -6,14 +6,14 @@
 #'  \eqn{1} and \eqn{m}, while the size of the first sample is kept fixed equal to \eqn{n}.
 #'
 #'
-#' @param m : number of observations in the test set
-#' @param n : number of observations in the calibration set
-#' @param alpha : significance level of the local test. Default value is set equal to 0.1
-#' @param m.exact : maximum value of the sample size of the second sample for which the critical
+#' @param m  number of observations in the test set
+#' @param n  number of observations in the calibration set
+#' @param alpha  significance level of the local test. Default value is set equal to 0.1
+#' @param m.exact  maximum value of the sample size of the second sample for which the critical
 #' values of the Wilcoxon-Mann-Whitney statistic are exactly computed using ***qwilcox*** function.
 #' Default value is set equal to 10.
-#' @param exact : logical value. If TRUE, exact computation of critical values is performed for
-#' all values of \eqn{k\in\{1,\ldots,m\}} when \eqn{n\leq 20}. Otherwise, exact computation of
+#' @param exact  logical value. If TRUE, exact computation of critical values is performed for
+#' all values of \eqn{k\in{1,\ldots,m}} when \eqn{n\leq 20}. Otherwise, exact computation of
 #' critical values is performed for all values of \eqn{k\in\{1,\ldots,m.exact\}} when \eqn{n<1000}.
 #' Default value is FALSE.
 #'
@@ -21,18 +21,19 @@
 #'
 #' @return A R object of class *crit.vals.info*, which is a list consisting
 #' of the following elements: \itemize{
-#' \item m: number of test observations
-#' \item n: number of calibration observations
-#' \item alpha: significance level of the local test
-#' \item crit.vals: vector of critical values of the Wilcoxon-Mann-Whitney
-#' statistic \eqn{U(n,k)}, \eqn{k=1,\ldots,m}. Given two samples
+#' \item m number of test observations
+#' \item n number of calibration observations
+#' \item alpha significance level of the local test
+#' \item crit.vals vector of critical values of the Wilcoxon-Mann-Whitney
+#' statistic \eqn{U(n,k)}, \eqn{k=m,\ldots,1} (first element of the vector
+#' corresponds to \eqn{k=m} and the last one to \eqn{k=1}. Given two samples
 #' \eqn{(X_1,\ldots,X_n)} and \eqn{(Y_1,\ldots,Y_k)}, the Wilcoxon-Mann-Whitney
-#' statistic is computed as \deqn{ U(n,k) = \sum_{i = 1}^{n}\sum_{j = 1}^{k} \mathbb{1}\{X_i > Y_j\}}
+#' statistic is computed as \deqn{U(n,k) = \sum_{i = 1}^{n}\sum_{j = 1}^{k} \mathbb{1}\{X_i > Y_j\}}
 #' and it has mean \eqn{kn/2} and variance \eqn{kn(k+n+1)/12}.
 #'
 #' When \eqn{n<1000} and \eqn{m<10} the value of the Wilcoxon-Mann-Whitney statistic
 #' is exactly computed with the R function ***qwilcox***; otherwise, we use
-#' the normal approximation using continuity correction \deqn{ U(n,k) \sim N(kn/2-1/2, kn(k+n+1)/12)}.
+#' the normal approximation using continuity correction \deqn{U(n,k) \sim N(kn/2-1/2, kn(k+n+1)/12)}.
 #' }
 #'
 #'
