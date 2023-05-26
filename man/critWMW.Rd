@@ -7,36 +7,37 @@
 critWMW(m, n, alpha = 0.1, m.exact = 10, exact = F)
 }
 \arguments{
-\item{m}{: number of observations in the test set}
+\item{m}{number of observations in the test set}
 
-\item{n}{: number of observations in the calibration set}
+\item{n}{number of observations in the calibration set}
 
-\item{alpha}{: significance level of the local test. Default value is set equal to 0.1}
+\item{alpha}{significance level of the local test. Default value is set equal to 0.1}
 
-\item{m.exact}{: maximum value of the sample size of the second sample for which the critical
+\item{m.exact}{maximum value of the sample size of the second sample for which the critical
 values of the Wilcoxon-Mann-Whitney statistic are exactly computed using \emph{\strong{qwilcox}} function.
 Default value is set equal to 10.}
 
-\item{exact}{: logical value. If TRUE, exact computation of critical values is performed for
-all values of \eqn{k\in\{1,\ldots,m\}} when \eqn{n\leq 20}. Otherwise, exact computation of
+\item{exact}{logical value. If TRUE, exact computation of critical values is performed for
+all values of \eqn{k\in{1,\ldots,m}} when \eqn{n\leq 20}. Otherwise, exact computation of
 critical values is performed for all values of \eqn{k\in\{1,\ldots,m.exact\}} when \eqn{n<1000}.
 Default value is FALSE.}
 }
 \value{
 A R object of class \emph{crit.vals.info}, which is a list consisting
 of the following elements: \itemize{
-\item m: number of test observations
-\item n: number of calibration observations
-\item alpha: significance level of the local test
-\item crit.vals: vector of critical values of the Wilcoxon-Mann-Whitney
-statistic \eqn{U(n,k)}, \eqn{k=1,\ldots,m}. Given two samples
+\item m number of test observations
+\item n number of calibration observations
+\item alpha significance level of the local test
+\item crit.vals vector of critical values of the Wilcoxon-Mann-Whitney
+statistic \eqn{U(n,k)}, \eqn{k=m,\ldots,1} (first element of the vector
+corresponds to \eqn{k=m} and the last one to \eqn{k=1}. Given two samples
 \eqn{(X_1,\ldots,X_n)} and \eqn{(Y_1,\ldots,Y_k)}, the Wilcoxon-Mann-Whitney
-statistic is computed as \deqn{ U(n,k) = \sum_{i = 1}^{n}\sum_{j = 1}^{k} \mathbb{1}\{X_i > Y_j\}}
+statistic is computed as \deqn{U(n,k) = \sum_{i = 1}^{n}\sum_{j = 1}^{k} \mathbb{1}\{X_i > Y_j\}}
 and it has mean \eqn{kn/2} and variance \eqn{kn(k+n+1)/12}.
 
 When \eqn{n<1000} and \eqn{m<10} the value of the Wilcoxon-Mann-Whitney statistic
 is exactly computed with the R function \emph{\strong{qwilcox}}; otherwise, we use
-the normal approximation using continuity correction \deqn{ U(n,k) \sim N(kn/2-1/2, kn(k+n+1)/12)}.
+the normal approximation using continuity correction \deqn{U(n,k) \sim N(kn/2-1/2, kn(k+n+1)/12)}.
 }
 }
 \description{
