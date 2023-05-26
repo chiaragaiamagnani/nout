@@ -19,7 +19,7 @@ dselection_Simes(S_Y, S_X, selection, alpha = 0.1)
 An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
 the number of true discoveries in closed testing procedure using
 Simes local test applied to conformal \emph{p}-values. The selection set, i.e., the set of hypothesis
-indices that we are interested can be choosen.
+indices that we are interested can be chosen.
 }
 \description{
 dselection_Simes
