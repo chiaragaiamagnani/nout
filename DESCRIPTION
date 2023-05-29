@@ -13,6 +13,8 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 Imports: 
     hommel,
+    Rcpp,
     stats
 URL: https://github.com/chiaragaiamagnani/nout
 BugReports: https://github.com/chiaragaiamagnani/nout/issues
+LinkingTo: Rcpp
