@@ -4,7 +4,7 @@
 \alias{dselection_mannwhitney}
 \title{dselection_mannwhitney}
 \usage{
-dselection_mannwhitney(S_Y, S_X, alpha, selection, nonselection)
+dselection_mannwhitney(S_Y, S_X, alpha, S)
 }
 \arguments{
 \item{S_Y}{score vector for the test set}
@@ -13,9 +13,7 @@ dselection_mannwhitney(S_Y, S_X, alpha, selection, nonselection)
 
 \item{alpha}{significance level}
 
-\item{selection}{set of the selected indices}
-
-\item{nonselection}{set of the not selected indices}
+\item{S}{set of the selected indices}
 }
 \value{
 An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
@@ -32,7 +30,7 @@ set.seed(321)
 Sxy = sample(x=1:1000, size=100)
 Sx = sample(Sxy, size=70)
 Sy = setdiff(Sxy, Sx)
-dselection_mannwhitney(S_Y=Sy, S_X=Sx, alpha = 0.1, selection = 1:10, nonselection=11:30)
+dselection_mannwhitney(S_Y=Sy, S_X=Sx, alpha = 0.1, S=1:10)
 
 
 
