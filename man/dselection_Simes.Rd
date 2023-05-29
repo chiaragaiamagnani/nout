@@ -4,14 +4,14 @@
 \alias{dselection_Simes}
 \title{dselection_Simes}
 \usage{
-dselection_Simes(S_Y, S_X, selection, alpha = 0.1)
+dselection_Simes(S_Y, S_X, S, alpha = 0.1)
 }
 \arguments{
 \item{S_Y}{: score vector for the test set}
 
 \item{S_X}{: score vector for the calibration set}
 
-\item{selection}{: vector of selected indices}
+\item{S}{: vector of selected indices}
 
 \item{alpha}{: significance level}
 }
@@ -29,6 +29,6 @@ set.seed(321)
 Sxy = sample(x=1:1000, size=100)
 Sx = sample(Sxy, size=70)
 Sy = setdiff(Sxy, Sx)
-dselection_Simes(S_Y=Sy, S_X=Sx, selection = 5:15)
+dselection_Simes(S_Y=Sy, S_X=Sx, S = 5:15)
 
 }
