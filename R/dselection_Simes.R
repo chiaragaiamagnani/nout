@@ -23,16 +23,11 @@
 #' dselection_Simes(S_Y=Sy, S_X=Sx, S = 5:15)
 #'
 dselection_Simes = function(S_Y, S_X, S, alpha = 0.1){
-  S_Y.selection = S_Y[S]
-  n = length(S_Y.selection)
-  m = length(S_X)
-  pval = sapply(1:n, function(i) (1+sum(S_X >= S_Y.selection[i]))/(m+1))
-  d = hommel::discoveries(hommel::hommel(pval), alpha = alpha)
 
-  # n = length(S_Y)
-  # m = length(S_X)
-  # pval = sapply(1:n, function(i) (1+sum(S_X >= S_Y[i]))/(m+1))
-  # d = hommel::discoveries(hommel::hommel(pval), ix = selection, alpha = alpha)
+  n = length(S_Y)
+  m = length(S_X)
+  pval = sapply(1:n, function(i) (1+sum(S_X >= S_Y[i]))/(m+1))
+  d = hommel::discoveries(hommel::hommel(pval), ix = S, alpha = alpha)
 
   return(d)
 }
