@@ -1,12 +1,13 @@
 
 
 
-#' dselection_mannwhitney
+#' dselection_MannWhitney
 #'
 #' @param S_Y score vector for the test set
 #' @param S_X score vector for the calibration set
-#' @param alpha significance level
 #' @param S set of the selected indices
+#' @param alpha significance level
+#'
 #'
 #' @return An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
 #' the number of true discoveries in closed testing procedure using
@@ -20,7 +21,7 @@
 #' Sxy = sample(x=1:1000, size=100)
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
-#' dselection_mannwhitney(S_Y=Sy, S_X=Sx, alpha = 0.1, S=1:10)
+#' dselection_MannWhitney(S_Y=Sy, S_X=Sx, alpha = 0.1, S=1:10)
 #'
 #'
 #'
@@ -29,7 +30,7 @@
 #' @importFrom Rcpp evalCpp
 #' @useDynLib nout, .registration=TRUE
 #'
-dselection_mannwhitney = function(S_Y, S_X, alpha, S){
+dselection_MannWhitney = function(S_Y, S_X, S, alpha){
 
   n = length(S_Y)
   m = length(S_X)
