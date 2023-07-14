@@ -376,6 +376,7 @@ for(b in 1:B){
 
   cond1 = ifelse(x1<Y, 1, 0)
   cond2 = sum(sapply(1:(m-1), function(i) ifelse(Xh[i]<Y & x1<Y, 1, 0)))
+
   res[b] = sum(2*cond1+cond2)^2
 
 }
@@ -389,26 +390,86 @@ m^2/3+4*m/3+7/3-4*punif(x1, min = 0, max = 2)-2*(m-1)*(punif(x1, min = 0, max = 
 # Verifico esattezza della forma chiusa di E[ai^2], i>1 dove
 # ai= 1{Xi<Y}+sum_{h=1}^m 1{Xi<Y, Xh<Y}
 
-B=10^6
+B=10^5
 m=10
 
-set.seed(123)
 res = vector()
 x1 = runif(n=1, min=0, max=2)
 for(b in 1:B){
 
   Xh = runif(n=(m-2), min=0, max=2)
   Xi = runif(n=1, min=0, max=2)
+  X = c(x1, Xi, Xh)
   Y = runif(n=1, min=0, max=2)
 
-  cond1 = ifelse(Xi<Y, 1, 0)
-  cond2 = sum(sapply(1:(m-2), function(j) ifelse(Xh[j]<Y & Xi<Y, 1, 0)))+ifelse(x1<Y & Xi<Y, 1, 0)
-  res[b] = sum(2*cond1+cond2)^2
+  cond2 = X<Y
+
+  # ai
+  cond1i = ifelse(Xi<Y, 1, 0)
+  cond2i = sum(cond2)*cond1i
+  ai = cond2i+cond1i
+
+  res[b] = ai^2
 
 }
 
 mean(res)
-3*m^2/12+10/12*m+35/12-5/2*(punif(x1, min = 0, max = 2))^2-2*(m-1)/3*(punif(x1, min = 0, max = 2))^3
+
+3+(2/3+1/4+m/4)*(m-2)+5/2*(1-(punif(x1, min = 0, max = 2))^2)+2/3*(m-2)*(1-(punif(x1, min = 0, max = 2))^3)
+
+
+
+
+
+
+
+
+
+
+
+# Verifico esattezza della forma chiusa di
+# sum_{h=2}^m (sum_{r=2}^m 1{Xh<Y, Xi<Y, Xr<Y})
+
+B=10^5
+m=10
+
+#set.seed(123)
+res = vector()
+
+for(b in 1:B){
+
+  Xh = runif(n=(m-1), min=0, max=2)
+  Xi = runif(n=1, min=0, max=2)
+  X = c(Xi, Xh)
+  Y = runif(n=1, min=0, max=2)
+
+  cond1 = ifelse(Xi<Y, 1, 0)
+  cond2aus = X<Y
+  cond2 = sum(cond2aus%*%t(cond2aus))
+  res[b] = cond2*cond1
+
+}
+
+mean(res)
+(m-2)*(m/4+1/4)+1/2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -540,24 +601,66 @@ mean(res)
 # ai= 1{Xi<Y}+sum_{h=1}^m 1{Xi<Y, Xh<Y}
 # a1= 1{x1<Y}+sum_{h=1}^m 1{Xi<Y, Xh<Y}
 
-B=10^4
+B=10^5
 m=10
 
-set.seed(123)
+#set.seed(123)
 res = vector()
 x1 = runif(n=1, min=0, max=2)
 for(b in 1:B){
 
   Xh = runif(n=(m-2), min=0, max=2)
   Xi = runif(n=1, min=0, max=2)
+  X = c(x1, Xi, Xh)
   Y = runif(n=1, min=0, max=2)
 
-  # cond1 = ifelse(Xi<Y, 1, 0)
-  # cond2 = sum(sapply(1:(m-2), function(j) ifelse(Xh[j]<Y & Xi<Y, 1, 0)))+ifelse(x1<Y & Xi<Y, 1, 0)
-  # res[b] = sum(2*cond1+cond2)^2
+  cond2 = X<Y
+
+  # a1
+  cond11 = ifelse(x1<Y, 1, 0)
+  cond21 = sum(cond2)*cond11
+  a1 = cond21+cond11
+
+  # ai
+  cond1i = ifelse(Xi<Y, 1, 0)
+  cond2i = sum(cond2)*cond1i
+  ai = cond2i+cond1i
+
+  res[b] = a1*ai
 
 }
 
-# mean(res)
-# m^2/4+7/6*m+31/12-3/2*(punif(x1, min = 0, max = 2))^2-2*(m-1)/3*(punif(x1, min = 0, max = 2))^3
+mean(res)
+(m-2)*(m-3)/4*(1-(punif(x1, min = 0, max = 2))^4)+(6*m-7)/3*(1-(punif(x1, min = 0, max = 2))^3)+9/2*(1-(punif(x1, min = 0, max = 2))^2)
+
+
+
+
+
+# Verifico esattezza della forma chiusa di
+# sum_{h=2}^m (sum_{r=2}^m 1{x1<Y, Xh<Y, Xi<Y, Xr<Y})
+
+B=10^5
+m=10
+
+#set.seed(123)
+res = vector()
+x1 = runif(n=1, min=0, max=2)
+
+for(b in 1:B){
+
+  Xh = runif(n=(m-2), min=0, max=2)
+  Xi = runif(n=1, min=0, max=2)
+  X = c(Xi, Xh)
+  Y = runif(n=1, min=0, max=2)
+
+  cond1 = ifelse(x1<Y & Xi<Y, 1, 0)
+  cond2aus = sapply(1:(m-1), function(j) ifelse(X[j]<Y, 1, 0))
+  cond2 = sum(cond2aus%*%t(cond2aus))
+  res[b] = cond2*cond1
+
+}
+
+mean(res)
+(m-2)*(m-3)/4*(1-(punif(x1, min = 0, max = 2))^4)+(m-2)*(1-(punif(x1, min = 0, max = 2))^3)+1/2*(1-(punif(x1, min = 0, max = 2))^2)
 
