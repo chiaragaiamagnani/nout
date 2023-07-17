@@ -358,75 +358,6 @@ mean(res)
 
 
 
-
-# Verifico esattezza della forma chiusa di E[a1^2] dove
-# a1= 1{x1<Y}+sum_{h=1}^m 1{Xi<Y, Xh<Y}
-
-B=10^5
-m=10
-
-set.seed(123)
-res = vector()
-x1 = runif(n=1, min=0, max=2)
-for(b in 1:B){
-
-  Xh = runif(n=(m-1), min=0, max=2)
-  #Xr = runif(n=1, min=0, max=2)
-  Y = runif(n=1, min=0, max=2)
-
-  cond1 = ifelse(x1<Y, 1, 0)
-  cond2 = sum(sapply(1:(m-1), function(i) ifelse(Xh[i]<Y & x1<Y, 1, 0)))
-
-  res[b] = sum(2*cond1+cond2)^2
-
-}
-
-mean(res)
-m^2/3+4*m/3+7/3-4*punif(x1, min = 0, max = 2)-2*(m-1)*(punif(x1, min = 0, max = 2))^2-(m-1)^2/3*(punif(x1, min = 0, max = 2))^3
-
-
-
-
-# Verifico esattezza della forma chiusa di E[ai^2], i>1 dove
-# ai= 1{Xi<Y}+sum_{h=1}^m 1{Xi<Y, Xh<Y}
-
-B=10^5
-m=10
-
-res = vector()
-x1 = runif(n=1, min=0, max=2)
-for(b in 1:B){
-
-  Xh = runif(n=(m-2), min=0, max=2)
-  Xi = runif(n=1, min=0, max=2)
-  X = c(x1, Xi, Xh)
-  Y = runif(n=1, min=0, max=2)
-
-  cond2 = X<Y
-
-  # ai
-  cond1i = ifelse(Xi<Y, 1, 0)
-  cond2i = sum(cond2)*cond1i
-  ai = cond2i+cond1i
-
-  res[b] = ai^2
-
-}
-
-mean(res)
-
-3+(2/3+1/4+m/4)*(m-2)+5/2*(1-(punif(x1, min = 0, max = 2))^2)+2/3*(m-2)*(1-(punif(x1, min = 0, max = 2))^3)
-
-
-
-
-
-
-
-
-
-
-
 # Verifico esattezza della forma chiusa di
 # sum_{h=2}^m (sum_{r=2}^m 1{Xh<Y, Xi<Y, Xr<Y})
 
@@ -452,27 +383,6 @@ for(b in 1:B){
 
 mean(res)
 (m-2)*(m/4+1/4)+1/2
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -596,10 +506,42 @@ mean(res)
 
 
 
+# Verifico esattezza della forma chiusa di E[a1^2], i>1 dove
+# a1= 1{x1<Y}+sum_{h=1}^m 1{x1<Y, Xh<Y}
+
+B=10^5
+m=10
+
+res = vector()
+x1 = runif(n=1, min=0, max=2)
+for(b in 1:B){
+
+  Xshort = runif(n=(m-1), min=0, max=2)
+  X = c(x1, Xshort)
+  Y = runif(n=1, min=0, max=2)
+
+  cond2 = X<Y
+
+  # a1
+  cond11 = ifelse(x1<Y, 1, 0)
+  cond21 = sum(cond2)*cond11
+  a1 = cond21+cond11
+
+  res[b] = a1^2
+}
+
+mean(res)
+4*(1-(punif(x1, min = 0, max = 2)))+
+  2*(m-1)*(1-(punif(x1, min = 0, max = 2))^2)+
+  (m-1)^2/3*(1-(punif(x1, min = 0, max = 2))^3)
+
+
+
+
 
 # Verifico esattezza della forma chiusa di E[ai*a1], i>1 dove
 # ai= 1{Xi<Y}+sum_{h=1}^m 1{Xi<Y, Xh<Y}
-# a1= 1{x1<Y}+sum_{h=1}^m 1{Xi<Y, Xh<Y}
+# a1= 1{x1<Y}+sum_{h=1}^m 1{x1<Y, Xh<Y}
 
 B=10^5
 m=10
@@ -631,9 +573,44 @@ for(b in 1:B){
 }
 
 mean(res)
-(m-2)*(m-3)/4*(1-(punif(x1, min = 0, max = 2))^4)+(6*m-7)/3*(1-(punif(x1, min = 0, max = 2))^3)+9/2*(1-(punif(x1, min = 0, max = 2))^2)
+(m-2)^2/4*(1-(punif(x1, min = 0, max = 2))^4)+
+  2*(m-2)*(1-(punif(x1, min = 0, max = 2))^3)+
+  9/2*(1-(punif(x1, min = 0, max = 2))^2)
 
 
+
+
+# Verifico esattezza della forma chiusa di E[ai^2], i>1 dove
+# ai= 1{Xi<Y}+sum_{h=1}^m 1{Xi<Y, Xh<Y}
+
+B=10^5
+m=10
+
+#set.seed(123)
+res = vector()
+x1 = runif(n=1, min=0, max=2)
+for(b in 1:B){
+
+  Xshort = runif(n=(m-2), min=0, max=2)
+  Xi = runif(n=1, min=0, max=2)
+  X = c(x1, Xi, Xshort)
+  Y = runif(n=1, min=0, max=2)
+
+  cond2 = X<Y
+
+  # ai
+  cond1i = ifelse(Xi<Y, 1, 0)
+  cond2i = sum(cond2)*cond1i
+  ai = cond2i+cond1i
+
+  res[b] = ai^2
+
+}
+
+mean(res)
+2+5/3*(m-2)+(m-3)*(m-2)/4+
+  2/3*(m-2)*(1-(punif(x1, min = 0, max = 2))^3)+
+  5/2*(1-(punif(x1, min = 0, max = 2))^2)
 
 
 
@@ -664,3 +641,224 @@ for(b in 1:B){
 mean(res)
 (m-2)*(m-3)/4*(1-(punif(x1, min = 0, max = 2))^4)+(m-2)*(1-(punif(x1, min = 0, max = 2))^3)+1/2*(1-(punif(x1, min = 0, max = 2))^2)
 
+
+
+
+# Verifico esattezza della forma chiusa di
+# E[(sum_{h=2}^m 1{Xi<Y, Xh<Y})(sum_{r=2}^m 1{Xj<Y, Xr<Y})]
+
+B=10^5
+m=10
+
+#set.seed(123)
+res = vector()
+x1 = runif(n=1, min=0, max=2)
+
+for(b in 1:B){
+
+  Xshort = runif(n=(m-3), min=0, max=2)
+  Xi = runif(n=1, min=0, max=2)
+  Xj = runif(n=1, min=0, max=2)
+  X = c(x1, Xi, Xj, Xshort)
+  Y = runif(n=1, min=0, max=2)
+
+  condi = ifelse(Xi<Y, 1, 0)
+  condj = ifelse(Xj<Y, 1, 0)
+  condX = sum(X<Y)
+  condh = condi*condX
+  condr = condj*condX
+  res[b] = condh*condr
+
+}
+
+mean(res)
+1/2*(1-(punif(x1, min = 0, max = 2))^2)+(m-3)/2*(1-(punif(x1, min = 0, max = 2))^4)+4/3*(1-(punif(x1, min = 0, max = 2))^3)+(m-3)*(m-4)/5+5/4*(m-3)+4/3
+
+(12*m^2+21*m+19)/60-(punif(x1, min = 0, max = 2))^2/2-(m-3)/4*(punif(x1, min = 0, max = 2))^4-4/3*(punif(x1, min = 0, max = 2))^3
+
+
+
+
+
+# Verifico esattezza della forma chiusa di E[ai*aj], i,j>1 i!=j dove
+# ai= 1{Xi<Y}+sum_{h=1}^m 1{Xi<Y, Xh<Y}
+# aj= 1{Xj<Y}+sum_{r=1}^m 1{Xj<Y, Xr<Y}
+
+B=10^5
+m=10
+
+#set.seed(123)
+res = vector()
+x1 = runif(n=1, min=0, max=2)
+for(b in 1:B){
+
+  Xshort = runif(n=(m-3), min=0, max=2)
+  Xi = runif(n=1, min=0, max=2)
+  Xj = runif(n=1, min=0, max=2)
+  X = c(x1, Xi, Xj, Xshort)
+  Y = runif(n=1, min=0, max=2)
+
+  cond2 = X<Y
+
+  # aj
+  cond1j = ifelse(Xj<Y, 1, 0)
+  cond2j = sum(cond2)*cond1j
+  aj = cond2j+cond1j
+
+  # ai
+  cond1i = ifelse(Xi<Y, 1, 0)
+  cond2i = sum(cond2)*cond1i
+  ai = cond2i+cond1i
+
+  res[b] = aj*ai
+
+}
+
+mean(res)
+3+(m-3)*(4*m+19)/20+1/2*(1-(punif(x1, min = 0, max = 2))^2)+5/3*(1-(punif(x1, min = 0, max = 2))^3)+(m-3)/2*(1-(punif(x1, min = 0, max = 2))^4)
+
+
+
+
+
+# Verifico esattezza della forma chiusa di E[h(x1, X2,...,Xm,Y)], dove
+# h(x1, X2,...,Xm,Y) = sum_{i=1}^m ai dove
+# ai= 1{Xi<Y}+sum_{h=1}^m 1{Xi<Y, Xh<Y}
+
+B=10^5
+m=10
+
+res = vector()
+x1 = runif(n=1, min=0, max=2)
+for(b in 1:B){
+
+  Xshort = runif(n=(m-1), min=0, max=2)
+  X = c(x1, Xshort)
+  Y = runif(n=1, min=0, max=2)
+
+  cond2 = X<Y
+
+  a = vector()
+  for(i in 1:m){
+    # ai
+    cond1i = ifelse(X[i]<Y, 1, 0)
+    cond2i = sum(cond2)*cond1i
+    a[i] = cond2i+cond1i
+  }
+  res[b] = sum(a)
+}
+
+mean(res)
+2*(1-punif(x1, min = 0, max = 2)) +(m-1)*(1-(punif(x1, min = 0, max = 2))^2)+(m-1)/3*(1+m)
+
+
+
+
+
+
+
+
+# Verifico esattezza della forma chiusa di E[h(x1, X2,...,Xm,Y)^2], dove
+# h(x1, X2,...,Xm,Y) = sum_{i=1}^m ai dove
+# ai= 1{Xi<Y}+sum_{h=1}^m 1{Xi<Y, Xh<Y}
+
+B=10^5
+m=10
+
+res = vector()
+x1 = runif(n=1, min=0, max=2)
+for(b in 1:B){
+
+  Xshort = runif(n=(m-1), min=0, max=2)
+  X = c(x1, Xshort)
+  Y = runif(n=1, min=0, max=2)
+
+  cond2 = X<Y
+
+  a = vector()
+  for(i in 1:m){
+    # ai
+    cond1i = ifelse(X[i]<Y, 1, 0)
+    cond2i = sum(cond2)*cond1i
+    a[i] = cond2i+cond1i
+  }
+  res[b] = sum(a)^2
+}
+
+mean(res)
+m^4/5+m^2/2-5/2*m+9/5+4*(1-punif(x1, min = 0, max = 2))+
+  (m-1)*(11+m)/2*(1-punif(x1, min = 0, max = 2)^2)+
+  (m-1)*(14/3-9)*(1-punif(x1, min = 0, max = 2)^3)+
+  ((m-1)*(m-2)*(3/2*m-4)/2)*(1-punif(x1, min = 0, max = 2)^4)
+
+
+
+
+
+
+
+# Verifico esattezza di theta = E[h(X1, X2,...,Xm,Y)]
+# dove anche X1 è random
+
+B=10^5
+m=10
+
+res = vector()
+
+for(b in 1:B){
+
+  X = runif(n=m, min=0, max=2)
+  Y = runif(n=1, min=0, max=2)
+
+  cond2 = X<Y
+
+  a = vector()
+  for(i in 1:m){
+    # ai
+    cond1i = ifelse(X[i]<Y, 1, 0)
+    cond2i = sum(cond2)*cond1i
+    a[i] = cond2i+cond1i
+  }
+  res[b] = sum(a)
+}
+
+mean(res)
+m+m*(m-1)/3
+
+
+
+
+# Verifico esattezza di E[(h(x1, X2,...,Xm,Y)-theta)^2]
+
+B=10^5
+m=10
+
+res = vector()
+x1 = runif(n=1, min=0, max=2)
+theta = m/3*(m+2)
+
+for(b in 1:B){
+
+  Xshort = runif(n=(m-1), min=0, max=2)
+  X = c(x1, Xshort)
+  Y = runif(n=1, min=0, max=2)
+
+  cond2 = X<Y
+
+  a = vector()
+  for(i in 1:m){
+    # ai
+    cond1i = ifelse(X[i]<Y, 1, 0)
+    cond2i = sum(cond2)*cond1i
+    a[i] = cond2i+cond1i
+  }
+  h = sum(a)
+  res[b] = (h - theta)^2
+}
+
+mean(res)
+4/45*m^4+2/5*m^3+19/30*m^2+47/45*m-7/6+
+  (-4/3*m*(m+2)+4)*(1-punif(x1, min = 0, max = 2))+
+  (-2/3*m^3-m^2/6+10/3*m-5/2)*(1-(punif(x1, min = 0, max = 2))^2)+
+  ((m-1)/3*(8*m-5))*(1-(punif(x1, min = 0, max = 2))^3)+
+  (m*(m-2)*(3*m-8))/4*(1-(punif(x1, min = 0, max = 2))^4)
