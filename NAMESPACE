@@ -2,6 +2,7 @@
 
 export(critWMW)
 export(d_MannWhitney)
+export(d_MannWhitneyk3)
 export(d_Simes)
 export(d_StoreyBH)
 export(d_StoreySimes)
