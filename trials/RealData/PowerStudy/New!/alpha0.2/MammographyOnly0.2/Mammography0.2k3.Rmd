@@ -1,0 +1,214 @@
+---
+title: "Comparison between different local tests: Simes, Simes with Storey and Wilcoxon-Mann-Whitney"
+output: pdf_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The aim is to compare on real datasets the performance of four closed testing procedures, which respectively use Simes local test with and without Storey estimator for the proportion of true null hypotheses, Wilcoxon-Mann-Whitney local test and the test statistic corresponding to $k=3$ derived in Theorem 1 of \textit{Testing for outliers with ranks}. Denoting inliers distribution by $F$, we are going to simulate an outliers distribution corresponding to $F^k$ with $k=3$ in order to show that closed testing procedure with the local test based on the test statistic corresponding to $k=3$ is more powerful than closed testing with Simes local test with and without Storey estimator and than closed testing with Wilcoxon-Mann-Whitney local test.
+
+
+
+## R functions and libraries
+```{r warning=FALSE, message=FALSE}
+library(nout)
+library(R.matlab)
+library(isotree)
+library(farff)
+library(tictoc)
+
+
+sim_realdata = function(B, dataset, m1, m, n, l, k, in_index, 
+                        out_index=NULL, alpha=m/(l+1), lambda = 0.5){
+
+  m0=m-m1
+  if(m1!=0 & is.null(out_index)){
+    stop("Error: arg out_index must be initialized.")
+  }
+
+  # if(m!=(m1+m0)){
+  #   stop("Error: equation m=m1+m0 must be verified.")
+  # }
+
+  if(m1!=0){
+    tr_ind = sample(in_index, size = n)
+    tr = dataset[tr_ind,]
+    iso.fo = isolation.forest(tr, ndim=ncol(dataset), ntrees=10, nthreads=1,
+                              scoring_metric = "depth", output_score = TRUE)
+    in_index2 = setdiff(in_index, tr_ind)
+
+    crit=critWMW(m=m, n=l, alpha=alpha)
+
+    d_WMW = rep(0,B)
+    d_WMWk3 = rep(0,B)
+    d_Simes = rep(0,B)
+    d_StoSimes = rep(0,B)
+    d_BH = rep(0,B)
+    d_StoBH = rep(0,B)
+
+    for(b in 1:B){
+      cal_ind = sample(in_index2, size = l)
+      in_index3 = setdiff(in_index2, cal_ind)
+      tein_ind = sample(in_index3, size = m0)
+      teoutaug_ind = sample(out_index, size = (k*m1))
+
+      cal = dataset[cal_ind,]
+      
+      teout_ind = vector()
+      for(j in 1:m1){
+        inds = teout_ind[(j+(j-1)*(k-1)):(j+j*(k-1))]
+        ind = max(inds)
+        teout_ind[j] = ind
+      }
+      te = dataset[c(tein_ind, teout_ind),]
+
+      S_cal = predict.isolation_forest(iso.fo$model, cal, type = "score")
+      S_te = predict.isolation_forest(iso.fo$model, te, type = "score")
+
+      d_WMW[b] = d_MannWhitney(S_X=S_cal, S_Y=S_te, alpha=alpha)
+      d_WMWk3[b] = d_MannWhitneyk3(S_X=S_cal, S_Y=S_te, alpha=alpha)
+      d_Simes[b] = d_Simes(S_X=S_cal, S_Y=S_te, alpha=alpha)
+      d_StoSimes[b] = d_StoreySimes(S_X=S_cal, S_Y=S_te, alpha=alpha)
+      d_BH[b] = d_benjhoch(S_X=S_cal, S_Y=S_te, alpha=alpha)
+      d_StoBH[b] = d_StoreyBH(S_X=S_cal, S_Y=S_te, alpha=alpha)
+    }
+  }
+
+  else{
+    tr_ind = sample(in_index, size = n)
+    tr = dataset[tr_ind,]
+    iso.fo = isolation.forest(tr, ndim=ncol(dataset), ntrees=10, nthreads=1,
+                              scoring_metric = "depth", output_score = TRUE)
+    in_index2 = setdiff(in_index, tr_ind)
+
+    crit=critWMW(m=m, n=l, alpha=alpha)
+
+    d_WMW = rep(0,B)
+    d_WMWk3 = rep(0,B)
+    d_Simes = rep(0,B)
+    d_StoSimes = rep(0,B)
+    d_BH = rep(0,B)
+    d_StoBH = rep(0,B)
+
+    for(b in 1:B){
+      cal_ind = sample(in_index2, size = l)
+      in_index3 = setdiff(in_index2, cal_ind)
+      te_ind = sample(in_index3, size = m0)
+
+      cal = dataset[cal_ind,]
+      te = dataset[te_ind,]
+
+      S_cal = predict.isolation_forest(iso.fo$model, cal, type = "score")
+      S_te = predict.isolation_forest(iso.fo$model, te, type = "score")
+
+      d_WMW[b] = d_MannWhitney(S_X=S_cal, S_Y=S_te, alpha=alpha)
+      d_WMWk3[b] = d_MannWhitneyk3(S_X=S_cal, S_Y=S_te, alpha=alpha)
+      d_Simes[b] = d_Simes(S_X=S_cal, S_Y=S_te, alpha=alpha)
+      d_StoSimes[b] = d_StoreySimes(S_X=S_cal, S_Y=S_te, alpha=alpha)
+      d_BH[b] = d_benjhoch(S_X=S_cal, S_Y=S_te, alpha=alpha)
+      d_StoBH[b] = d_StoreyBH(S_X=S_cal, S_Y=S_te, alpha=alpha)
+    }
+  }
+
+  discov = as.data.frame(cbind("d_BH"=d_BH, "d_StoBH"=d_StoBH, "d_Simes"=d_Simes,
+                               "d_StoSimes"=d_StoSimes, "d_WMW"=d_WMW, "d_WMWk3"=d_WMWk3))
+  colnames(discov) = c("BH", "BHSto", "CTSim", "CTSimSto", "CTWMW", "CTWMWk3")
+  mean.discov = apply(discov, MARGIN = 2, FUN = mean)
+
+  powerGlobalNull = as.data.frame(cbind("d_BH"=d_BH>0, "d_StoBH"=d_StoBH>0, "d_Simes"=d_Simes>0,
+                                        "d_StoSimes"=d_StoSimes>0, "d_WMW"=d_WMW>0,"d_WMWk3"=d_WMWk3>0))
+  colnames(powerGlobalNull) = c("BH", "BHSto", "CTSim", "CTSimSto", "CTWMW", "CTWMWk3")
+  mean.powerGlobalNull = apply(powerGlobalNull, MARGIN = 2, FUN = mean)
+
+  return(list("discoveries"=discov, "mean.discoveries" = mean.discov,
+              "powerGlobalNull"=powerGlobalNull, "mean.powerGlobalNull"=mean.powerGlobalNull,
+              "m1"=m1, "alpha"=alpha))
+
+}
+
+
+```
+
+
+
+In the following we set the calibration set and the test set size, respectively $l$ and $m$, so that the nominal level $\alpha$ is proportional to $\frac{m}{l+1}$. The train set size is equal to $n$ and the number of iterations is $B=10^5$.
+
+
+
+## Mammography dataset
+The dataset is available at http://odds.cs.stonybrook.edu/mammography-dataset/.
+
+```{r warning=FALSE, message=FALSE}
+set.seed(321)
+
+# Initializing parameters
+B=10^5
+n = 199
+l = 199
+m = 20
+alpha = m/(l+1)
+m1s = seq(from=0, to=m, by=1)
+data = readMat("G:\\Il mio Drive\\PHD\\Progetto di ricerca\\Conformal Inference Project\\Simulazioni\\7. Applicazioni dati reali\\Dataset mammography\\mammography.mat")
+dataset = cbind(data$X, data$y); colnames(dataset)[ncol(dataset)] = "y"
+in_ind = which(dataset[,ncol(dataset)]==0)
+out_ind = which(dataset[,ncol(dataset)]==1)
+
+tic()
+res = lapply(m1s,
+             function(m1) sim_realdata(B=B, in_index=in_ind, out_index=out_ind,
+                                       dataset=dataset,
+                                       alpha=alpha,l=l, n=n, m=m, m1=m1))
+toc()
+
+# Storing results
+store_res = list("mean.discov" = matrix(nrow=length(m1s), ncol = 6),
+                 "mean.powerGlobalNull" = matrix(nrow=length(m1s), ncol = 6))
+row.names = rep(NA, times=length(m1s))
+for(i in 1:length(m1s)){
+  row.names[i] = paste("theta =",m1s[i])
+}
+rownames(store_res$mean.discov) = row.names
+colnames(store_res$mean.discov) = c("BH", "StoBH", "Simes", "StoSimes", "WMW")
+rownames(store_res$mean.powerGlobalNull) = row.names
+colnames(store_res$mean.powerGlobalNull) = c("BH", "StoBH", "Simes", "StoSimes", "WMW")
+
+
+for(i in 1:length(res)){
+  store_res$mean.discov[i,] = res[[i]]$mean.discov
+  store_res$mean.powerGlobalNull[i,] = res[[i]]$mean.powerGlobalNull
+}
+
+store_res$mean.discov
+store_res$mean.powerGlobalNull
+
+plot(x = m1s, y = store_res$mean.discov[,1], col = "#DC143C", ylab = "d",
+     xlab = "m1", ylim=c(0,m), type = "b", lty = 2, pch=19,
+     main = "Mean of the number of discoveries on B replications")
+points(x = m1s, y = store_res$mean.discov[,2], col = "#FFA07A", type = "b", lty = 2, pch=19)
+points(x = m1s, y = store_res$mean.discov[,3], col = "#808000", type = "b", lty = 2, pch=19)
+points(x = m1s, y = store_res$mean.discov[,4], col = "#BDB76B", type = "b", lty = 2, pch=19)
+points(x = m1s, y = store_res$mean.discov[,6], col = "#9999FF", type = "b", lty = 2, pch=19)
+points(x = m1s, y = store_res$mean.discov[,5], col = 5, type = "b", lty = 2, pch=19)
+legend("topleft", pch = 19, col = c("#DC143C","#FFA07A","#808000","#BDB76B",5,"#9999FF"),
+       legend =c("BH", "StoreyBH", "Simes CT", "StoreySimes CT", "WMW CT", "WMWk3 CT"))
+
+
+plot(x = m1s, y = store_res$mean.powerGlobalNull[,1], col = "#DC143C", ylab = "power",
+     xlab = "m1", ylim=c(0,1), type = "b", lty = 2, pch=19,
+     main = "Mean of the power on B replications")
+lines(x = m1s, y = store_res$mean.powerGlobalNull[,2], col = "#FFA07A", type = "b", lty = 2, pch=19)
+points(x = m1s, y = store_res$mean.powerGlobalNull[,5], col = 5, type = "b", lty = 2, pch=19)
+points(x = m1s, y = store_res$mean.powerGlobalNull[,6], col = "#9999FF", type = "b", lty = 2, pch=19)
+legend("bottomright", pch = 19, col = c("#DC143C","#FFA07A",5, "#9999FF"),
+       legend = c("BH and Simes CT", "StoreyBH and StoreySimes CT", "WMW CT", "WMWk3 CT"))
+
+resMammography = res
+save(resMammography, file="~/nout/trials/RealData/PowerStudy/New!/alpha0.2/MammographyOnly0.2/resMammographyk3")
+
+```
+
+
+
