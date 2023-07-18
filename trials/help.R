@@ -664,3 +664,4 @@ for(b in 1:B){
 mean(res)
 (m-2)*(m-3)/4*(1-(punif(x1, min = 0, max = 2))^4)+(m-2)*(1-(punif(x1, min = 0, max = 2))^3)+1/2*(1-(punif(x1, min = 0, max = 2))^2)
 
+
