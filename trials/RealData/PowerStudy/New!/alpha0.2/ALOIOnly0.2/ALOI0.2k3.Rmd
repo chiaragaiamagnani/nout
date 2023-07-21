@@ -16,10 +16,12 @@ The aim is to compare on real datasets the performance of four closed testing pr
 ```{r warning=FALSE, message=FALSE}
 library(nout)
 library(R.matlab)
+library(readr)
+library(foreign)
 library(isotree)
-library(farff)
 library(tictoc)
 library(ggplot2)
+library(foreach)
 
 
 sim_realdata = function(B, dataset, m1, m, n, l, in_index, 
@@ -139,24 +141,23 @@ In the following we set the calibration set and the test set size, respectively 
 
 
 
-## Covertype dataset
-The dataset is available at http://odds.cs.stonybrook.edu/forestcovercovertype-dataset.
+## ALOI dataset
+The dataset is available at https://www.dbs.ifi.lmu.de/research/outlier-evaluation/DAMI/literature/ALOI.
 
 ```{r warning=FALSE, message=FALSE}
 set.seed(321)
 
 # Initializing parameters
-B=10^5
+B = 10^5
 n = 199
 l = 199
 m = 20
 alpha = m/(l+1)
 m1s = seq(from=0, to=m, by=1)
 
-data = readMat("~/nout/trials/RealData/Datasets/Dataset covertype/cover.mat")
-dataset = cbind(data$X, data$y); colnames(dataset)[ncol(dataset)] = "y"
-in_ind = which(dataset[,ncol(dataset)]==0)
-out_ind = which(dataset[,ncol(dataset)]==1)
+dataset = read.arff("~/nout/trials/RealData/Datasets/Dataset ALOI/ALOI_withoutdupl.arff")
+out_ind = which(dataset$outlier=="yes")
+in_ind = which(dataset$outlier=="no")
 
 tic()
 res = lapply(m1s,
@@ -170,12 +171,12 @@ store_res = list("mean.discov" = matrix(nrow=length(m1s), ncol = 6),
                  "mean.powerGlobalNull" = matrix(nrow=length(m1s), ncol = 6))
 row.names = rep(NA, times=length(m1s))
 for(i in 1:length(m1s)){
-  row.names[i] = paste("theta =",m1s[i])
+  row.names[i] = paste("m1 =",m1s[i])
 }
 rownames(store_res$mean.discov) = row.names
-colnames(store_res$mean.discov) = c("BH", "StoBH", "Simes", "StoSimes", "WMW")
+colnames(store_res$mean.discov) = c("BH", "StoBH", "Simes", "StoSimes", "WMW", "WMWk3")
 rownames(store_res$mean.powerGlobalNull) = row.names
-colnames(store_res$mean.powerGlobalNull) = c("BH", "StoBH", "Simes", "StoSimes", "WMW")
+colnames(store_res$mean.powerGlobalNull) = c("BH", "StoBH", "Simes", "StoSimes", "WMW", "WMWk3")
 
 
 for(i in 1:length(res)){
@@ -227,10 +228,13 @@ ggplot(df_long_power, aes(x = x, y = y, color = group)) +
   theme_minimal() +
   theme(legend.title = element_blank())
 
-resCovertypek3 = res
-save(resCovertypek3, file="~/nout/trials/RealData/PowerStudy/New!/alpha0.2/CoverOnly0.2/resCovertypek3")
+
+resALOIk3 = res
+save(resALOIk3, file="~/nout/trials/RealData/PowerStudy/New!/alpha0.2/ALOIOnly0.2/resALOIk3")
 
 ```
+
+
 
 
 

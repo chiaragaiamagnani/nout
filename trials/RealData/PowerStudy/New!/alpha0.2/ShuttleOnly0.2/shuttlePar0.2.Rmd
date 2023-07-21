@@ -76,6 +76,9 @@ B=10^4
 l = 12794
 m = 9999
 n = 2000
+l = 199
+m = 199
+n = 20
 myalpha = n/(m+1)
 
 tr_ind = sample(in_ind, size = l)
@@ -114,7 +117,7 @@ res = foreach(b = 1:B, .combine=cbind) %dopar% {
   te = dataset[te_ind,]
   S_cal = isotree::predict.isolation_forest(isofo.model, cal, type = "score")
   S_te = isotree::predict.isolation_forest(isofo.model, te, type = "score")
-  d_WMW = nout::d_mannwhitney(S_Y = S_te, S_X = S_cal, crit = mycrit)
+  d_WMW = nout::d_MannWhitney(S_Y = S_te, S_X = S_cal, alpha = myalpha)
   d_Sim = nout::d_Simes(S_X = S_cal, S_Y = S_te, alpha = myalpha)
   StoSimes = nout::d_StoreySimes(S_X = S_cal, S_Y = S_te, alpha = myalpha)
   d_StoSimes = StoSimes$d
