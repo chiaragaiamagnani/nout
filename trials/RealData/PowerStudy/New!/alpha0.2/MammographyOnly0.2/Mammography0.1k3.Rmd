@@ -19,9 +19,9 @@ library(R.matlab)
 library(isotree)
 library(farff)
 library(tictoc)
-library(tidyverse)
 
-sim_realdata = function(B, dataset, m1, m, n, l, in_index, 
+
+sim_realdata = function(B, dataset, m1, m, n, l, k, in_index, 
                         out_index=NULL, alpha=m/(l+1), lambda = 0.5){
 
   m0=m-m1
@@ -138,112 +138,30 @@ In the following we set the calibration set and the test set size, respectively 
 
 
 
-## Credit Card Fraud Detection dataset
-The dataset is available at  https://www.kaggle.com/mlg-ulb/creditcardfraud.
+## Mammography dataset
+The dataset is available at http://odds.cs.stonybrook.edu/mammography-dataset/.
 
 ```{r warning=FALSE, message=FALSE}
 set.seed(321)
 
 # Initializing parameters
-B=2
+B=10^5
 n = 199
 l = 199
 m = 20
 alpha = m/(l+1)
 m1s = seq(from=0, to=m, by=1)
-n = 19
-l = 19
-m = 2
-alpha = m/(l+1)
-m1s = seq(from=0, to=m, by=1)
-dataset = read_csv("~/nout/trials/RealData/Datasets/Dataset creditcard/creditcard.csv")
+
+data = readMat("~/nout/trials/RealData/Datasets/Dataset mammography/mammography.mat")
+dataset = cbind(data$X, data$y); colnames(dataset)[ncol(dataset)] = "y"
 in_ind = which(dataset[,ncol(dataset)]==0)
 out_ind = which(dataset[,ncol(dataset)]==1)
 
-cl <- makeCluster(parallel::detectCores())
-clusterEvalQ(cl, {library(isotree)})
-registerDoSNOW(cl)
-
 tic()
-
-# to be continued ------------------------------------------------------------------------------------------------------------------
 res = lapply(m1s,
-             function(m1){
-               foreach(b = 1:B, .combine=cbind) %dopar% {
-                 
-                m0=m-m1
-                 
-                if(m1!=0){
-                  tr_ind = sample(in_ind, size = n)
-                  tr = dataset[tr_ind,]
-                  iso.fo = isolation.forest(tr, ndim=ncol(dataset), ntrees=10, nthreads=1,
-                                            scoring_metric = "depth", output_score = TRUE)
-                  in_index2 = setdiff(in_ind, tr_ind)
-              
-                  crit=critWMW(m=m, n=l, alpha=alpha)
-                  
-                  cal_ind = sample(in_index2, size = l)
-                  in_index3 = setdiff(in_index2, cal_ind)
-                  tein_ind = sample(in_index3, size = m0)
-                  teoutaug_ind = sample(out_ind, size = (k*m1))
-            
-                  cal = dataset[cal_ind,]
-                  
-                  teout_ind = vector()
-                  for(j in 1:m1){
-                    inds = teout_ind[(j+(j-1)*(k-1)):(j+j*(k-1))]
-                    ind = max(inds)
-                    teout_ind[j] = ind
-                  }
-                  te = dataset[c(tein_ind, teout_ind),]
-            
-                  S_cal = predict.isolation_forest(iso.fo$model, cal, type = "score")
-                  S_te = predict.isolation_forest(iso.fo$model, te, type = "score")
-            
-                  d_WMW = d_MannWhitney(S_X=S_cal, S_Y=S_te, alpha=alpha)
-                  d_WMWk3 = d_MannWhitneyk3(S_X=S_cal, S_Y=S_te, alpha=alpha)
-                  d_Simes = d_Simes(S_X=S_cal, S_Y=S_te, alpha=alpha)
-                  d_StoSimes = d_StoreySimes(S_X=S_cal, S_Y=S_te, alpha=alpha)
-                  d_BH = d_benjhoch(S_X=S_cal, S_Y=S_te, alpha=alpha)
-                  d_StoBH = d_StoreyBH(S_X=S_cal, S_Y=S_te, alpha=alpha)
-                }
-
-             else{
-    tr_ind = sample(in_index, size = n)
-    tr = dataset[tr_ind,]
-    iso.fo = isolation.forest(tr, ndim=ncol(dataset), ntrees=10, nthreads=1,
-                              scoring_metric = "depth", output_score = TRUE)
-    in_index2 = setdiff(in_index, tr_ind)
-
-    crit=critWMW(m=m, n=l, alpha=alpha)
-
-    d_WMW = rep(0,B)
-    d_WMWk3 = rep(0,B)
-    d_Simes = rep(0,B)
-    d_StoSimes = rep(0,B)
-    d_BH = rep(0,B)
-    d_StoBH = rep(0,B)
-
-    for(b in 1:B){
-      cal_ind = sample(in_index2, size = l)
-      in_index3 = setdiff(in_index2, cal_ind)
-      te_ind = sample(in_index3, size = m0)
-
-      cal = dataset[cal_ind,]
-      te = dataset[te_ind,]
-
-      S_cal = predict.isolation_forest(iso.fo$model, cal, type = "score")
-      S_te = predict.isolation_forest(iso.fo$model, te, type = "score")
-
-      d_WMW[b] = d_MannWhitney(S_X=S_cal, S_Y=S_te, alpha=alpha)
-      d_WMWk3[b] = d_MannWhitneyk3(S_X=S_cal, S_Y=S_te, alpha=alpha)
-      d_Simes[b] = d_Simes(S_X=S_cal, S_Y=S_te, alpha=alpha)
-      d_StoSimes[b] = d_StoreySimes(S_X=S_cal, S_Y=S_te, alpha=alpha)
-      d_BH[b] = d_benjhoch(S_X=S_cal, S_Y=S_te, alpha=alpha)
-      d_StoBH[b] = d_StoreyBH(S_X=S_cal, S_Y=S_te, alpha=alpha)
-    }
-    
-
+             function(m1) sim_realdata(B=B, in_index=in_ind, out_index=out_ind,
+                                       dataset=dataset,
+                                       alpha=alpha,l=l, n=n, m=m, m1=m1))
 toc()
 
 # Storing results
@@ -251,7 +169,7 @@ store_res = list("mean.discov" = matrix(nrow=length(m1s), ncol = 6),
                  "mean.powerGlobalNull" = matrix(nrow=length(m1s), ncol = 6))
 row.names = rep(NA, times=length(m1s))
 for(i in 1:length(m1s)){
-  row.names[i] = paste("m1 =",m1s[i])
+  row.names[i] = paste("theta =",m1s[i])
 }
 rownames(store_res$mean.discov) = row.names
 colnames(store_res$mean.discov) = c("BH", "StoBH", "Simes", "StoSimes", "WMW")
@@ -268,32 +186,51 @@ store_res$mean.discov
 store_res$mean.powerGlobalNull
 
 
-plot(x = m1s, y = store_res$mean.discov[,1], col = "#DC143C", ylab = "d",
-     xlab = "m1", ylim=c(0,m), type = "b", lty = 2, pch=19,
-     main = "Mean of the number of discoveries on B replications")
-points(x = m1s, y = store_res$mean.discov[,2], col = "#FFA07A", type = "b", lty = 2, pch=19)
-points(x = m1s, y = store_res$mean.discov[,3], col = "#808000", type = "b", lty = 2, pch=19)
-points(x = m1s, y = store_res$mean.discov[,4], col = "#BDB76B", type = "b", lty = 2, pch=19)
-points(x = m1s, y = store_res$mean.discov[,6], col = "#9999FF", type = "b", lty = 2, pch=19)
-points(x = m1s, y = store_res$mean.discov[,5], col = 5, type = "b", lty = 2, pch=19)
-legend("topleft", pch = 19, col = c("#DC143C","#FFA07A","#808000","#BDB76B",5,"#9999FF"),
-       legend =c("BH", "StoreyBH", "Simes CT", "StoreySimes CT", "WMW CT", "WMWk3 CT"))
+# Plot discoveries
+df <- data.frame(
+  x = m1s,
+  BH = store_res$mean.discov[, 1],
+  StoreyBH = store_res$mean.discov[, 2],
+  Simes_CT = store_res$mean.discov[, 3],
+  StoreySimes_CT = store_res$mean.discov[, 4],
+  WMW_CT = store_res$mean.discov[, 5],
+  WMWk3_CT = store_res$mean.discov[, 6]
+)
+df_long <- tidyr::pivot_longer(df, cols = -x, names_to = "group", values_to = "y")
+
+ggplot(df_long, aes(x = x, y = y, color = group)) +
+  geom_line() +
+  geom_point()+
+  scale_color_manual(values = c("#DC143C", "#FFA07A", "#808000", "#BDB76B", 5, "#9999FF")) +
+  labs(x = "m1", y = "d", title = "Mean of the number of discoveries on B replications") +
+  theme_minimal() +
+  theme(legend.title = element_blank())
 
 
-plot(x = m1s, y = store_res$mean.powerGlobalNull[,1], col = "#DC143C", ylab = "power",
-     xlab = "m1", ylim=c(0,1), type = "b", lty = 2, pch=19,
-     main = "Mean of the power on B replications")
-lines(x = m1s, y = store_res$mean.powerGlobalNull[,2], col = "#FFA07A", type = "b", lty = 2, pch=19)
-points(x = m1s, y = store_res$mean.powerGlobalNull[,5], col = 5, type = "b", lty = 2, pch=19)
-points(x = m1s, y = store_res$mean.powerGlobalNull[,6], col = "#9999FF", type = "b", lty = 2, pch=19)
-legend("bottomright", pch = 19, col = c("#DC143C","#FFA07A",5, "#9999FF"),
-       legend = c("BH and Simes CT", "StoreyBH and StoreySimes CT", "WMW CT", "WMWk3 CT"))
+# Plot power
+dfpower <- data.frame(
+  x = m1s,
+  BH = store_res$mean.powerGlobalNull[, 1],
+  StoreyBH = store_res$mean.powerGlobalNull[, 2],
+  WMW_CT = store_res$mean.powerGlobalNull[, 5],
+  WMWk3_CT = store_res$mean.powerGlobalNull[, 6]
+)
+df_long_power <- tidyr::pivot_longer(dfpower, cols = -x, names_to = "group", values_to = "y")
 
-resCreditCard = res
-save(resCreditCard, file="~/nout/trials/RealData/PowerStudy/New!/alpha0.2/CreditCardOnly0.2/resCreditCardk3")
+# Plot the lines with different colors and legends
+ggplot(df_long_power, aes(x = x, y = y, color = group)) +
+  geom_line() +
+  geom_point()+
+  scale_color_manual(values = c("#DC143C","#FFA07A",5, "#9999FF")) +
+  labs(x = "m1", y = "power", title = "Mean of the power on B replications") +
+  theme_minimal() +
+  theme(legend.title = element_blank())
+
+
+resMammographyk3 = res
+save(resMammographyk3, file="~/nout/trials/RealData/PowerStudy/New!/alpha0.2/MammographyOnly0.2/resMammographyk3")
 
 ```
-
 
 
 
