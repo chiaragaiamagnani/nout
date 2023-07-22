@@ -29,25 +29,25 @@ d_MannWhitneyk3 = function(S_Y,S_X,alpha){
   m = length(S_X)
   k = 3
 
-  crit = sapply(1:n, function(k){
-    theta = m/(3*k)*(m-2)
+  crit = sapply(1:n, function(h){
+    theta = m/(3*h)*(m-2)
     z11 = 4/45*m^4-4/5*m^3+29/90*m^2-121/90*m-1/5
     z12 = (7*m^4+8*m^3+2*m^2-2*m)/15
-    variance = z11+z12/k
-    res = stats::qnorm(alpha, mean=theta, sd = sqrt(variance/n),
+    variance = z11+z12/h
+    res = stats::qnorm(alpha, mean=theta, sd = sqrt(variance/h),
                                               lower.tail = F)
     return(res)
     })
 
-  U_i = sort(sapply(1:n, function(i) sum(S_Y[i]>S_X)),
-             decreasing = TRUE)
+  U_i = sapply(1:n, function(i) sum(S_Y[i]>S_X))
   U2_i = U_i^2
+  Uk3 = sort(U_i+U2_i, decreasing = T)
 
   # For each k in {1,...,m} consider the worst case scenario
   # (consider the k smallest U_i)
-  Uk3 = sapply(1:n, function(k) sum(U_i[k:n]+U2_i[k:n]))
+  Uk3wc = sapply(1:n, function(h) sum(Uk3[h:n]))
 
-  d = sum(cumsum(Uk3 >= crit) == 1:n)
+  d = sum(cumsum(Uk3wc >= crit) == 1:n)
 
   return(d)
 
