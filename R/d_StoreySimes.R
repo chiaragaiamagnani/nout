@@ -41,9 +41,18 @@ d_StoreySimes = function(S_Y, S_X, alpha = 0.1, lambda=0.5){
   simes.pval = sapply(1:m, function(i)
     min(pval[i:m]/seq(from=1, to=m-i+1, by=1)))
 
-  # Building the levels of the Simes test with Storey estimator
-  pi.not = sapply(1:m, function(i)
-    (1+sum(pval[i:m]>lambda))/((m-i+1)*(1-lambda)))
+  # Building the levels of Simes test with Storey estimator
+  # pi.not = sapply(1:m, function(i)
+  #   (1+sum(pval[i:m]>lambda))/((m-i+1)*(1-lambda)))
+
+  # Building the levels of Simes test with Storey estimator.
+  # Storey estimator will be used in the closed testing procedure
+  # in every levels except for lowest ones, when the set of
+  # considered pvalues has cardinality less than or equal to 2.
+
+  pi.not.highlevels = sapply(1:(m-2), function(i)
+      (1+sum(pval[i:m]>lambda))/((m-i+1)*(1-lambda)))
+  pi.not = c(pi.not.highlevels,1,1)
   coeff = seq(from = m, to = 1, by = -1)
   thr = alpha/(coeff*pi.not)
 

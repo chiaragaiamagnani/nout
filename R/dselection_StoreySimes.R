@@ -3,14 +3,23 @@ findhStoreySimes = function(pvalues, lambda = 0.5, alpha){
 
   n = length(pvalues)
   p.ordered = sort(pvalues, decreasing=F)
-  pi0Storey.mod = sapply(n:1, function(s) (1+sum(p.ordered[(n-s+1):n]>=lambda))/(s*(1-lambda)))
-  coeffs = alpha/(n:1*pi0Storey.mod)
+  # pi0Storey.mod vettore di n entrate in cui la prima corrisponde a s=n e l'ultima a s=1
+  # pi0Storey.mod = sapply(n:1, function(s) (1+sum(p.ordered[(n-s+1):n]>=lambda))/(s*(1-lambda)))
+
+  # Storey estimator will be used in the closed testing procedure
+  # in every levels except for lowest ones, when the set of
+  # considered pvalues has cardinality less than or equal to 2.
+  pi0Storey.mod.highlevels = sapply(n:3, function(s) (1+sum(p.ordered[(n-s+1):n]>=lambda))/(s*(1-lambda)))
+  pi0Storey.mod = c(pi0Storey.mod.highlevels, 1,1)
+  # coeffs = vettore di n entrate in cui la prima corrisponde a s=n e l'ultima a s=1
+  coeffs = alpha/((n:1)*pi0Storey.mod)
 
   h=0; cont=T; s=n;
 
   while(cont==T & s>0){
     p = p.ordered[((n-s+1)):n]
-    thr = 1:s*coeffs[(n-s+1)]
+    # thr = vettore di s entrate in cui la prima corrisponde ha peso 1 e l'ultima ha peso s
+    thr = (1:s)*coeffs[(n-s+1)]
     if(sum(p>thr)==s){
       h=s; cont=F
     }
@@ -18,10 +27,19 @@ findhStoreySimes = function(pvalues, lambda = 0.5, alpha){
       s=s-1
   }
 
-  h.res = list("h"=h,
-               "n" = n,
-               "pvalues" = pvalues,
-               "coeff" = coeffs[which(coeffs == h)])
+  if(h==0){
+    h.res = list("h" = h,
+                 "n" = n,
+                 "pvalues" = pvalues,
+                 "coeff" = alpha*(1-lambda))
+  }
+  else{
+    h.res = list("h" = h,
+                 "n" = n,
+                 "pvalues" = pvalues,
+                 # "coeff" = coeffs[which(coeffs == h)]
+                 "coeff" = coeffs[n-h+1])
+  }
 
   class(h.res) = "hres.class"
 
@@ -37,7 +55,7 @@ finddStoreySimes = function(input, S, alpha){
     stop("Error: input class must be hres.class")
   }
 
-  n = length(input$n)
+  n = input$n
   p.selected = input$pvalues[S]
   coeff = input$coeff
 
@@ -79,7 +97,7 @@ finddStoreySimes = function(input, S, alpha){
 #' Sxy = sample(x=1:1000, size=100)
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
-#' dselection_StoreySimes(S_Y=Sy, S_X=Sx, S = 1:15, alpha = 0.2)
+#' dselection_StoreySimes(S_Y=Sy, S_X=Sx, S = 1:29, alpha = 0.6)
 #'
 dselection_StoreySimes = function(S_X, S_Y, S, lambda = 0.5, alpha){
 
