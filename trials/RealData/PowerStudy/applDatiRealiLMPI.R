@@ -5,7 +5,7 @@ library(tictoc)
 set.seed(321)
 
 # Initializing parameters
-B=10^3
+B=10
 n = 199
 l = 199
 m = 20
@@ -62,8 +62,8 @@ points(x = m1s, y = store_res$mean.powerGlobalNull[,5], col = 5, pch=19)
 legend("bottomright", pch = 19, col = c(1,2,5),
        legend = c("BH and Simes CT", "StoreyBH and StoreySimes CT", "WMW CT"))
 
-             
-             
+
+
   HI :)
 
 
