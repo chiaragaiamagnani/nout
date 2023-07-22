@@ -33,6 +33,6 @@ set.seed(321)
 Sxy = sample(x=1:1000, size=100)
 Sx = sample(Sxy, size=70)
 Sy = setdiff(Sxy, Sx)
-dselection_StoreySimes(S_Y=Sy, S_X=Sx, S = 1:15, alpha = 0.2)
+dselection_StoreySimes(S_Y=Sy, S_X=Sx, S = 1:29, alpha = 0.6)
 
 }
