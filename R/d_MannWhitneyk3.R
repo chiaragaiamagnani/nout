@@ -27,7 +27,6 @@
 d_MannWhitneyk3 = function(S_Y,S_X,alpha){
   n = length(S_Y)
   m = length(S_X)
-  k = 3
 
   crit = sapply(1:n, function(h){
     theta = m/(3*h)*(m-2)
