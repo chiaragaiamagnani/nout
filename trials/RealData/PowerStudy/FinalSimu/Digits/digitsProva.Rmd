@@ -90,7 +90,6 @@ CompareMethodNaturalOutliers = function(B, n1, n, out_ind, inlier_remaining, iso
   n0 = n-n1
   foreach(b = 1:B, .combine=cbind) %dopar% {
     if(n1==0){
-      n0 = n
       N = n0 + m
       in_index3 = sample(inlier_remaining, size = N)
       cal_ind = in_index3[1:m]
@@ -126,7 +125,10 @@ CompareMethodNaturalOutliers = function(B, n1, n, out_ind, inlier_remaining, iso
       N = n0 + m
       in_index3 = sample(inlier_remaining, size = N)
       cal_ind = in_index3[1:m]
-      tein_ind = in_index3[(m+1):N]
+      if(n0!=0) 
+        tein_ind = in_index3[(m+1):N]
+      else
+        tein_ind = NULL
       teout_ind = sample(out_ind, size = n1)
       cal = dataset[cal_ind,]
       te = dataset[c(tein_ind, teout_ind),]
@@ -222,7 +224,7 @@ The dataset is available at http://odds.cs.stonybrook.edu/pendigits-dataset.
 set.seed(321)
 
 # Initializing parameters
-B = 2
+B = 10^4
 m = 199
 l = 199
 n = 20
@@ -345,6 +347,7 @@ resDigits0.1 = list("raw.res"=res,
                     "compact.results" = results, 
                     "outlier.identification" = outlier.identification)
 save(resDigits0.1, file="~/nout/trials/RealData/PowerStudy/FinalSimu/Digits/resDigits0.1")
+
 
 ```
 
