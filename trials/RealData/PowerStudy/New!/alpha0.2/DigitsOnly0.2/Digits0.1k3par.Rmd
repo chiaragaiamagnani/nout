@@ -79,13 +79,13 @@ foreachfz = function(B, n1){
     augmented.S_te = predict.isolation_forest(isofo.model, te, type = "score")
     if(n1==0) 
       S_te = augmented.S_te
+
     if(n1==n)
-      S_te = sapply(0:(n1-1), FUN=function(i) max(augmented.S_te[1+k*i],
-                                                  augmented.S_te[k+k*i]))
+      S_te = sapply(1:n1, FUN=function(i) max(augmented.S_te[(1+k*(i-1)):(i*k)]))
+    
     if(0<n1&n1<n)
-      S_te = c(augmented.S_te[1:n0], 
-                    sapply(0:(n1-1), FUN=function(i) max(augmented.S_te[1+k*i],
-                                                         augmented.S_te[k+k*i])))
+      S_te = c(augmented.S_te[(k*n1+1):(k*n1+n0)], 
+                    sapply(1:n1, FUN=function(i) max(augmented.S_te[(1+k*(i-1)):(i*k)])))
       
     d_WMW = nout::d_MannWhitney(S_Y = S_te, S_X = S_cal, alpha=alpha)
     d_WMWk3 = nout::d_MannWhitneyk3(S_Y = S_te, S_X = S_cal, alpha=alpha)
