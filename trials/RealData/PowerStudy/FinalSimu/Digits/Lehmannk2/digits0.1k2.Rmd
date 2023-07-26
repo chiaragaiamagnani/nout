@@ -159,7 +159,7 @@ CompareMethodLehmannOutliers = function(B, n1, n, k, out_ind, inlier_remaining, 
 ```
 
 
-In the following we set the calibration set and the test set size, respectively $l$ and $m$, so that the nominal level $\alpha$ is proportional to $\frac{m}{l+1}$. The train set size is equal to $n$ and the number of iterations is $B=10^4$.
+In the following we set the calibration set and the test set size, respectively $l$ and $m$, so that the nominal level $\alpha$ is proportional to $\frac{m}{l+1}$. The train set size is equal to $n$ and the number of iterations is $B=10^5$.
 
 
 
@@ -171,7 +171,7 @@ The dataset is available at http://odds.cs.stonybrook.edu/pendigits-dataset.
 set.seed(321)
 
 # Initializing parameters
-B = 10^6
+B = 10^5
 m = 199
 l = 199
 n = 20
@@ -268,34 +268,12 @@ ggplot(df_long_power, aes(x = x, y = y, color = group)) +
   theme(legend.title = element_blank())
 
 
-# Plot unconditional power 
+# Table unconditional power 
 probsn1 = sapply(0:n, function(k) (1-theta)^k*theta^(n-k))
-uncond.pow_BH = sum(pow_BH*probsn1)
-uncond.pow_StoreyBH = sum(pow_StoBH*probsn1)
-uncond.pow_WMW = sum(pow_WMW*probsn1) 
-
-
-dfuncondpower <- data.frame(
-  x = n1s,
-  BH = uncond.pow_BH,
-  StoreyBH = uncond.pow_StoreyBH,
-  WMW_CT = uncond.pow_WMW
-)
-df_long_uncondpower <- tidyr::pivot_longer(dfuncondpower, cols = -x, names_to = "group", values_to = "y")
-
-# Plot the lines with different colors and legends
-ggplot(df_long_uncondpower, aes(x = x, y = y, color = group)) +
-  geom_line() +
-  geom_point()+
-  scale_color_manual(values = c("#DC143C","#FFA07A",5)) +
-  labs(x = "n1", y = "power", title = "Mean of the unconditional power on B replications") +
-  theme_minimal() +
-  theme(legend.title = element_blank())
-
-
-
-
-
+unconditional.power = cbind("uncond.pow_BH" = alpha+sum(pow_BH*probsn1),
+                            "uncond.pow_StoreyBH" = alpha+sum(pow_StoBH*probsn1),
+                            "uncond.pow_WMW" = alpha+sum(pow_WMW*probsn1))
+print(unconditional.power)
 # outlier.identification = list()
 # for(i in 1:length(n1s)){
 #   outlier.identification[[i]] = matrix(nrow = 3, ncol = 4)
@@ -317,9 +295,7 @@ ggplot(df_long_uncondpower, aes(x = x, y = y, color = group)) +
 # }
 
 resDigits0.1k2 = list("raw.res"=res, 
-                    "unconditional.power" = cbind("BH" = uncond.pow_BH,
-                                                  "StoreyBH" = uncond.pow_StoreyBH,
-                                                  "WMW_CT" = uncond.pow_WMW), 
+                    "unconditional.power" = unconditional.power, 
                     "compact.results" = results #, 
                     #"outlier.identification" = outlier.identification
                     )
