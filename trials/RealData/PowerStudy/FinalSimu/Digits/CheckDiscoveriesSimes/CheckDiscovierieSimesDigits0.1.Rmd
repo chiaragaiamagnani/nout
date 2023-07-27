@@ -370,7 +370,7 @@ CheckDiscovierieSimesDigits0.1 = list("raw.res"=res,
                     #"k.est" = kest, 
                     "compact.results" = results, 
                     "outlier.identification" = outlier.identification)
-save(CheckDiscovierieSimesDigits0.1, file="~/nout/trials/RealData/PowerStudy/FinalSimu/Digits/CheckDiscovierieSimesDigits0.1")
+save(CheckDiscovierieSimesDigits0.1, file="~/nout/trials/RealData/PowerStudy/FinalSimu/Digits/CheckDiscoveriesSimes/CheckDiscovierieSimesDigits0.1")
 
 
 ```
