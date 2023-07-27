@@ -151,7 +151,7 @@ CompareMethodNaturalOutliers = function(B, n1, n, out_ind, inlier_remaining, iso
 
       if(d_WMW>0){
         outlierTF = sapply(confvalid.index, function(h) 
-            nout::dselection_MannWhitney(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
+            nout::dselection.prova_MannWhitney(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
         outlier.identified_WMW = confvalid.index[as.logical(outlierTF)]
       }
       else  outlier.identified_WMW = NULL
