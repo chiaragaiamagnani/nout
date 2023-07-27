@@ -245,7 +245,7 @@ The dataset is available at http://odds.cs.stonybrook.edu/pendigits-dataset.
 set.seed(321)
 
 # Initializing parameters
-B = 100
+B = 1000
 m = 199
 l = 199
 n = 20
