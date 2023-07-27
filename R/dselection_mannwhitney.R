@@ -35,19 +35,31 @@ dselection_MannWhitney = function(S_Y, S_X, S, alpha){
   n = length(S_Y)
   m = length(S_X)
   s = length(S)
-  notS = (1:n)[-S]
+  if(s<1)
+    stop("Error: selected index set is empty.")
 
-  crit = nout::critWMW(m=m, n=s,alpha=alpha)$crit.vals
+  if(s>n)
+    stop("Error: selected index set should be contained in vector 1:length(S_Y).")
 
-  u_j = sapply(S, function(j) sum(S_Y[j]>S_X))
-  v_j = sapply(notS, function(j) sum(S_Y[j]>S_X))
+  if(s==n)
+    d = d_MannWhitney(S_Y = S_Y, S_X = S_X, alpha = alpha)
 
-  u0 = max(c(u_j,v_j))
-  v0 = min(c(u_j,v_j))
-  myu = c(v0, sort(u_j), rep(u0+1, n-s+1))
-  myv = c(v0, sort(v_j), rep(u0+1, s+1))
+  if(1<=s & s<n){
+    notS = (1:n)[-S]
+    crit = sort(nout::critWMW(m=m, n=s,alpha=alpha)$crit.vals)
 
-  d = findDiscSum(s=s, m=n, u=myu, v=myv, cs=crit)
+    u_j = sapply(S, function(j) sum(S_Y[j]>S_X))
+    v_j = sapply(notS, function(j) sum(S_Y[j]>S_X))
+
+    u0 = max(c(u_j,v_j))
+    v0 = min(c(u_j,v_j))
+    myu = c(v0, sort(u_j), rep(u0+1, n-s+1))
+    myv = c(v0, sort(v_j), rep(u0+1, s+1))
+
+    d = findDiscSum(s=s, m=n, u=myu, v=myv, cs=crit)
+
+  }
+
   return(d)
 }
 
