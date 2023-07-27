@@ -134,7 +134,7 @@ critWMW = function(m, n, alpha, n.exact=10, exact=F){
 #' the number of true discoveries in closed testing procedure using
 #' Wilcoxon-Mann-Whitney local test applied to conformal *p*-values.
 #' The selection set, i.e. the set of hypothesis
-#' indices that we are interested in is \eqn{[m]=:\{1,...,m\}} by default.
+#' indices that we are interested in is \eqn{[n]=:\{1,...,n\}} by default.
 #'
 #' @export
 #'
