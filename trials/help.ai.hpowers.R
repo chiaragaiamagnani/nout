@@ -259,7 +259,6 @@ for(b in 1:B){
 }
 
 mean(res)
-
 1/15*(m^2-1)*(3*m^2-2)+
   4*(1-punif(x1, min = 0, max = 2))+
   (m-1)*14*(1-punif(x1, min = 0, max = 2)^2)+

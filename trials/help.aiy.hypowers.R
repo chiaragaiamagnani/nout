@@ -90,9 +90,7 @@ m=10
 res = vector()
 y = runif(n=1, min=0, max=2)
 for(b in 1:B){
-
   X = runif(n=m, min=0, max=2)
-
   cond2 = X<y
 
   a = vector()
@@ -106,7 +104,6 @@ for(b in 1:B){
 }
 
 mean(res)
-
 4*m*punif(y, min = 0, max = 2)+
   14*(m-1)*m*(punif(y, min = 0, max = 2))^2+
   8*(m-2)*(m-1)*m*(punif(y, min = 0, max = 2))^3+
@@ -117,7 +114,7 @@ mean(res)
 
 
 
-# ---------------------------- E[h(X1,X2,...,Xm,y)^2] ----------------------------
+# ---------------------------- E[h(X1,X2,...,Xm,y)] ----------------------------
 
 # Verifico esattezza della forma chiusa di E[h(X1, X2,...,Xm,y)^2], dove
 # h(X1, X2,...,Xm,y) = sum_{i=1}^m ai dove
@@ -145,7 +142,6 @@ for(b in 1:B){
 }
 
 mean(res)
-
 2*m*punif(y, min = 0, max = 2)+
   (m-1)*m*(punif(y, min = 0, max = 2))^2
 
