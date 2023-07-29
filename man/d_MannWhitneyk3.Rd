@@ -17,12 +17,15 @@ d_MannWhitneyk3(S_Y, S_X, alpha)
 An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
 the number of true discoveries in closed testing procedure using
 the LMPI local test corresponding to \eqn{k=3} applied to conformal \emph{p}-values.
-The selection set, i.e. the set of hypothesis
-indices that we are interested in is \eqn{[m]=:\{1,...,m\}} by default.
+The selection set is the set of indices corresponding to the observations in the test set that
+we want to test. By default, the selection set is \eqn{[n]=:\{1,...,n\}} and corresponds to the
+entire test set.
 }
 \description{
 It returns the lower bound for the number of true discoveries in closed testing procedure
-using Wilcoxon-Mann-Whitney local test.
+using the test statistic \eqn{\sum_{j=1}^n U_j(U_j+1)}, where \eqn{U_j} is the rank of the
+\eqn{j}th observation in the test set among the vector of calibration units and \eqn{n} is the
+number of observations in the test set of the test set.
 }
 \examples{
 set.seed(321)
