@@ -240,11 +240,11 @@ save(resDigits0.1k2, file="~/nout/trials/RealData/PowerStudy/FinalSimu/Digits/Le
 
 ```
 
-mean.pinot = vector()
+<!-- mean.pinot = vector() -->
 
-for(j in 1:length(n1s)){
-  mean.pinot[j] = mean(unlist(resDigits0.1k2$compact.results[[j]]["pi.not"]))
-}
+<!-- for(j in 1:length(n1s)){ -->
+<!--   mean.pinot[j] = mean(unlist(resDigits0.1k2$compact.results[[j]]["pi.not"])) -->
+<!-- } -->
 
 
 
