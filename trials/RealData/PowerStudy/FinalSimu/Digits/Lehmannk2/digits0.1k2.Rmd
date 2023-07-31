@@ -40,18 +40,6 @@ compact_results = function(res){
     power.GlobalNull = as.data.frame(discoveries>0)
     mean.powerGlobalNull = apply(power.GlobalNull, MARGIN = 2, FUN = mean)
     
-    # out_identification = as.data.frame(
-    #   cbind("out.identif_WMW"=
-    #           unlist(res[[j]][rownames(res[[j]])=="outlier.identified_WMW",]),
-    #         "out.identif_StoSimes"=
-    #           unlist(res[[j]][rownames(res[[j]])=="outlier.identified_StoSimes",]),
-    #         "out.identif_Simes"=
-    #           unlist(res[[j]][rownames(res[[j]])=="outlier.identified_Simes",])
-    #         )
-    # )
-    # mean.out_identification = apply(out_identification, MARGIN = 2, FUN = mean)
-    # mean.out_identification_pos = apply(out_identification>0, MARGIN = 2, FUN = mean)
-    
     results[[j]] = list("discoveries" = discoveries, 
                         "mean.discoveries" = mean.discoveries,
                         "power.GlobalNull" = power.GlobalNull,
@@ -113,42 +101,11 @@ CompareMethodLehmannOutliers = function(B, n1, n, k, out_ind, inlier_remaining, 
       d_StoBH = nout::d_StoreyBH(S_X = S_cal, S_Y = S_te, alpha = alpha)
       uniques = length(unique(c(S_cal, S_te)))
       
-      # # outlier identification with WMW
-      # conf.pval = sapply(1:n, function(j) (1+sum(S_cal >= S_te[j]))/(m+1))
-      # confvalid.pval = conf.pval<alpha
-      # confvalid.index = which(conf.pval<alpha)
-      # 
-      # if(d_WMW>0){
-      #   outlierTF = sapply(confvalid.index, function(h) 
-      #       nout::dselection_MannWhitney(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
-      #   outlier.identified_WMW = confvalid.index[as.logical(outlierTF)]
-      # }
-      # else  outlier.identified_WMW = NULL
-      # 
-      # # outlier identification with Simes
-      # if(d_Sim>0){
-      #   outlierTF = sapply(confvalid.index, function(h) 
-      #       nout::dselection_Simes(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
-      #   outlier.identified_Simes = confvalid.index[as.logical(outlierTF)]
-      # }
-      # else  outlier.identified_Simes = NULL
-      # 
-      # # outlier identification with StoreySimes
-      # if(d_StoSimes>0){
-      #   outlierTF = sapply(confvalid.index, function(h) 
-      #       nout::dselection_StoreySimes(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
-      #   outlier.identified_StoSimes = confvalid.index[as.logical(outlierTF)]
-      # }
-      # else  outlier.identified_StoSimes = NULL
-      
       return(list("d_BH" = d_BH,
                   "d_StoBH" = d_StoBH,
                   "d_Sim" = d_Sim,
                   "d_StoSimes" = d_StoSimes,
                   "d_WMW" = d_WMW,
-                  # "outlier.identified_WMW" = length(outlier.identified_WMW),
-                  # "outlier.identified_Simes" = length(outlier.identified_Simes),
-                  # "outlier.identified_StoSimes" = length(outlier.identified_StoSimes),
                   "uniques" = uniques,
                   "n1" = n1,
                   "pi.not" = pi.not,
@@ -269,42 +226,25 @@ ggplot(df_long_power, aes(x = x, y = y, color = group)) +
 
 
 # Table unconditional power 
-probsn1 = sapply(0:n, function(k) (1-theta)^k*theta^(n-k))
+probsn1 = sapply(0:n, function(k) choose(n,k)(1-theta)^k*theta^(n-k))
 unconditional.power = cbind("uncond.pow_BH" = alpha+sum(pow_BH*probsn1),
                             "uncond.pow_StoreyBH" = alpha+sum(pow_StoBH*probsn1),
                             "uncond.pow_WMW" = alpha+sum(pow_WMW*probsn1))
 print(unconditional.power)
-# outlier.identification = list()
-# for(i in 1:length(n1s)){
-#   outlier.identification[[i]] = matrix(nrow = 3, ncol = 4)
-#   rownames(outlier.identification[[i]]) = c("WMW", "Simes", "StoSimes")
-#   colnames(outlier.identification[[i]]) = c("mean.out.identif", "%successful.identification",
-#                                     "mean.d", "mean.d>0(power)")
-#   outlier.identification[[i]][,1] = apply(
-#     results[[i]][["out_identification"]], MARGIN = 2, FUN = mean)
-#   outlier.identification[[i]][,2] = apply(
-#     results[[i]][["out_identification"]]>0, MARGIN = 2, FUN = mean)
-#   outlier.identification[[i]][,3] = results[[i]]$mean.discoveries[c(3,4,5)]
-#   outlier.identification[[i]][,4] = results[[i]]$mean.powerGlobalNull[c(3,4,5)]
-# }
-# 
-# for(i in 1:length(n1s)){
-#   cat("\n")
-#   cat(paste("n1=", n1s[i]))
-#   print(outlier.identification[[i]])
-# }
 
 resDigits0.1k2 = list("raw.res"=res, 
                     "unconditional.power" = unconditional.power, 
-                    "compact.results" = results #, 
-                    #"outlier.identification" = outlier.identification
-                    )
+                    "compact.results" = results)
 save(resDigits0.1k2, file="~/nout/trials/RealData/PowerStudy/FinalSimu/Digits/Lehmannk2/resDigits0.1k2")
 
 
 ```
 
+mean.pinot = vector()
 
+for(j in 1:length(n1s)){
+  mean.pinot[j] = mean(unlist(resDigits0.1k2$compact.results[[j]]["pi.not"]))
+}
 
 
 
