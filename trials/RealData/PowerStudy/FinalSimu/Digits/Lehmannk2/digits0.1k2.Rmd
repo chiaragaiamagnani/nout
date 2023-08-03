@@ -226,10 +226,15 @@ ggplot(df_long_power, aes(x = x, y = y, color = group)) +
 
 
 # Table unconditional power 
-probsn1 = sapply(0:n, function(k) choose(n,k)(1-theta)^k*theta^(n-k))
-unconditional.power = cbind("uncond.pow_BH" = alpha+sum(pow_BH*probsn1),
-                            "uncond.pow_StoreyBH" = alpha+sum(pow_StoBH*probsn1),
-                            "uncond.pow_WMW" = alpha+sum(pow_WMW*probsn1))
+thetas = seq(from = 0, to = 1, by = 0.02)
+probsn1 = sapply(theta, 
+                 function(theta) sapply(1:n, 
+                                        function(k) choose(n,k)*(1-theta)^(n-k)*theta^(k)))
+colnames(probsn1) = as.character(thetas)
+rownames(probsn1) = as.character(1:n)
+unconditional.power = cbind("uncond.pow_BH" = apply(pow_BH[-1]*probsn1, MARGIN = 2, sum),
+                            "uncond.pow_StoreyBH" = apply(pow_StoBH[-1]*probsn1, MARGIN = 2, sum),
+                            "uncond.pow_WMW" = apply(pow_WMW[-1]*probsn1, MARGIN = 2, sum))
 print(unconditional.power)
 
 resDigits0.1k2 = list("raw.res"=res, 

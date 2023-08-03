@@ -132,18 +132,17 @@ The dataset is available at http://odds.cs.stonybrook.edu/pendigits-dataset.
 set.seed(321)
 
 # Initializing parameters
-B = 10
+B = 10^4
 m = 19
 l = 19
 n = 4
-alpha = n/(l+1)
+alpha = n/(m+1)
 n1s = seq(from=0, to=n, by=1)
 
 data = readMat("~/nout/trials/RealData/Datasets/Dataset digits/pendigits.mat")
 dataset = cbind(data$X, data$y); colnames(dataset)[ncol(dataset)] = "y"
 in_ind = which(dataset[,ncol(dataset)]==0)
 out_ind = which(dataset[,ncol(dataset)]==1)
-theta = length(out_ind)/nrow(dataset) # proportion of outliers in the entire dataset
 
 cluster <- makeCluster(parallel::detectCores())
 registerDoSNOW(cluster)
@@ -222,7 +221,7 @@ dfpower <- data.frame(
   BH = pow_BH,
   StoreyBH = pow_StoBH,
   WMW_CT = pow_WMW,
-  WMW_CT = pow_WMWk3
+  WMWk3 = pow_WMWk3
 )
 df_long_power <- tidyr::pivot_longer(dfpower, cols = -x, names_to = "group", values_to = "y")
 
@@ -237,11 +236,17 @@ ggplot(df_long_power, aes(x = x, y = y, color = group)) +
 
 
 # Table unconditional power 
-probsn1 = sapply(0:n, function(k) (1-theta)^k*theta^(n-k))
-unconditional.power = cbind("uncond.pow_BH" = alpha+sum(pow_BH*probsn1),
-                            "uncond.pow_StoreyBH" = alpha+sum(pow_StoBH*probsn1),
-                            "uncond.pow_WMW" = alpha+sum(pow_WMW*probsn1),
-                            "uncond.pow_WMWk3" = alpha+sum(pow_WMWk3*probsn1))
+thetas = seq(from = 0, to = 1, by = 0.02)
+probsn1 = sapply(thetas, 
+                 function(theta) sapply(1:n, 
+                                        function(k) choose(n,k)*(1-theta)^(n-k)*theta^(k)))
+colnames(probsn1) = as.character(thetas)
+rownames(probsn1) = as.character(1:n)
+unconditional.power = cbind("uncond.pow_BH" = apply(pow_BH[-1]*probsn1, MARGIN = 2, sum),
+                            "uncond.pow_StoreyBH" = apply(pow_StoBH[-1]*probsn1, MARGIN = 2, sum),
+                            "uncond.pow_WMW" = apply(pow_WMW[-1]*probsn1, MARGIN = 2, sum),
+                            "uncond.pow_WMWk3" = apply(pow_WMWk3[-1]*probsn1, MARGIN = 2, sum))
+
 print(unconditional.power)
 
 resDigits0.1k3 = list("raw.res"=res, 
@@ -256,17 +261,17 @@ save(resDigits0.1k3, file="~/nout/trials/RealData/PowerStudy/FinalSimu/Digits/Le
 
 
 
-S_cal = results[[1]][["S_cal"]][4]
-S_te = results[[1]][["S_te"]][4]
-S_Y = unlist(S_te)
-S_X = unlist(S_cal)
+<!-- S_cal = results[[1]][["S_cal"]][4] -->
+<!-- S_te = results[[1]][["S_te"]][4] -->
+<!-- S_Y = unlist(S_te) -->
+<!-- S_X = unlist(S_cal) -->
 
 
 
-S_cal = results[[1]][["S_cal"]][5]
-S_te = results[[1]][["S_te"]][5]
-S_Y = unlist(S_te)
-S_X = unlist(S_cal)
+<!-- S_cal = results[[1]][["S_cal"]][5] -->
+<!-- S_te = results[[1]][["S_te"]][5] -->
+<!-- S_Y = unlist(S_te) -->
+<!-- S_X = unlist(S_cal) -->
 
 
 

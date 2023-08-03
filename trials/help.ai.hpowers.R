@@ -25,12 +25,14 @@ for(b in 1:B){
 }
 
 mean(res)
-4*(1-(punif(x1, min = 0, max = 2)))+
+closed = 4*(1-(punif(x1, min = 0, max = 2)))+
   5/2*(m-1)*(1-(punif(x1, min = 0, max = 2))^2)+
   (m-1)*(m-2)/3*(1-(punif(x1, min = 0, max = 2))^3)
 
 
-
+mean.incr = sapply(1:B, function(b) mean(res[1:b]))
+plot(mean.incr)
+abline(h = closed, col = "red")
 
 
 # ---------------------------- E[a1*ai] ----------------------------
@@ -69,11 +71,14 @@ for(b in 1:B){
 }
 
 mean(res)
-(m-2)^2/4*(1-(punif(x1, min = 0, max = 2))^4)+
+closed = (m-2)^2/4*(1-(punif(x1, min = 0, max = 2))^4)+
   2*(m-2)*(1-(punif(x1, min = 0, max = 2))^3)+
   9/2*(1-(punif(x1, min = 0, max = 2))^2)
 
 
+mean.incr = sapply(1:B, function(b) mean(res[1:b]))
+plot(mean.incr)
+abline(h = closed, col = "red")
 
 
 
@@ -107,10 +112,14 @@ for(b in 1:B){
 }
 
 mean(res)
-2+5/3*(m-2)+(m-3)*(m-2)/4+
+closed = 2+5/3*(m-2)+(m-3)*(m-2)/4+
   2/3*(m-2)*(1-(punif(x1, min = 0, max = 2))^3)+
   5/2*(1-(punif(x1, min = 0, max = 2))^2)
 
+
+mean.incr = sapply(1:B, function(b) mean(res[1:b]))
+plot(mean.incr)
+abline(h = closed, col = "red")
 
 
 # ---------------------------- E[ai*aj] ----------------------------
@@ -150,14 +159,17 @@ for(b in 1:B){
 }
 
 mean(res)
-3+7/4*(m-3)+(m-3)*(m-4)/5+
+closed = 3+7/4*(m-3)+(m-3)*(m-4)/5+
   7/3*(1-(punif(x1, min = 0, max = 2))^2)+
   (m-3)/2*(1-(punif(x1, min = 0, max = 2))^4)
 
 
+mean.incr = sapply(1:B, function(b) mean(res[1:b]))
+plot(mean.incr)
+abline(h = closed, col = "red")
 
 
-# ---------------------------- E[h(X1,X2,...,Xm,Y)] ----------------------------
+# ---------------------------- theta = E[h(X1,X2,...,Xm,Y)] ----------------------------
 
 
 # Verifico esattezza della forma chiusa di E[h(X1, X2,...,Xm,Y)], dove
@@ -187,9 +199,12 @@ for(b in 1:B){
 }
 
 mean(res)
-m+m*(m-1)/3
+theta = m+m*(m-1)/3
 
 
+mean.incr = sapply(1:B, function(b) mean(res[1:b]))
+plot(mean.incr)
+abline(h = theta, col = "red")
 
 # ---------------------------- E[h(x1,X2,...,Xm,Y)] ----------------------------
 
@@ -221,11 +236,14 @@ for(b in 1:B){
 }
 
 mean(res)
-2*(1-punif(x1, min = 0, max = 2))+
+closed = 2*(1-punif(x1, min = 0, max = 2))+
   (m-1)*(1-(punif(x1, min = 0, max = 2))^2)+
   (m-1)/3*(1+m)
 
 
+mean.incr = sapply(1:B, function(b) mean(res[1:b]))
+plot(mean.incr)
+abline(h = closed, col = "red")
 
 
 
@@ -259,51 +277,55 @@ for(b in 1:B){
 }
 
 mean(res)
-1/15*(m^2-1)*(3*m^2-2)+
+closed = 1/15*(m^2-1)*(3*m^2-2)+
   4*(1-punif(x1, min = 0, max = 2))+
   (m-1)*14*(1-punif(x1, min = 0, max = 2)^2)+
   (m-1)*(m-2)*22/3*(1-punif(x1, min = 0, max = 2)^3)+
   (m-1)*(m-2)*(2*m-5)/2*(1-punif(x1, min = 0, max = 2)^4)
 
 
+mean.incr = sapply(1:B, function(b) mean(res[1:b]))
+plot(mean.incr)
+abline(h = closed, col = "red")
 
 
-# ---------------------------- E[h(X1,X2,...,Xm,y)] ----------------------------
 
-# Verifico esattezza della forma chiusa di E[h(X1, X2,...,Xm,y)], dove
-# h(X1, X2,...,Xm,y) = sum_{i=1}^m ai dove
-# ai= 1{Xi<y}+sum_{h=1}^m 1{Xi<y, Xh<y}
+
+# -------------------------- z11 ----------------------------------------------
 
 B=10^5
-m=10
+m = 10
+n = 5
 
-y = runif(n=1, min=0, max=2)
+theta = m+m*(m-1)/3
+theta2 = theta^2
 
-res = vector()
-for(b in 1:B){
-
-  X = runif(n=m, min=0, max=2)
-
-  cond2 = X<y
-
-  a = vector()
-  for(i in 1:m){
-    # ai
-    cond1i = ifelse(X[i]<y, 1, 0)
-    cond2i = sum(cond2)*cond1i
-    a[i] = cond2i+cond1i
-  }
-  res[b] = sum(a)
+Eh2x1 = function(x1){
+  out = 1/15*(m^2-1)*(3*m^2-2)+
+    4*(1-punif(x1, min = 0, max = 2))+
+    (m-1)*14*(1-punif(x1, min = 0, max = 2)^2)+
+    (m-1)*(m-2)*22/3*(1-punif(x1, min = 0, max = 2)^3)+
+    (m-1)*(m-2)*(2*m-5)/2*(1-punif(x1, min = 0, max = 2)^4)
+  return(out)
 }
+
+Ehx1 = function(x1){
+  out = 2*(1-punif(x1, min = 0, max = 2))+
+    (m-1)*(1-(punif(x1, min = 0, max = 2))^2)+
+    (m-1)/3*(1+m)
+  return(out)
+}
+
+x1s = runif(n=B, min=0, max=2)
+res = sapply(x1s, function(x) Eh2x1(x)+theta2-2*theta*Ehx1(x))
+
 
 mean(res)
 
-2*m*punif(y, min = 0, max = 2)+
-  (m-1)*m*(punif(y, min = 0, max = 2))^2
+z11 = 4/45*m^4+16/45*m^3+29/90*m^2+13/30*m-1/5
 
-
-
-
-
+mean.incr = sapply(1:B, function(b) mean(res[1:b]))
+plot(mean.incr)
+abline(h = z11, col = "red")
 
 

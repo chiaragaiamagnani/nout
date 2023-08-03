@@ -31,11 +31,12 @@ d_MannWhitneyk3 = function(S_Y,S_X,alpha){
   n = length(S_Y)
   m = length(S_X)
 
+  z11 = 4/45*m^4+16/45*m^3+29/90*m^2+13/30*m-1/5
+  z12 = 4/45*m^4+16/45*m^3+19/45*m^2+2/15*m
+
   crit = sapply(1:n, function(h){
-    theta = m/(3*h)*(m+2)
-    z11 = 4/45*m^4-4/5*m^3+29/90*m^2-121/90*m-1/5
-    z12 = (7*m^4+8*m^3+2*m^2-2*m)/15
-    variance = (z11+z12/h)/sqrt(h)
+    theta = (m+m*(m-1)/3)/h
+    variance = (m*z11+z12/h)/h^2
     quantiles = stats::qnorm(alpha, mean=theta, sd = sqrt(variance), lower.tail = F)
     return(quantiles)
     })
