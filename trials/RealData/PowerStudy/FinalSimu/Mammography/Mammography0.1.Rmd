@@ -43,25 +43,10 @@ compact_results = function(res){
     power.GlobalNull = as.data.frame(discoveries>0)
     mean.powerGlobalNull = apply(power.GlobalNull, MARGIN = 2, FUN = mean)
     
-    out_identification = as.data.frame(
-      cbind("out.identif_WMW"=
-              unlist(res[[j]][rownames(res[[j]])=="outlier.identified_WMW",]),
-            "out.identif_StoSimes"=
-              unlist(res[[j]][rownames(res[[j]])=="outlier.identified_StoSimes",]),
-            "out.identif_Simes"=
-              unlist(res[[j]][rownames(res[[j]])=="outlier.identified_Simes",])
-            )
-    )
-    mean.out_identification = apply(out_identification, MARGIN = 2, FUN = mean)
-    mean.out_identification_pos = apply(out_identification>0, MARGIN = 2, FUN = mean)
-    
     results[[j]] = list("discoveries" = discoveries, 
                         "mean.discoveries" = mean.discoveries,
                         "power.GlobalNull" = power.GlobalNull,
                         "mean.powerGlobalNull" = mean.powerGlobalNull,
-                        "out_identification" = out_identification,
-                        "mean.out_identification" = mean.out_identification,
-                        "mean.out_identification>0" = mean.out_identification_pos,
                         "pi.not" = res[[j]][rownames(res[[j]])=="pi.not",],
                         "uniques" = res[[j]][rownames(res[[j]])=="uniques",],
                         "n1" = res[[j]][rownames(res[[j]])=="n1",1],
@@ -75,7 +60,7 @@ TrainingIsoForest = function(l, dataset){
   
   tr_ind = sample(in_ind, size = l)
   tr = dataset[tr_ind,]
-  isofo.model = isotree::isolation.forest(tr, ndim=ncol(dataset), ntrees=10, nthreads=1,
+  isofo.model = isotree::isolation.forest(tr, ndim=ncol(dataset), ntrees=70, nthreads=3,
                             scoring_metric = "depth", output_score = TRUE)$model
   in_index2 = setdiff(in_ind, tr_ind)
   
@@ -113,9 +98,6 @@ CompareMethodNaturalOutliers = function(B, n1, n, out_ind, inlier_remaining, iso
                   "d_Sim" = d_Sim,
                   "d_StoSimes" = d_StoSimes,
                   "d_WMW" = d_WMW,
-                  "outlier.identified_WMW" = 0,
-                  "outlier.identified_Simes" = 0,
-                  "outlier.identified_StoSimes" = 0,
                   "uniques" = uniques,
                   "n1" = n1,
                   "pi.not" = pi.not,
@@ -150,37 +132,11 @@ CompareMethodNaturalOutliers = function(B, n1, n, out_ind, inlier_remaining, iso
       confvalid.pval = conf.pval<alpha
       confvalid.index = which(conf.pval<alpha)
 
-      if(d_WMW>0){
-        outlierTF = sapply(confvalid.index, function(h) 
-            nout::dselection_MannWhitney(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
-        outlier.identified_WMW = confvalid.index[as.logical(outlierTF)]
-      }
-      else  outlier.identified_WMW = NULL
-      
-      # outlier identification with Simes
-      if(d_Sim>0){
-        outlierTF = sapply(confvalid.index, function(h) 
-            nout::dselection_Simes(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
-        outlier.identified_Simes = confvalid.index[as.logical(outlierTF)]
-      }
-      else  outlier.identified_Simes = NULL
-      
-      # outlier identification with StoreySimes
-      if(d_StoSimes>0){
-        outlierTF = sapply(confvalid.index, function(h) 
-            nout::dselection_StoreySimes(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
-        outlier.identified_StoSimes = confvalid.index[as.logical(outlierTF)]
-      }
-      else  outlier.identified_StoSimes = NULL
-      
       return(list("d_BH" = d_BH,
                   "d_StoBH" = d_StoBH,
                   "d_Sim" = d_Sim,
                   "d_StoSimes" = d_StoSimes,
                   "d_WMW" = d_WMW,
-                  "outlier.identified_WMW" = length(outlier.identified_WMW),
-                  "outlier.identified_Simes" = length(outlier.identified_Simes),
-                  "outlier.identified_StoSimes" = length(outlier.identified_StoSimes),
                   "uniques" = uniques,
                   "n1" = n1,
                   "pi.not" = pi.not,
@@ -228,7 +184,7 @@ B = 10^4
 m = 199
 l = 199
 n = 20
-alpha = n/(l+1)
+alpha = n/(m+1)
 n1s = seq(from=0, to=n, by=1)
 
 data = readMat("~/nout/trials/RealData/Datasets/Dataset mammography/mammography.mat")
@@ -323,31 +279,10 @@ ggplot(df_long_power, aes(x = x, y = y, color = group)) +
   theme_minimal() +
   theme(legend.title = element_blank())
 
-outlier.identification = list()
-for(i in 1:length(n1s)){
-  outlier.identification[[i]] = matrix(nrow = 3, ncol = 4)
-  rownames(outlier.identification[[i]]) = c("WMW", "Simes", "StoSimes")
-  colnames(outlier.identification[[i]]) = c("mean.out.identif", "%successful.identification",
-                                    "mean.d", "mean.d>0(power)")
-  outlier.identification[[i]][,1] = apply(
-    results[[i]][["out_identification"]], MARGIN = 2, FUN = mean)
-  outlier.identification[[i]][,2] = apply(
-    results[[i]][["out_identification"]]>0, MARGIN = 2, FUN = mean)
-  outlier.identification[[i]][,3] = results[[i]]$mean.discoveries[c(3,4,5)]
-  outlier.identification[[i]][,4] = results[[i]]$mean.powerGlobalNull[c(3,4,5)]
-}
-
-for(i in 1:length(n1s)){
-  cat("\n")
-  cat(paste("n1=", n1s[i]))
-  print(outlier.identification[[i]])
-}
-
 resMammo0.1 = list("raw.res"=res, 
                     "k.est" = kest, 
-                    "compact.results" = results, 
-                    "outlier.identification" = outlier.identification)
-save(resMammo0.1, file="~/nout/trials/RealData/PowerStudy/FinalSimu/Cover/resMammo0.1")
+                    "compact.results" = results)
+save(resMammo0.1, file="~/nout/trials/RealData/PowerStudy/FinalSimu/Mammography/resMammo0.1")
 
 ```
 
