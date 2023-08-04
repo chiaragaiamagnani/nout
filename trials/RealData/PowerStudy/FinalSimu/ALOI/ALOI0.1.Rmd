@@ -31,7 +31,7 @@ compact_results = function(res){
   
   results = list()
   for(j in 1:length(n1s)){
-    discoveries = as.data.frame(
+    lb.d = as.data.frame(
       cbind("d_BH"=unlist(res[[j]][rownames(res[[j]])=="d_BH",]), 
             "d_StoBH"=unlist(res[[j]][rownames(res[[j]])=="d_StoBH",]),
             "d_Sim"=unlist(res[[j]][rownames(res[[j]])=="d_Sim",]),
@@ -39,30 +39,29 @@ compact_results = function(res){
             "d_WMW"=unlist(res[[j]][rownames(res[[j]])=="d_WMW",])
             )
     )
-    mean.discoveries = apply(discoveries, MARGIN = 2, FUN = mean)
+    mean.lb.d = apply(lb.d, MARGIN = 2, FUN = mean)
     
-    power.GlobalNull = as.data.frame(discoveries>0)
+    power.GlobalNull = as.data.frame(lb.d>0)
     mean.powerGlobalNull = apply(power.GlobalNull, MARGIN = 2, FUN = mean)
     
-    out_identification = as.data.frame(
-      cbind("out.identif_WMW"=
-              unlist(res[[j]][rownames(res[[j]])=="outlier.identified_WMW",]),
-            "out.identif_StoSimes"=
-              unlist(res[[j]][rownames(res[[j]])=="outlier.identified_StoSimes",]),
-            "out.identif_Simes"=
-              unlist(res[[j]][rownames(res[[j]])=="outlier.identified_Simes",])
-            )
-    )
-    mean.out_identification = apply(out_identification, MARGIN = 2, FUN = mean)
-    mean.out_identification_pos = apply(out_identification>0, MARGIN = 2, FUN = mean)
+    # n.disc = as.data.frame(
+    #   cbind("n.disc.Simes" = unlist(res[[j]][rownames(res[[j]])=="n.disc.Simes",]),
+    #         "n.disc.Simes2" = unlist(res[[j]][rownames(res[[j]])=="n.disc.Simes2",]),
+    #          "n.disc.StoSimes" = unlist(res[[j]][rownames(res[[j]])=="n.disc.StoSimes",]),
+    #         "n.disc.WMW" = unlist(res[[j]][rownames(res[[j]])=="n.disc.WMW",]),
+    #         "n.disc.WMW.cpp" = unlist(res[[j]][rownames(res[[j]])=="n.disc.WMW.cpp",])
+    #         )
+    # )
+    # mean.n.disc = apply(n.disc, MARGIN = 2, FUN = mean)
+    # #mean.n.disc_pos = apply(n.disc>0, MARGIN = 2, FUN = mean)
     
-    results[[j]] = list("discoveries" = discoveries, 
-                        "mean.discoveries" = mean.discoveries,
+    results[[j]] = list("lb.d" = lb.d, 
+                        "mean.lb.d" = mean.lb.d,
                         "power.GlobalNull" = power.GlobalNull,
                         "mean.powerGlobalNull" = mean.powerGlobalNull,
-                        "out_identification" = out_identification,
-                        "mean.out_identification" = mean.out_identification,
-                        "mean.out_identification>0" = mean.out_identification_pos,
+                        # "n.disc" = n.disc,
+                        # "mean.n.disc" = mean.n.disc,
+                        # #"mean.n.disc>0" = mean.n.disc_pos,
                         "pi.not" = res[[j]][rownames(res[[j]])=="pi.not",],
                         "uniques" = res[[j]][rownames(res[[j]])=="uniques",],
                         "n1" = res[[j]][rownames(res[[j]])=="n1",1],
@@ -91,7 +90,6 @@ CompareMethodNaturalOutliers = function(B, n1, n, out_ind, inlier_remaining, iso
   n0 = n-n1
   foreach(b = 1:B, .combine=cbind) %dopar% {
     if(n1==0){
-      n0 = n
       N = n0 + m
       in_index3 = sample(inlier_remaining, size = N)
       cal_ind = in_index3[1:m]
@@ -112,11 +110,13 @@ CompareMethodNaturalOutliers = function(B, n1, n, out_ind, inlier_remaining, iso
       return(list("d_BH" = d_BH,
                   "d_StoBH" = d_StoBH,
                   "d_Sim" = d_Sim,
+                  # "n.disc.Simes" = 0,
+                  # "n.disc.Simes2" = 0,
                   "d_StoSimes" = d_StoSimes,
+                  # "n.disc.StoSimes" = 0,
                   "d_WMW" = d_WMW,
-                  "outlier.identified_WMW" = 0,
-                  "outlier.identified_Simes" = 0,
-                  "outlier.identified_StoSimes" = 0,
+                  # "n.disc.WMW" = 0,
+                  # "n.disc.WMW.cpp" = 0,
                   "uniques" = uniques,
                   "n1" = n1,
                   "pi.not" = pi.not,
@@ -130,7 +130,7 @@ CompareMethodNaturalOutliers = function(B, n1, n, out_ind, inlier_remaining, iso
       if(n0!=0) 
         tein_ind = in_index3[(m+1):N]
       else
-        tein_ind = NULL      
+        tein_ind = NULL
       teout_ind = sample(out_ind, size = n1)
       cal = dataset[cal_ind,]
       te = dataset[c(tein_ind, teout_ind),]
@@ -146,42 +146,54 @@ CompareMethodNaturalOutliers = function(B, n1, n, out_ind, inlier_remaining, iso
       d_StoBH = nout::d_StoreyBH(S_X = S_cal, S_Y = S_te, alpha = alpha)
       uniques = length(unique(c(S_cal, S_te)))
       
-      # outlier identification with WMW
-      conf.pval = sapply(1:n, function(j) (1+sum(S_cal >= S_te[j]))/(m+1))
-      confvalid.pval = conf.pval<alpha
-      confvalid.index = which(conf.pval<alpha)
-
-      if(d_WMW>0){
-        outlierTF = sapply(confvalid.index, function(h) 
-            nout::dselection_MannWhitney(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
-        outlier.identified_WMW = confvalid.index[as.logical(outlierTF)]
-      }
-      else  outlier.identified_WMW = NULL
-      
-      # outlier identification with Simes
-      if(d_Sim>0){
-        outlierTF = sapply(confvalid.index, function(h) 
-            nout::dselection_Simes(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
-        outlier.identified_Simes = confvalid.index[as.logical(outlierTF)]
-      }
-      else  outlier.identified_Simes = NULL
-      
-      # outlier identification with StoreySimes
-      if(d_StoSimes>0){
-        outlierTF = sapply(confvalid.index, function(h) 
-            nout::dselection_StoreySimes(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
-        outlier.identified_StoSimes = confvalid.index[as.logical(outlierTF)]
-      }
-      else  outlier.identified_StoSimes = NULL
+      # # outlier identification with WMW
+      # conf.pval = sapply(1:n, function(j) (1+sum(S_cal >= S_te[j]))/(m+1))
+      # confvalid.pval = conf.pval<alpha
+      # confvalid.index = which(conf.pval<alpha)
+      # 
+      # n.disc.WMW.cpp=0
+      # n.disc.WMW=0
+      # if(d_WMW>0 & length(confvalid.index)!=0){
+      #   outlierTF.WMW.cpp = sapply(confvalid.index, function(h) 
+      #     nout::dselection_MannWhitney(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
+      #   #outlier.identified_MannWhitney = confvalid.index[as.logical(outlierTF)]
+      #   n.disc.WMW.cpp = sum(outlierTF.WMW.cpp)
+      #   outlierTF.WMW = sapply(confvalid.index, function(h) 
+      #     nout::dselection.prova_MannWhitney(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
+      #   n.disc.WMW = sum(outlierTF.WMW)
+      # }
+      # 
+      # # outlier identification with Simes
+      # n.disc.Simes=0
+      # n.disc.Simes2=0
+      # if(d_Sim>0 & length(confvalid.index)!=0){
+      #   outlierTF.Simes = sapply(confvalid.index, function(h) 
+      #       nout::dselection_Simes(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
+      #   #outlier.identified_Simes = confvalid.index[as.logical(outlierTF)]
+      #   n.disc.Simes = sum(outlierTF.Simes)
+      #   p = hommel(conf.pval)
+      #   n.disc.Simes2 = sum(p@adjusted <= alpha)
+      # }
+      # 
+      # # outlier identification with StoreySimes
+      # n.disc.StoSimes=0
+      # if(d_StoSimes>0 & length(confvalid.index)!=0){
+      #   outlierTF.StoSim = sapply(confvalid.index, function(h) 
+      #     nout::dselection_StoreySimes(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
+      #   #outlier.identified_StoSimes = confvalid.index[as.logical(outlierTFStoSim)]
+      #   n.disc.StoSimes = sum(outlierTF.StoSim)
+      # }
       
       return(list("d_BH" = d_BH,
                   "d_StoBH" = d_StoBH,
                   "d_Sim" = d_Sim,
+                  # "n.disc.Simes" = n.disc.Simes,
+                  # "n.disc.Simes2" = n.disc.Simes2,
                   "d_StoSimes" = d_StoSimes,
+                  # "n.disc.StoSimes" = n.disc.StoSimes,
                   "d_WMW" = d_WMW,
-                  "outlier.identified_WMW" = length(outlier.identified_WMW),
-                  "outlier.identified_Simes" = length(outlier.identified_Simes),
-                  "outlier.identified_StoSimes" = length(outlier.identified_StoSimes),
+                  # "n.disc.WMW" = n.disc.WMW,
+                  # "n.disc.WMW.cpp" = n.disc.WMW.cpp,
                   "uniques" = uniques,
                   "n1" = n1,
                   "pi.not" = pi.not,
@@ -238,7 +250,7 @@ in_ind = which(dataset$outlier=="no")
 
 cluster <- makeCluster(parallel::detectCores())
 registerDoSNOW(cluster)
-clusterEvalQ(cluster, {list(library(isotree), library(nout))})
+clusterEvalQ(cluster, {list(library(isotree), library(nout), library(hommel))})
 clusterExport(cluster, list("n", "m", "l", "in_ind", "out_ind", "dataset", "alpha"))
 
 tic()
@@ -246,10 +258,11 @@ modeltrain = TrainingIsoForest(l=l, dataset=dataset)
 kest = estimatek(B=B, inlier_remaining=modeltrain$inlier_remaining, 
           out_ind=out_ind, isofo.model=modeltrain$model, dataset=dataset)
 res = lapply(1:length(n1s), 
-             function(j) CompareMethodNaturalOutliers(B=B, n1=n1s[j], n=n, dataset=dataset,
-                               isofo.model=modeltrain$model, 
-                               out_ind=out_ind, 
-                               inlier_remaining=modeltrain$inlier_remaining))
+             function(j) CompareMethodNaturalOutliers(B=B, n1=n1s[j], n=n,
+                                                      dataset=dataset,
+                                                      isofo.model=modeltrain$model,
+                                                      out_ind=out_ind,
+                                                      inlier_remaining=modeltrain$inlier_remaining))
 toc()
 stopCluster(cluster)           
 
@@ -269,19 +282,28 @@ pow_Sim = vector()
 pow_StoSimes = vector()
 pow_WMW = vector()
 
+# disc_Sim = vector()
+# disc_StoSimes = vector()
+# disc_WMW = vector()
+# disc_WMW.cpp = vector()
+
 for(j in 1:length(n1s)){
-  d_BH[j] = results[[j]]$mean.discoveries[1]
-  d_StoBH[j] = results[[j]]$mean.discoveries[2]
-  d_Sim[j] = results[[j]]$mean.discoveries[3]
-  d_StoSimes[j] = results[[j]]$mean.discoveries[4]
-  d_WMW[j] = results[[j]]$mean.discoveries[5]
+  d_BH[j] = results[[j]]$mean.lb.d[1]
+  d_StoBH[j] = results[[j]]$mean.lb.d[2]
+  d_Sim[j] = results[[j]]$mean.lb.d[3]
+  d_StoSimes[j] = results[[j]]$mean.lb.d[4]
+  d_WMW[j] = results[[j]]$mean.lb.d[5]
 
   pow_BH[j] = results[[j]]$mean.powerGlobalNull[1]
   pow_StoBH[j] = results[[j]]$mean.powerGlobalNull[2]
   pow_Sim[j] = results[[j]]$mean.powerGlobalNull[3]
   pow_StoSimes[j] = results[[j]]$mean.powerGlobalNull[4]
   pow_WMW[j] = results[[j]]$mean.powerGlobalNull[5]
-
+  
+  # disc_Sim[j] = results[[j]]$mean.n.disc[1]
+  # disc_StoSimes[j] = results[[j]]$mean.n.disc[3]
+  # disc_WMW[j] = results[[j]]$mean.n.disc[4]
+  # disc_WMW.cpp[j] = results[[j]]$mean.n.disc[5]
 }
 
 # Plot discoveries
@@ -322,31 +344,28 @@ ggplot(df_long_power, aes(x = x, y = y, color = group)) +
   theme_minimal() +
   theme(legend.title = element_blank())
 
-outlier.identification = list()
-for(i in 1:length(n1s)){
-  outlier.identification[[i]] = matrix(nrow = 3, ncol = 4)
-  rownames(outlier.identification[[i]]) = c("WMW", "Simes", "StoSimes")
-  colnames(outlier.identification[[i]]) = c("mean.out.identif", "%successful.identification",
-                                    "mean.d", "mean.d>0(power)")
-  outlier.identification[[i]][,1] = apply(
-    results[[i]][["out_identification"]], MARGIN = 2, FUN = mean)
-  outlier.identification[[i]][,2] = apply(
-    results[[i]][["out_identification"]]>0, MARGIN = 2, FUN = mean)
-  outlier.identification[[i]][,3] = results[[i]]$mean.discoveries[c(3,4,5)]
-  outlier.identification[[i]][,4] = results[[i]]$mean.powerGlobalNull[c(3,4,5)]
-}
+# n.disc.tablelist = list()
+# for(i in 1:length(n1s)){
+#   n.disc.tablelist[[i]] = matrix(ncol = 5, nrow = 2)
+#   colnames(n.disc.tablelist[[i]]) = c("Simes", "Simes2", "StoSimes", "WMW", "WMW.cpp")
+#   rownames(n.disc.tablelist[[i]]) = c("mean.n.disc", "mean.d")
+#   n.disc.tablelist[[i]][1,] = apply(results[[i]][["n.disc"]], MARGIN = 2, FUN = mean)
+#   n.disc.tablelist[[i]][2,] = results[[i]]$mean.lb.d[c(3,3,4,5,5)]
+# }
+# 
+# for(i in 1:length(n1s)){
+#   cat("\n")
+#   cat(paste("n1=", n1s[i]))
+#   cat("\n")
+#   print(n.disc.tablelist[[i]])
+# }
 
-for(i in 1:length(n1s)){
-  cat("\n")
-  cat(paste("n1=", n1s[i]))
-  print(outlier.identification[[i]])
-}
-
-resCover0.1 = list("raw.res"=res, 
+resALOI0.1 = list("raw.res"=res, 
                     "k.est" = kest, 
-                    "compact.results" = results, 
-                    "outlier.identification" = outlier.identification)
-save(resCover0.1, file="~/nout/trials/RealData/PowerStudy/FinalSimu/ALOI/resALOI0.1")
+                    "compact.results" = results # , 
+                    # "n.disc.tablelist" = n.disc.tablelist
+                    )
+save(resALOI0.1, file="~/nout/trials/RealData/PowerStudy/FinalSimu/ALOI/resALOI0.1")
 
 ```
 
