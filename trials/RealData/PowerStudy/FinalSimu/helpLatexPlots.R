@@ -521,7 +521,8 @@ cat(paste("(",paste(round(theta,4),
 
 cat(paste("(",paste(round(theta,4),
                     round(sapply(1:5,
-                                 function(nc) sum( dbinom(0:n,size=n,prob=theta) * res$lb.d.matrix[,nc])),
+                                 function(nc)
+                                   sum(dbinom(0:n,size=n,prob=theta)*res$lb.d.matrix[,nc])),
                           4), sep=","),")"))
 
 cat(paste("(",paste(n1s, matrixMammo0.1$lb.d.matrix[,1], sep=","),")"))

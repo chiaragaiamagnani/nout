@@ -143,5 +143,5 @@ d.n1pos = cbind("d.n1pos_BH" = round(sum(matrixMammo0.1$lb.d.matrix[-1,"FDR-BH"]
 
 
 
-mean(sapply(1:21, function(k) mean(unlist(resMammo0.1$compact.results[[k]]$uniques))))
-mean(sapply(1:21, function(k) mean(unlist(results[[k]]$uniques))))/(199+20)
+mean(sapply(1:21, function(k) mean(unlist(resMammo0.1$compact.results[[k]]$uniques))))/(199+20)
+#mean(sapply(1:21, function(k) mean(unlist(results[[k]]$uniques))))/(199+20)
