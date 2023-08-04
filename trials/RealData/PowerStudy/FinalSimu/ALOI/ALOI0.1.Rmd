@@ -225,7 +225,7 @@ The dataset is available at https://www.dbs.ifi.lmu.de/research/outlier-evaluati
 set.seed(321)
 
 # Initializing parameters
-B = 10^2
+B = 10^4
 m = 199
 l = 199
 n = 20
@@ -346,7 +346,7 @@ resCover0.1 = list("raw.res"=res,
                     "k.est" = kest, 
                     "compact.results" = results, 
                     "outlier.identification" = outlier.identification)
-save(resCover0.1, file="~/nout/trials/RealData/PowerStudy/FinalSimu/Cover/resCover0.1")
+save(resCover0.1, file="~/nout/trials/RealData/PowerStudy/FinalSimu/ALOI/resALOI0.1")
 
 ```
 
