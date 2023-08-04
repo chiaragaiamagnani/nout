@@ -3,7 +3,8 @@
 library(nout)
 library(R.matlab)
 library(isotree)
-library(farff)
+library(readr)
+library(foreign)
 library(tictoc)
 library(tidyverse)
 library(doSNOW)
@@ -633,5 +634,103 @@ cat(paste("(",paste(n1s, matrixCover0.1$pow.rejGlob.matrix[,2], sep=","),")"))
 cat(paste("(",paste(n1s, matrixCover0.1$pow.rejGlob.matrix[,3], sep=","),")"))
 cat(paste("(",paste(n1s, matrixCover0.1$pow.rejGlob.matrix[,4], sep=","),")"))
 cat(paste("(",paste(n1s, matrixCover0.1$pow.rejGlob.matrix[,5], sep=","),")"))
+
+
+# ------------------------------------------ ALOI ------------------------------------------
+
+load("~/nout/trials/RealData/PowerStudy/FinalSimu/ALOI/resALOI0.1")
+
+dataset = read.arff("~/nout/trials/RealData/Datasets/Dataset ALOI/ALOI_withoutdupl.arff")
+out_ind = which(dataset$outlier=="yes")
+in_ind = which(dataset$outlier=="no")
+
+n = 20
+n1s = seq(from=0, to=n, by=1)
+
+pow.rejGlob_BH = vector()
+pow.rejGlob_StoBH = vector()
+pow.rejGlob_Sim = vector()
+pow.rejGlob_StoSimes = vector()
+pow.rejGlob_WMW = vector()
+
+lb.d_BH = vector()
+lb.d_StoBH = vector()
+lb.d_Sim = vector()
+lb.d_StoSimes = vector()
+lb.d_WMW = vector()
+resALOI0.1 = resCover0.1
+for(j in 1:length(n1s)){
+  lb.d_BH[j] = resALOI0.1$compact.results[[j]]$mean.discoveries[1]
+  lb.d_StoBH[j] = resALOI0.1$compact.results[[j]]$mean.discoveries[2]
+  lb.d_Sim[j] = resALOI0.1$compact.results[[j]]$mean.discoveries[3]
+  lb.d_StoSimes[j] = resALOI0.1$compact.results[[j]]$mean.discoveries[4]
+  lb.d_WMW[j] = resALOI0.1$compact.results[[j]]$mean.discoveries[5]
+
+  pow.rejGlob_BH[j] = resALOI0.1$compact.results[[j]]$mean.powerGlobalNull[1]
+  pow.rejGlob_StoBH[j] = resALOI0.1$compact.results[[j]]$mean.powerGlobalNull[2]
+  pow.rejGlob_Sim[j] = resALOI0.1$compact.results[[j]]$mean.powerGlobalNull[3]
+  pow.rejGlob_StoSimes[j] = resALOI0.1$compact.results[[j]]$mean.powerGlobalNull[4]
+  pow.rejGlob_WMW[j] = resALOI0.1$compact.results[[j]]$mean.powerGlobalNull[5]
+
+}
+
+
+lb.d = matrix(nrow = (n+1), ncol = 5)
+rownames(lb.d) = as.character(n1s)
+colnames(lb.d) = c("FDR-BH", "FDR-Storey", "CT-Simes", "CT-Storey", "CT-WMW")
+
+lb.d[,1] = lb.d_BH
+lb.d[,2] = lb.d_StoBH
+lb.d[,3] = lb.d_Sim
+lb.d[,4] = lb.d_StoSimes
+lb.d[,5] = lb.d_WMW
+View(lb.d)
+
+pow.rejGlob = matrix(nrow = (n+1), ncol = 5)
+rownames(pow.rejGlob) = as.character(seq(from=0, to=n, by=1))
+colnames(pow.rejGlob) = c("FDR-BH", "FDR-Storey", "CT-Simes", "CT-Storey", "CT-WMW")
+pow.rejGlob[,1] = pow.rejGlob_BH
+pow.rejGlob[,2] = pow.rejGlob_StoBH
+pow.rejGlob[,3] = pow.rejGlob_Sim
+pow.rejGlob[,4] = pow.rejGlob_StoSimes
+pow.rejGlob[,5] = pow.rejGlob_WMW
+View(pow.rejGlob)
+
+matrixALOI0.1 = list("lb.d.matrix" = lb.d, "pow.rejGlob.matrix" = pow.rejGlob)
+save(matrixALOI0.1, file = "~/nout/trials/RealData/PowerStudy/FinalSimu/ALOI/matrixALOI0.1")
+
+#load("~/nout/trials/RealData/PowerStudy/FinalSimu/Digits/NaturalOutlierDistribution/matrixDigits0.1")
+res = matrixALOI0.1
+
+theta = length(out_ind)/nrow(dataset)
+
+cat(paste("(",paste(round(theta,4),
+                    round(sapply(1:5,
+                                 function(nc) sum(dbinom(0:n,size=n,prob=theta) * res$pow.rejGlob.matrix[,nc])),
+                          4), sep=","),")"))
+
+cat(paste("(",paste(round(theta,4),
+                    round(sapply(1:5,
+                                 function(nc) sum( dbinom(0:n,size=n,prob=theta) * res$lb.d.matrix[,nc])),
+                          4), sep=","),")"))
+
+
+
+cat(paste("(",paste(n1s, matrixALOI0.1$lb.d.matrix[,1], sep=","),")"))
+cat(paste("(",paste(n1s, matrixALOI0.1$lb.d.matrix[,2], sep=","),")"))
+cat(paste("(",paste(n1s, matrixALOI0.1$lb.d.matrix[,3], sep=","),")"))
+cat(paste("(",paste(n1s, matrixALOI0.1$lb.d.matrix[,4], sep=","),")"))
+cat(paste("(",paste(n1s, matrixALOI0.1$lb.d.matrix[,5], sep=","),")"))
+
+
+cat(paste("(",paste(n1s, matrixALOI0.1$pow.rejGlob.matrix[,1], sep=","),")"))
+cat(paste("(",paste(n1s, matrixALOI0.1$pow.rejGlob.matrix[,2], sep=","),")"))
+cat(paste("(",paste(n1s, matrixALOI0.1$pow.rejGlob.matrix[,3], sep=","),")"))
+cat(paste("(",paste(n1s, matrixALOI0.1$pow.rejGlob.matrix[,4], sep=","),")"))
+cat(paste("(",paste(n1s, matrixALOI0.1$pow.rejGlob.matrix[,5], sep=","),")"))
+
+
+
+
 
 
