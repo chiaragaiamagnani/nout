@@ -699,7 +699,8 @@ View(pow.rejGlob)
 matrixALOI0.1 = list("lb.d.matrix" = lb.d, "pow.rejGlob.matrix" = pow.rejGlob)
 save(matrixALOI0.1, file = "~/nout/trials/RealData/PowerStudy/FinalSimu/ALOI/matrixALOI0.1")
 
-#load("~/nout/trials/RealData/PowerStudy/FinalSimu/Digits/NaturalOutlierDistribution/matrixDigits0.1")
+#
+load("~/nout/trials/RealData/PowerStudy/FinalSimu/ALOI/matrixALOI0.1")
 res = matrixALOI0.1
 
 theta = length(out_ind)/nrow(dataset)
@@ -729,7 +730,7 @@ cat(paste("(",paste(n1s, matrixALOI0.1$pow.rejGlob.matrix[,3], sep=","),")"))
 cat(paste("(",paste(n1s, matrixALOI0.1$pow.rejGlob.matrix[,4], sep=","),")"))
 cat(paste("(",paste(n1s, matrixALOI0.1$pow.rejGlob.matrix[,5], sep=","),")"))
 
-
+theta
 
 
 
