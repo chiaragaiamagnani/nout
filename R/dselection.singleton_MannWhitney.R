@@ -1,5 +1,5 @@
 
-#' dselection.prova_MannWhitney
+#' dselection.singleton_MannWhitney
 #'
 #' @description It returns the lower bound for the number of true discoveries in closed testing procedure
 #' using Wilcoxon-Mann-Whitney local test.
@@ -25,7 +25,7 @@
 #' crit = nout::critWMW(m=length(Sx), n=length(Sy), alpha=0.1)
 #' dselection.prova_MannWhitney(S_Y=Sy, S_X=Sx, S=3, alpha=0.1)
 #'
-dselection.prova_MannWhitney = function(S_Y,S_X,S,alpha){
+dselection.singleton_MannWhitney = function(S_Y,S_X,S,alpha){
 
   n = length(S_Y)
   m = length(S_X)

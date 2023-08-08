@@ -3,7 +3,7 @@ findhStoreySimes = function(pvalues, lambda = 0.5, alpha){
 
   n = length(pvalues)
   p.ordered = sort(pvalues, decreasing=F)
-  # pi0Storey.mod vettore di n entrate in cui la prima corrisponde a s=n e l'ultima a s=1
+  # pi0Storey.mod  vector of length n where the first one corresponds to s=n and the last one to s=1
   # pi0Storey.mod = sapply(n:1, function(s) (1+sum(p.ordered[(n-s+1):n]>=lambda))/(s*(1-lambda)))
 
   # Storey estimator will be used in the closed testing procedure
@@ -11,14 +11,14 @@ findhStoreySimes = function(pvalues, lambda = 0.5, alpha){
   # considered pvalues has cardinality less than or equal to 2.
   pi0Storey.mod.highlevels = sapply(n:3, function(s) (1+sum(p.ordered[(n-s+1):n]>=lambda))/(s*(1-lambda)))
   pi0Storey.mod = c(pi0Storey.mod.highlevels, 1,1)
-  # coeffs = vettore di n entrate in cui la prima corrisponde a s=n e l'ultima a s=1
+  # coeffs =  vector of length n where the first one corresponds to s=n and the last one to s=1
   coeffs = alpha/((n:1)*pi0Storey.mod)
 
   h=0; cont=T; s=n;
 
   while(cont==T & s>0){
     p = p.ordered[((n-s+1)):n]
-    # thr = vettore di s entrate in cui la prima corrisponde ha peso 1 e l'ultima ha peso s
+    # thr = vector of length s where the first one has weight 1 and the last one has weight equal to s
     thr = (1:s)*coeffs[(n-s+1)]
     if(sum(p>thr)==s){
       h=s; cont=F
