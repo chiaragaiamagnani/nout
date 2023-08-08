@@ -207,6 +207,18 @@ cat(paste("(",paste(n1s, matrixDigits0.1$n.disc[,2], sep=","),")"))
 cat(paste("(",paste(n1s, matrixDigits0.1$n.disc[,3], sep=","),")"))
 
 
+# Scale log1p
+cat(paste("(",paste(n1s,  round(log1p(matrixDigits0.1$lb.d.matrix[,1]), 4), sep=","),")"))
+cat(paste("(",paste(n1s,  round(log1p(matrixDigits0.1$lb.d.matrix[,2]), 4), sep=","),")"))
+cat(paste("(",paste(n1s,  round(log1p(matrixDigits0.1$lb.d.matrix[,3]), 4), sep=","),")"))
+cat(paste("(",paste(n1s,  round(log1p(matrixDigits0.1$lb.d.matrix[,4]), 4), sep=","),")"))
+cat(paste("(",paste(n1s,  round(log1p(matrixDigits0.1$lb.d.matrix[,5]), 4), sep=","),")"))
+
+cat(paste("(",paste(n1s,  round(log1p(matrixDigits0.1$n.disc[,1]), 4), sep=","),")"))
+cat(paste("(",paste(n1s,  round(log1p(matrixDigits0.1$n.disc[,2]), 4), sep=","),")"))
+cat(paste("(",paste(n1s,  round(log1p(matrixDigits0.1$n.disc[,3]), 4), sep=","),")"))
+
+
 
 
 
@@ -324,6 +336,17 @@ cat(paste("(",paste(n1s, matrixCredit0.1$n.disc[,1], sep=","),")"))
 cat(paste("(",paste(n1s, matrixCredit0.1$n.disc[,2], sep=","),")"))
 cat(paste("(",paste(n1s, matrixCredit0.1$n.disc[,3], sep=","),")"))
 
+
+# Scale log1p
+cat(paste("(",paste(n1s,  round(log1p(matrixCredit0.1$lb.d.matrix[,1]), 4), sep=","),")"))
+cat(paste("(",paste(n1s,  round(log1p(matrixCredit0.1$lb.d.matrix[,2]), 4), sep=","),")"))
+cat(paste("(",paste(n1s,  round(log1p(matrixCredit0.1$lb.d.matrix[,3]), 4), sep=","),")"))
+cat(paste("(",paste(n1s,  round(log1p(matrixCredit0.1$lb.d.matrix[,4]), 4), sep=","),")"))
+cat(paste("(",paste(n1s,  round(log1p(matrixCredit0.1$lb.d.matrix[,5]), 4), sep=","),")"))
+
+cat(paste("(",paste(n1s,  round(log1p(matrixCredit0.1$n.disc[,1]), 4), sep=","),")"))
+cat(paste("(",paste(n1s,  round(log1p(matrixCredit0.1$n.disc[,2]), 4), sep=","),")"))
+cat(paste("(",paste(n1s,  round(log1p(matrixCredit0.1$n.disc[,3]), 4), sep=","),")"))
 
 
 

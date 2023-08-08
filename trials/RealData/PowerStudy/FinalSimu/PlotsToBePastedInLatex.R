@@ -1,34 +1,4 @@
 
-#' @misc{CreditCard,
-#'   key = {Credit Card Fraud Detection Data Set},
-#'   note = {https://www.kaggle.com/mlg-ulb/creditcardfraud. Not normalized, without duplicates, categorial attributes removed}
-#' }
-#'
-#'
-#' %@misc{Digits,
-#'   %    key = {pendigits},
-#'   %    note = {Pen-Based Recognition of Handwritten Digits Data Set. http://odds.cs.stonybrook.edu/pendigits-dataset}
-#'   %}
-#'
-#'
-#' @misc{Shuttle,
-#'   key = {Shuttle},
-#'   note = {Statlog (Shuttle) Data Set. http://odds.cs.stonybrook.edu/shuttle-dataset}
-#' }
-#'
-#'
-#' @misc{Mammography,
-#'   key = {Mammography},
-#'   note = {http://odds.cs.stonybrook.edu/mammography-dataset/}
-#' }
-#'
-#'
-#' @misc{Cover,
-#'   key = {Covertype},
-#'   note = {http://odds.cs.stonybrook.edu/forestcovercovertype-dataset}
-#' }
-
-
 # ------------------------------ Shuttle ----------------------------------------
 
 load("~/nout/trials/RealData/PowerStudy/FinalSimu/Shuttle/resShuttle0.1v2")
