@@ -27,8 +27,6 @@ library(ggplot2)
 library(hommel)
 
 compact_results = function(res){
-  resT=as.data.frame(t(res))
-  
   results = list()
   for(j in 1:length(n1s)){
     lb.d = as.data.frame(
@@ -225,6 +223,7 @@ Shuttle2 = cbind(Shuttle2, "Outlier" = outlier)
 set.seed(321)
 
 # Initializing parameters
+B = 10^4
 l = 199
 m = 199
 n = 20
