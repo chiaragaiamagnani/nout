@@ -198,7 +198,7 @@ table(Shuttle$Class)
 fours = which(Shuttle[,10]== "4")
 Shuttle2 = Shuttle[-fours,]
 
-# DIfferent classes of outliers
+# Different classes of outliers
 out.classes = c("2","3","5","6","7")
 
 out2.ind = which(Shuttle2$Class == levels(Shuttle2[,10])[2])
@@ -225,7 +225,6 @@ Shuttle2 = cbind(Shuttle2, "Outlier" = outlier)
 set.seed(321)
 
 # Initializing parameters
-B = 10
 l = 199
 m = 199
 n = 20
