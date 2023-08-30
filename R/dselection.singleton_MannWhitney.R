@@ -23,7 +23,7 @@
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
 #' crit = nout::critWMW(m=length(Sx), n=length(Sy), alpha=0.1)
-#' dselection.prova_MannWhitney(S_Y=Sy, S_X=Sx, S=3, alpha=0.1)
+#' dselection.singleton_MannWhitney(S_Y=Sy, S_X=Sx, S=3, alpha=0.1)
 #'
 dselection.singleton_MannWhitney = function(S_Y,S_X,S,alpha){
 
