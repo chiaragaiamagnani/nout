@@ -24,6 +24,7 @@ library(tictoc)
 library(tidyverse)
 library(doSNOW)
 library(ggplot2)
+library(hommel)
 
 compact_results = function(res){
   resT=as.data.frame(t(res))
@@ -43,24 +44,24 @@ compact_results = function(res){
     power.GlobalNull = as.data.frame(lb.d>0)
     mean.powerGlobalNull = apply(power.GlobalNull, MARGIN = 2, FUN = mean)
     
-    # n.disc = as.data.frame(
-    #   cbind("n.disc.Simes" = unlist(res[[j]][rownames(res[[j]])=="n.disc.Simes",]),
-    #         "n.disc.Simes2" = unlist(res[[j]][rownames(res[[j]])=="n.disc.Simes2",]),
-    #          "n.disc.StoSimes" = unlist(res[[j]][rownames(res[[j]])=="n.disc.StoSimes",]),
-    #         "n.disc.WMW" = unlist(res[[j]][rownames(res[[j]])=="n.disc.WMW",]),
-    #         "n.disc.WMW.cpp" = unlist(res[[j]][rownames(res[[j]])=="n.disc.WMW.cpp",])
-    #         )
-    # )
-    # mean.n.disc = apply(n.disc, MARGIN = 2, FUN = mean)
-    # #mean.n.disc_pos = apply(n.disc>0, MARGIN = 2, FUN = mean)
+    n.disc = as.data.frame(
+      cbind("n.disc.Simes" = unlist(res[[j]][rownames(res[[j]])=="n.disc.Simes",]),
+            "n.disc.Simes2" = unlist(res[[j]][rownames(res[[j]])=="n.disc.Simes2",]),
+             "n.disc.StoSimes" = unlist(res[[j]][rownames(res[[j]])=="n.disc.StoSimes",]),
+            "n.disc.WMW" = unlist(res[[j]][rownames(res[[j]])=="n.disc.WMW",]),
+            "n.disc.WMW.cpp" = unlist(res[[j]][rownames(res[[j]])=="n.disc.WMW.cpp",])
+            )
+    )
+    mean.n.disc = apply(n.disc, MARGIN = 2, FUN = mean)
+    #mean.n.disc_pos = apply(n.disc>0, MARGIN = 2, FUN = mean)
     
     results[[j]] = list("lb.d" = lb.d, 
                         "mean.lb.d" = mean.lb.d,
                         "power.GlobalNull" = power.GlobalNull,
                         "mean.powerGlobalNull" = mean.powerGlobalNull,
-                        # "n.disc" = n.disc,
-                        # "mean.n.disc" = mean.n.disc,
-                        # #"mean.n.disc>0" = mean.n.disc_pos,
+                        "n.disc" = n.disc,
+                        "mean.n.disc" = mean.n.disc,
+                        #"mean.n.disc>0" = mean.n.disc_pos,
                         "pi.not" = res[[j]][rownames(res[[j]])=="pi.not",],
                         "uniques" = res[[j]][rownames(res[[j]])=="uniques",],
                         "n1" = res[[j]][rownames(res[[j]])=="n1",1],
@@ -109,13 +110,13 @@ CompareMethodNaturalOutliers = function(B, n1, n, out_ind, inlier_remaining, iso
       return(list("d_BH" = d_BH,
                   "d_StoBH" = d_StoBH,
                   "d_Sim" = d_Sim,
-                  # "n.disc.Simes" = 0,
-                  # "n.disc.Simes2" = 0,
+                  "n.disc.Simes" = 0,
+                  "n.disc.Simes2" = 0,
                   "d_StoSimes" = d_StoSimes,
-                  # "n.disc.StoSimes" = 0,
+                  "n.disc.StoSimes" = 0,
                   "d_WMW" = d_WMW,
-                  # "n.disc.WMW" = 0,
-                  # "n.disc.WMW.cpp" = 0,
+                  "n.disc.WMW" = 0,
+                  "n.disc.WMW.cpp" = 0,
                   "uniques" = uniques,
                   "n1" = n1,
                   "pi.not" = pi.not,
@@ -145,54 +146,54 @@ CompareMethodNaturalOutliers = function(B, n1, n, out_ind, inlier_remaining, iso
       d_StoBH = nout::d_StoreyBH(S_X = S_cal, S_Y = S_te, alpha = alpha)
       uniques = length(unique(c(S_cal, S_te)))
       
-      # # outlier identification with WMW
-      # conf.pval = sapply(1:n, function(j) (1+sum(S_cal >= S_te[j]))/(m+1))
-      # confvalid.pval = conf.pval<alpha
-      # confvalid.index = which(conf.pval<alpha)
-      # 
-      # n.disc.WMW.cpp=0
-      # n.disc.WMW=0
-      # if(d_WMW>0 & length(confvalid.index)!=0){
-      #   outlierTF.WMW.cpp = sapply(confvalid.index, function(h) 
-      #     nout::dselection_MannWhitney(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
-      #   #outlier.identified_MannWhitney = confvalid.index[as.logical(outlierTF)]
-      #   n.disc.WMW.cpp = sum(outlierTF.WMW.cpp)
-      #   outlierTF.WMW = sapply(confvalid.index, function(h) 
-      #     nout::dselection.prova_MannWhitney(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
-      #   n.disc.WMW = sum(outlierTF.WMW)
-      # }
-      # 
-      # # outlier identification with Simes
-      # n.disc.Simes=0
-      # n.disc.Simes2=0
-      # if(d_Sim>0 & length(confvalid.index)!=0){
-      #   outlierTF.Simes = sapply(confvalid.index, function(h) 
-      #       nout::dselection_Simes(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
-      #   #outlier.identified_Simes = confvalid.index[as.logical(outlierTF)]
-      #   n.disc.Simes = sum(outlierTF.Simes)
-      #   p = hommel(conf.pval)
-      #   n.disc.Simes2 = sum(p@adjusted <= alpha)
-      # }
-      # 
-      # # outlier identification with StoreySimes
-      # n.disc.StoSimes=0
-      # if(d_StoSimes>0 & length(confvalid.index)!=0){
-      #   outlierTF.StoSim = sapply(confvalid.index, function(h) 
-      #     nout::dselection_StoreySimes(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
-      #   #outlier.identified_StoSimes = confvalid.index[as.logical(outlierTFStoSim)]
-      #   n.disc.StoSimes = sum(outlierTF.StoSim)
-      # }
+      # outlier identification with WMW
+      conf.pval = sapply(1:n, function(j) (1+sum(S_cal >= S_te[j]))/(m+1))
+      confvalid.pval = conf.pval<alpha
+      confvalid.index = which(conf.pval<alpha)
+
+      n.disc.WMW.cpp=0
+      n.disc.WMW=0
+      if(d_WMW>0 & length(confvalid.index)!=0){
+        outlierTF.WMW.cpp = sapply(confvalid.index, function(h) 
+          nout::dselection_MannWhitney(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
+        #outlier.identified_MannWhitney = confvalid.index[as.logical(outlierTF)]
+        n.disc.WMW.cpp = sum(outlierTF.WMW.cpp)
+        outlierTF.WMW = sapply(confvalid.index, function(h) 
+          nout::dselection.prova_MannWhitney(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
+        n.disc.WMW = sum(outlierTF.WMW)
+      }
+      
+      # outlier identification with Simes
+      n.disc.Simes=0
+      n.disc.Simes2=0
+      if(d_Sim>0 & length(confvalid.index)!=0){
+        outlierTF.Simes = sapply(confvalid.index, function(h) 
+            nout::dselection_Simes(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
+        #outlier.identified_Simes = confvalid.index[as.logical(outlierTF)]
+        n.disc.Simes = sum(outlierTF.Simes)
+        p = hommel(conf.pval)
+        n.disc.Simes2 = sum(p@adjusted <= alpha)
+      }
+
+      # outlier identification with StoreySimes
+      n.disc.StoSimes=0
+      if(d_StoSimes>0 & length(confvalid.index)!=0){
+        outlierTF.StoSim = sapply(confvalid.index, function(h) 
+          nout::dselection_StoreySimes(S_Y = S_te, S_X = S_cal, S = h, alpha=alpha))
+        #outlier.identified_StoSimes = confvalid.index[as.logical(outlierTFStoSim)]
+        n.disc.StoSimes = sum(outlierTF.StoSim)
+      }
       
       return(list("d_BH" = d_BH,
                   "d_StoBH" = d_StoBH,
                   "d_Sim" = d_Sim,
-                  # "n.disc.Simes" = n.disc.Simes,
-                  # "n.disc.Simes2" = n.disc.Simes2,
+                  "n.disc.Simes" = n.disc.Simes,
+                  "n.disc.Simes2" = n.disc.Simes2,
                   "d_StoSimes" = d_StoSimes,
-                  # "n.disc.StoSimes" = n.disc.StoSimes,
+                  "n.disc.StoSimes" = n.disc.StoSimes,
                   "d_WMW" = d_WMW,
-                  # "n.disc.WMW" = n.disc.WMW,
-                  # "n.disc.WMW.cpp" = n.disc.WMW.cpp,
+                  "n.disc.WMW" = n.disc.WMW,
+                  "n.disc.WMW.cpp" = n.disc.WMW.cpp,
                   "uniques" = uniques,
                   "n1" = n1,
                   "pi.not" = pi.not,
@@ -222,7 +223,6 @@ estimatek = function(B, inlier_remaining, out_ind, isofo.model, dataset){
 }
 
 
-
 ```
 
 
@@ -233,6 +233,7 @@ In the following we set the calibration set and the test set size, respectively 
 The dataset is available at http://odds.cs.stonybrook.edu/forestcovercovertype-dataset.
 
 ```{r warning=FALSE, message=FALSE}
+
 
 set.seed(321)
 
@@ -254,7 +255,6 @@ cluster <- makeCluster(parallel::detectCores())
 registerDoSNOW(cluster)
 clusterEvalQ(cluster, {list(library(isotree), library(nout), library(hommel))})
 clusterExport(cluster, list("n", "m", "l", "in_ind", "out_ind", "dataset", "alpha"))
-
 tic()
 modeltrain = TrainingIsoForest(l=l, dataset=dataset)
 kest = estimatek(B=B, inlier_remaining=modeltrain$inlier_remaining, 
@@ -284,11 +284,6 @@ pow_Sim = vector()
 pow_StoSimes = vector()
 pow_WMW = vector()
 
-# disc_Sim = vector()
-# disc_StoSimes = vector()
-# disc_WMW = vector()
-# disc_WMW.cpp = vector()
-
 for(j in 1:length(n1s)){
   d_BH[j] = results[[j]]$mean.lb.d[1]
   d_StoBH[j] = results[[j]]$mean.lb.d[2]
@@ -301,12 +296,9 @@ for(j in 1:length(n1s)){
   pow_Sim[j] = results[[j]]$mean.powerGlobalNull[3]
   pow_StoSimes[j] = results[[j]]$mean.powerGlobalNull[4]
   pow_WMW[j] = results[[j]]$mean.powerGlobalNull[5]
-  
-  # disc_Sim[j] = results[[j]]$mean.n.disc[1]
-  # disc_StoSimes[j] = results[[j]]$mean.n.disc[3]
-  # disc_WMW[j] = results[[j]]$mean.n.disc[4]
-  # disc_WMW.cpp[j] = results[[j]]$mean.n.disc[5]
+
 }
+
 
 # Plot discoveries
 df <- data.frame(
@@ -346,27 +338,11 @@ ggplot(df_long_power, aes(x = x, y = y, color = group)) +
   theme_minimal() +
   theme(legend.title = element_blank())
 
-# n.disc.tablelist = list()
-# for(i in 1:length(n1s)){
-#   n.disc.tablelist[[i]] = matrix(ncol = 5, nrow = 2)
-#   colnames(n.disc.tablelist[[i]]) = c("Simes", "Simes2", "StoSimes", "WMW", "WMW.cpp")
-#   rownames(n.disc.tablelist[[i]]) = c("mean.n.disc", "mean.d")
-#   n.disc.tablelist[[i]][1,] = apply(results[[i]][["n.disc"]], MARGIN = 2, FUN = mean)
-#   n.disc.tablelist[[i]][2,] = results[[i]]$mean.lb.d[c(3,3,4,5,5)]
-# }
-# 
-# for(i in 1:length(n1s)){
-#   cat("\n")
-#   cat(paste("n1=", n1s[i]))
-#   cat("\n")
-#   print(n.disc.tablelist[[i]])
-# }
 
 resCover0.1 = list("raw.res"=res, 
                     "k.est" = kest, 
-                    "compact.results" = results # , 
-                    #"n.disc.tablelist" = n.disc.tablelist
-                    )
+                    "compact.results" = results
+                   )
 save(resCover0.1, file="~/nout/trials/RealData/PowerStudy/FinalSimu/Cover/resCover0.1")
 
 ```
