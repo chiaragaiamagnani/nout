@@ -13,6 +13,7 @@ trials/RealData/Datasets/
 trials/RealData/PowerStudy/New!/alpha0.2/DigitsOnly0.2/Lehmann k=4/resDigits_alpha02_k4_alln1s
 trials/RealData/PowerStudy/FinalSimu/CreditCard/resCreditCard0.1v2
 trials/RealData/PowerStudy/FinalSimu/ALOI/resALOI0.1
+trials/RealData/PowerStudy/FinalSimu/Cover/resCover0.1
 trials/RealData/k_est.pdf
 trials/RealData/k_est.Rmd
 trials/RealData/DigitsAE.R
