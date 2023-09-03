@@ -20,9 +20,6 @@ dataset = cbind(data$X, data$y); colnames(dataset)[ncol(dataset)] = "y"
 in_ind = which(dataset[,ncol(dataset)]==0)
 out_ind = which(dataset[,ncol(dataset)]==1)
 
-n = 20
-n1s = seq(from=0, to=n, by=1)
-
 d_BH = vector()
 d_StoBH = vector()
 d_Sim = vector()
@@ -50,7 +47,6 @@ for(j in 1:length(n1s)){
 
 }
 
-
 lb.d = matrix(nrow = (n+1), ncol = 5)
 rownames(lb.d) = as.character(n1s)
 colnames(lb.d) = c("FDR-BH", "FDR-Storey", "CT-Simes", "CT-Storey", "CT-WMW")
@@ -60,7 +56,6 @@ lb.d[,2] = d_StoBH
 lb.d[,3] = d_Sim
 lb.d[,4] = d_StoSimes
 lb.d[,5] = d_WMW
-View(lb.d)
 
 pow.rejGlob = matrix(nrow = (n+1), ncol = 5)
 rownames(pow.rejGlob) = as.character(seq(from=0, to=n, by=1))
@@ -70,25 +65,84 @@ pow.rejGlob[,2] = pow.rejGlob_StoBH
 pow.rejGlob[,3] = pow.rejGlob_Sim
 pow.rejGlob[,4] = pow.rejGlob_StoSimes
 pow.rejGlob[,5] = pow.rejGlob_WMW
-View(pow.rejGlob)
 
 matrixDigits0.1k2 = list("lb.d.matrix" = lb.d, "pow.rejGlob.matrix" = pow.rejGlob)
-save(matrixDigits0.1k2, file = "C:/Users/chiar/Documents/matrixDigits0.1k2")
+save(matrixDigits0.1k2, file = "~/nout/trials/RealData/PowerStudy/FinalSimu/Digits/Lehmannk2/matrixDigits0.1k2")
 
 #load("C:/Users/chiar/Documents/matrixDigits0.1k2")
 res = matrixDigits0.1k2
 
-theta = seq(0,1, length.out=51)
+thetas = seq(0,1, length.out=51)
 
-cat(paste("(",paste(theta,
+cat(paste("(",paste(thetas,
                     round(sapply(theta, function(p)
                       sum( dbinom(0:n,size=n,prob=p) * res$pow.rejGlob.matrix[,5])
                     ),4), sep=","),")"))
 
-cat(paste("(",paste(theta,
+cat(paste("(",paste(thetas,
                     round(sapply(theta, function(p)
                       sum( dbinom(0:n,size=n,prob=p) * res$lb.d.matrix[,5])
                     ),4), sep=","),")"))
+
+
+pow_BH = round(sapply(theta, function(p)
+  sum( dbinom(0:n,size=n,prob=p) * res$pow.rejGlob.matrix[,1])),4)
+pow_StoBH = round(sapply(theta, function(p)
+  sum( dbinom(0:n,size=n,prob=p) * res$pow.rejGlob.matrix[,2])),4)
+pow_Simes = round(sapply(theta, function(p)
+  sum( dbinom(0:n,size=n,prob=p) * res$pow.rejGlob.matrix[,3])),4)
+pow_ASimes = round(sapply(theta, function(p)
+  sum( dbinom(0:n,size=n,prob=p) * res$pow.rejGlob.matrix[,4])),4)
+pow_WMW = round(sapply(theta, function(p)
+  sum( dbinom(0:n,size=n,prob=p) * res$pow.rejGlob.matrix[,5])),4)
+
+lb.d.BH = round(sapply(theta, function(p)
+  sum( dbinom(0:n,size=n,prob=p) * res$lb.d.matrix[,1])),4)
+lb.d.StoBH = round(sapply(theta, function(p)
+  sum( dbinom(0:n,size=n,prob=p) * res$lb.d.matrix[,2])),4)
+lb.d.Simes = round(sapply(theta, function(p)
+  sum( dbinom(0:n,size=n,prob=p) * res$lb.d.matrix[,3])),4)
+lb.d.ASimes = round(sapply(theta, function(p)
+  sum( dbinom(0:n,size=n,prob=p) * res$lb.d.matrix[,4])),4)
+lb.d.WMW = round(sapply(theta, function(p)
+  sum( dbinom(0:n,size=n,prob=p) * res$lb.d.matrix[,5])),4)
+
+
+# Plot lower bound d
+df <- data.frame(
+  x = thetas,
+  BH = lb.d.BH,
+  StoreyBH = lb.d.StoBH,
+  Simes_CT = lb.d.Simes,
+  StoreySimes_CT = lb.d.ASimes,
+  WMW_CT = lb.d.WMW
+)
+df_long <- tidyr::pivot_longer(df, cols = -x, names_to = "group", values_to = "y")
+
+ggplot(df_long, aes(x = x, y = y, color = group)) +
+  geom_line(size=1) +
+  scale_color_manual(values = c("black","gray","blue", "cyan", "red")) +
+  labs(x = "Number of outliers n1", y = "Average lower bound d") +
+  theme_minimal() +
+  theme(legend.title = element_blank())
+
+
+# Plot power
+dfpower <- data.frame(
+  x = thetas,
+  Simes = pow_BH,
+  ASimes = pow_StoBH,
+  WMW = pow_WMW
+)
+df_long_power <- tidyr::pivot_longer(dfpower, cols = -x, names_to = "group", values_to = "y")
+
+ggplot(df_long_power, aes(x = x, y = y, color = group)) +
+  geom_line(size=1) +
+  scale_color_manual(values = c("blue","black","red")) +
+  labs(x = "Number of outliers n1", y = "Power to reject the global null") +
+  theme_minimal() +
+  theme(legend.title = element_blank())
+
 
 
 # -------------------------------- Digits ----------------------------------------------
@@ -207,6 +261,7 @@ cat(paste("(",paste(n1s, matrixDigits0.1$n.disc[,2], sep=","),")"))
 cat(paste("(",paste(n1s, matrixDigits0.1$n.disc[,3], sep=","),")"))
 
 
+
 # Scale log1p
 cat(paste("(",paste(n1s,  round(log1p(matrixDigits0.1$lb.d.matrix[,1]), 4), sep=","),")"))
 cat(paste("(",paste(n1s,  round(log1p(matrixDigits0.1$lb.d.matrix[,2]), 4), sep=","),")"))
@@ -218,6 +273,37 @@ cat(paste("(",paste(n1s,  round(log1p(matrixDigits0.1$n.disc[,1]), 4), sep=","),
 cat(paste("(",paste(n1s,  round(log1p(matrixDigits0.1$n.disc[,2]), 4), sep=","),")"))
 cat(paste("(",paste(n1s,  round(log1p(matrixDigits0.1$n.disc[,3]), 4), sep=","),")"))
 
+
+
+
+# Plot lower bound d and |D|
+n.disc_Simes = matrixDigits0.1$n.disc[,1]
+n.disc_ASimes = matrixDigits0.1$n.disc[,2]
+n.disc_WMW = matrixDigits0.1$n.disc[,3]
+
+df <- data.frame(
+  x = n1s,
+  lb.d_Simes = matrixDigits0.1$lb.d.matrix[,3],
+  lb.d_ASimes = matrixDigits0.1$lb.d.matrix[,4],
+  lb.d_WMW = matrixDigits0.1$lb.d.matrix[,5],
+  n.D_Simes = n.disc_Simes,
+  n.D_ASimes = n.disc_ASimes,
+  n.D_WMW = n.disc_WMW
+)
+df_long <- tidyr::pivot_longer(df, cols = -x, names_to = "group", values_to = "y")
+
+# Define a function to determine the linetype
+lineType <- function(group){
+  if(startsWith(group, "n.D")) return("solid")
+  else return("dotted")
+}
+
+ggplot(df_long, aes(x = x, y = y, color = group, linetype = sapply(group, lineType))) +
+  geom_line(size=1) +
+  scale_color_manual(values = c("cyan","gray", "red","cyan", "gray", "red")) +
+  labs(x = "Number of outliers n1", y = "Average lower bound d and average |D|") +
+  theme_minimal() +
+  theme(legend.title = element_blank())
 
 
 
