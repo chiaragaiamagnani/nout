@@ -132,7 +132,7 @@ The dataset is available at http://odds.cs.stonybrook.edu/pendigits-dataset.
 set.seed(321)
 
 # Initializing parameters
-B = 10^4
+B = 10^3
 m = 19
 l = 19
 n = 4

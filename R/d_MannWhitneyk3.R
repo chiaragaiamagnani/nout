@@ -35,8 +35,8 @@ d_MannWhitneyk3 = function(S_Y,S_X,alpha){
   z12 = 4/45*m^4+16/45*m^3+19/45*m^2+2/15*m
 
   crit = sapply(1:n, function(h){
-    theta = (m+m*(m-1)/3)/h
-    variance = (m*z11+z12/h)/h^2
+    theta = (m+m*(m-1)/3)*h
+    variance = (m*z11+z12/h)*h^2
     quantiles = stats::qnorm(alpha, mean=theta, sd = sqrt(variance), lower.tail = F)
     return(quantiles)
     })
