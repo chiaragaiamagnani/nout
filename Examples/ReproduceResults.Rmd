@@ -1097,7 +1097,7 @@ Compute the permutation distribution of the Fisher's, Simes', Wilcoxon-Mann-Whit
 
 # How we chose k=7 for the LMPI test statistic
 (pr.XlessequalY = mean(replicate(90000, sample(x,1) < sample(y,1))))
-(k = floor(pr.XlessequalY/(1-pr.XlessequalY)))
+(k = pr.XlessequalY/(1-pr.XlessequalY))
 
 
 # Fisher's statistic
