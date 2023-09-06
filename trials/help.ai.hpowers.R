@@ -329,3 +329,6 @@ plot(mean.incr)
 abline(h = z11, col = "red")
 
 
+mean.incr[(B-500):B]
+z11
+

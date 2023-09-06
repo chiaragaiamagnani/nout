@@ -196,5 +196,5 @@ plot(mean.incr)
 abline(h = z12, col = "red")
 
 
-
-
+mean.incr[(B-500):B]
+z12

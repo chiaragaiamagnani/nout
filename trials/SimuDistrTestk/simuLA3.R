@@ -70,31 +70,7 @@ plot(table(rank3stat)/length(rank3stat),
 rug(rank3stat[1])
 curve(dnorm(x, mean=theta, sd=sqrt(variance)), col="red", add=T)
 axis(side=1, at=rank3stat[1], round(rank3stat[1],3) )
-axis(side=2, at=c(0,0.1), c(0,0.1))
-
-
-
-
-
-# Approximate standard normal
-z11 = 4/45*N^4+16/45*N^3+29/90*N^2+13/30*N-1/5
-z12 = 4/45*N^4+16/45*N^3+19/45*N^2+2/15*N
-
-theta = (N+N*(N-1)/3)
-variance = (N*z11+z12/n)/n^2
-
-# LMPI statistic for k=3
-plot(table(rank3stat)/length(rank3stat),
-     xlab = "LMPI rank statistic for Lehmann's alternative with k=3",
-     ylab = "Frequency",
-     ylim = c(0,0.04),
-     xaxt="n",
-     yaxt="n")
-rug(rank3stat[1])
-curve(dnorm(x, mean=theta, sd=sqrt(variance)), col="red", add=T)
-axis(side=1, at=rank3stat[1], round(rank3stat[1],3) )
 axis(side=2, at=c(0,0.006), c(0,0.006))
-
 
 
 
