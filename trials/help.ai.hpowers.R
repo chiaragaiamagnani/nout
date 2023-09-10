@@ -295,7 +295,6 @@ abline(h = closed, col = "red")
 
 B=10^5
 m = 10
-n = 5
 
 theta = m+m*(m-1)/3
 theta2 = theta^2

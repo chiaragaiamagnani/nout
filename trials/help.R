@@ -823,7 +823,10 @@ for(b in 1:B){
 }
 
 mean(res)
-m+m*(m-1)/3
+(theta = m+m*(m-1)/3)
+mean.incr = sapply(1:B, function(b) mean(res[1:b]))
+plot(mean.incr)
+abline(h = theta, col = "red")
 
 
 
