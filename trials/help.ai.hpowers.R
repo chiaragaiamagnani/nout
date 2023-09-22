@@ -25,9 +25,9 @@ for(b in 1:B){
 }
 
 mean(res)
-closed = 4*(1-(punif(x1, min = 0, max = 2)))+
+(closed = 4*(1-(punif(x1, min = 0, max = 2)))+
   5/2*(m-1)*(1-(punif(x1, min = 0, max = 2))^2)+
-  (m-1)*(m-2)/3*(1-(punif(x1, min = 0, max = 2))^3)
+  (m-1)*(m-2)/3*(1-(punif(x1, min = 0, max = 2))^3))
 
 
 mean.incr = sapply(1:B, function(b) mean(res[1:b]))
@@ -71,9 +71,9 @@ for(b in 1:B){
 }
 
 mean(res)
-closed = (m-2)^2/4*(1-(punif(x1, min = 0, max = 2))^4)+
+(closed = (m-2)^2/4*(1-(punif(x1, min = 0, max = 2))^4)+
   2*(m-2)*(1-(punif(x1, min = 0, max = 2))^3)+
-  9/2*(1-(punif(x1, min = 0, max = 2))^2)
+  9/2*(1-(punif(x1, min = 0, max = 2))^2))
 
 
 mean.incr = sapply(1:B, function(b) mean(res[1:b]))
@@ -240,10 +240,14 @@ closed = 2*(1-punif(x1, min = 0, max = 2))+
   (m-1)*(1-(punif(x1, min = 0, max = 2))^2)+
   (m-1)/3*(1+m)
 
+closed2 = 2*(1-punif(x1, min = 0, max = 2))+
+  (m-1)*(1-(punif(x1, min = 0, max = 2))^2)/2+
+  (m-1)/3*(1+m)
 
 mean.incr = sapply(1:B, function(b) mean(res[1:b]))
 plot(mean.incr)
 abline(h = closed, col = "red")
+
 
 
 
@@ -321,7 +325,7 @@ res = sapply(x1s, function(x) Eh2x1(x)+theta2-2*theta*Ehx1(x))
 
 mean(res)
 
-z11 = 4/45*m^4+16/45*m^3+29/90*m^2+13/30*m-1/5
+(z11 = 4/45*m^4+16/45*m^3+29/90*m^2+13/30*m-1/5)
 
 mean.incr = sapply(1:B, function(b) mean(res[1:b]))
 plot(mean.incr)

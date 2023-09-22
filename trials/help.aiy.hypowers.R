@@ -148,8 +148,8 @@ for(b in 1:B){
 }
 
 mean(res)
-closed = 2*m*punif(y, min = 0, max = 2)+
-  (m-1)*m*(punif(y, min = 0, max = 2))^2
+(closed = 2*m*punif(y, min = 0, max = 2)+
+  (m-1)*m*(punif(y, min = 0, max = 2))^2)
 
 mean.incr = sapply(1:B, function(b) mean(res[1:b]))
 plot(mean.incr)
@@ -189,7 +189,7 @@ res = sapply(ys, function(y) Eh2y(y)+theta2-2*theta*Ehy(y))
 
 mean(res)
 
-z12 = 4/45*m^4+16/45*m^3+19/45*m^2+2/15*m
+(z12 = 4/45*m^4+16/45*m^3+19/45*m^2+2/15*m)
 
 mean.incr = sapply(1:B, function(b) mean(res[1:b]))
 plot(mean.incr)
