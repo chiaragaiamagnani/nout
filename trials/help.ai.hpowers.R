@@ -29,7 +29,6 @@ mean(res)
   5/2*(m-1)*(1-(punif(x1, min = 0, max = 2))^2)+
   (m-1)*(m-2)/3*(1-(punif(x1, min = 0, max = 2))^3))
 
-
 mean.incr = sapply(1:B, function(b) mean(res[1:b]))
 plot(mean.incr)
 abline(h = closed, col = "red")
@@ -75,11 +74,15 @@ mean(res)
   2*(m-2)*(1-(punif(x1, min = 0, max = 2))^3)+
   9/2*(1-(punif(x1, min = 0, max = 2))^2))
 
+(closed2 = (m-2)*(m-3)/4*(1-(punif(x1, min = 0, max = 2))^4)+
+    7/3*(m-2)*(1-(punif(x1, min = 0, max = 2))^3)+
+    9/2*(1-(punif(x1, min = 0, max = 2))^2))
+
 
 mean.incr = sapply(1:B, function(b) mean(res[1:b]))
 plot(mean.incr)
 abline(h = closed, col = "red")
-
+abline(h = closed2, col = "blue")
 
 
 # ---------------------------- E[ai^2] ----------------------------
@@ -112,14 +115,14 @@ for(b in 1:B){
 }
 
 mean(res)
-closed = 2+5/3*(m-2)+(m-3)*(m-2)/4+
+(closed = 2+5/3*(m-2)+(m-3)*(m-2)/4+
   2/3*(m-2)*(1-(punif(x1, min = 0, max = 2))^3)+
-  5/2*(1-(punif(x1, min = 0, max = 2))^2)
-
+  5/2*(1-(punif(x1, min = 0, max = 2))^2))
 
 mean.incr = sapply(1:B, function(b) mean(res[1:b]))
 plot(mean.incr)
 abline(h = closed, col = "red")
+
 
 
 # ---------------------------- E[ai*aj] ----------------------------
@@ -159,9 +162,9 @@ for(b in 1:B){
 }
 
 mean(res)
-closed = 3+7/4*(m-3)+(m-3)*(m-4)/5+
-  7/3*(1-(punif(x1, min = 0, max = 2))^2)+
-  (m-3)/2*(1-(punif(x1, min = 0, max = 2))^4)
+(closed = 3+7/4*(m-3)+(m-3)*(m-4)/5+
+  7/3*(1-(punif(x1, min = 0, max = 2))^3)+
+  (m-3)/2*(1-(punif(x1, min = 0, max = 2))^4))
 
 
 mean.incr = sapply(1:B, function(b) mean(res[1:b]))
@@ -236,18 +239,13 @@ for(b in 1:B){
 }
 
 mean(res)
-closed = 2*(1-punif(x1, min = 0, max = 2))+
+(closed = 2*(1-punif(x1, min = 0, max = 2))+
   (m-1)*(1-(punif(x1, min = 0, max = 2))^2)+
-  (m-1)/3*(1+m)
-
-closed2 = 2*(1-punif(x1, min = 0, max = 2))+
-  (m-1)*(1-(punif(x1, min = 0, max = 2))^2)/2+
-  (m-1)/3*(1+m)
+  (m-1)/3*(1+m))
 
 mean.incr = sapply(1:B, function(b) mean(res[1:b]))
 plot(mean.incr)
 abline(h = closed, col = "red")
-
 
 
 
@@ -281,18 +279,33 @@ for(b in 1:B){
 }
 
 mean(res)
-closed = 1/15*(m^2-1)*(3*m^2-2)+
+
+# closed sbagliato, giusto closed2
+(closed = (m-1)*(m-2)/15*(3*m^2+9*m+16)+
   4*(1-punif(x1, min = 0, max = 2))+
-  (m-1)*14*(1-punif(x1, min = 0, max = 2)^2)+
-  (m-1)*(m-2)*22/3*(1-punif(x1, min = 0, max = 2)^3)+
-  (m-1)*(m-2)*(2*m-5)/2*(1-punif(x1, min = 0, max = 2)^4)
+  14*(m-1)*(1-punif(x1, min = 0, max = 2)^2)+
+  8*(m-1)*(m-2)*(1-punif(x1, min = 0, max = 2)^3)+
+  (m-1)*(m-2)*(m-3)*(1-punif(x1, min = 0, max = 2)^4))
+
+(closed2 = 5/6-4*punif(x1, min = 0, max = 2)+
+  5*punif(x1, min = 0, max = 2)^2-2*punif(x1, min = 0, max = 2)^3+
+  7*m/4-5*punif(x1, min = 0, max = 2)^2*m+
+  3*punif(x1, min = 0, max = 2)^3*m+7/6*m^2-punif(x1, min = 0, max = 2)^3*m^2+m^3/4+
+  1/20*(m-1)*(14-180*punif(x1, min = 0, max = 2)^2-140*punif(x1, min = 0, max = 2)^3*(m-2)+29*m+
+                19*m^2+4*m^3-20*punif(x1, min = 0, max = 2)^4*(6-5*m+m^2)))
+
+(closed3 = (m-1)/15*(3*m^3+3*m^2-2*m-2)+
+    4*(1-punif(x1, min = 0, max = 2))+
+    14*(m-1)*(1-punif(x1, min = 0, max = 2)^2)+
+    8*(m-1)*(m-2)*(1-punif(x1, min = 0, max = 2)^3)+
+    (m-1)*(m-2)*(m-3)*(1-punif(x1, min = 0, max = 2)^4))
 
 
 mean.incr = sapply(1:B, function(b) mean(res[1:b]))
 plot(mean.incr)
 abline(h = closed, col = "red")
-
-
+abline(h = closed2, col = "blue")
+abline(h = closed3, col = "darkgreen")
 
 
 # -------------------------- z11 ----------------------------------------------
@@ -304,11 +317,11 @@ theta = m+m*(m-1)/3
 theta2 = theta^2
 
 Eh2x1 = function(x1){
-  out = 1/15*(m^2-1)*(3*m^2-2)+
+  out = (m-1)/15*(3*m^3+3*m^2-2*m-2)+
     4*(1-punif(x1, min = 0, max = 2))+
-    (m-1)*14*(1-punif(x1, min = 0, max = 2)^2)+
-    (m-1)*(m-2)*22/3*(1-punif(x1, min = 0, max = 2)^3)+
-    (m-1)*(m-2)*(2*m-5)/2*(1-punif(x1, min = 0, max = 2)^4)
+    14*(m-1)*(1-punif(x1, min = 0, max = 2)^2)+
+    8*(m-1)*(m-2)*(1-punif(x1, min = 0, max = 2)^3)+
+    (m-1)*(m-2)*(m-3)*(1-punif(x1, min = 0, max = 2)^4)
   return(out)
 }
 
@@ -325,13 +338,35 @@ res = sapply(x1s, function(x) Eh2x1(x)+theta2-2*theta*Ehx1(x))
 
 mean(res)
 
-(z11 = 4/45*m^4+16/45*m^3+29/90*m^2+13/30*m-1/5)
+(z11 = 4/45*m^4+16/45*m^3+19/45*m^2+2/15*m)
 
 mean.incr = sapply(1:B, function(b) mean(res[1:b]))
 plot(mean.incr)
 abline(h = z11, col = "red")
 
 
-mean.incr[(B-500):B]
-z11
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

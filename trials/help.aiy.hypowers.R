@@ -27,13 +27,14 @@ for(b in 1:B){
 }
 
 mean(res)
-closed = 4*(punif(y, min = 0, max = 2))+
+(closed = 4*(punif(y, min = 0, max = 2))+
   5*(m-1)*(punif(y, min = 0, max = 2))^2+
-  (m-2)*(m-1)*(punif(y, min = 0, max = 2))^3
+  (m-2)*(m-1)*(punif(y, min = 0, max = 2))^3)
 
 mean.incr = sapply(1:B, function(b) mean(res[1:b]))
 plot(mean.incr)
 abline(h = closed, col = "red")
+
 
 
 # ---------------------------- E[ai_y*aj_y] ----------------------------
@@ -71,11 +72,9 @@ for(b in 1:B){
 }
 
 mean(res)
-closed = 9*(punif(y, min = 0, max = 2))^2+
+(closed = 9*(punif(y, min = 0, max = 2))^2+
   7*(m-2)*(punif(y, min = 0, max = 2))^3+
-  (m-2)*(m-3)*(punif(y, min = 0, max = 2))^4
-
-
+  (m-2)*(m-3)*(punif(y, min = 0, max = 2))^4)
 
 mean.incr = sapply(1:B, function(b) mean(res[1:b]))
 plot(mean.incr)
@@ -108,10 +107,10 @@ for(b in 1:B){
 }
 
 mean(res)
-closed = 4*m*punif(y, min = 0, max = 2)+
+(closed = 4*m*punif(y, min = 0, max = 2)+
   14*(m-1)*m*(punif(y, min = 0, max = 2))^2+
   8*(m-2)*(m-1)*m*(punif(y, min = 0, max = 2))^3+
-  m*(m-1)*(m-2)*(m-3)*(punif(y, min = 0, max = 2))^4
+  m*(m-1)*(m-2)*(m-3)*(punif(y, min = 0, max = 2))^4)
 
 mean.incr = sapply(1:B, function(b) mean(res[1:b]))
 plot(mean.incr)
@@ -196,5 +195,4 @@ plot(mean.incr)
 abline(h = z12, col = "red")
 
 
-mean.incr[(B-500):B]
-z12
+
