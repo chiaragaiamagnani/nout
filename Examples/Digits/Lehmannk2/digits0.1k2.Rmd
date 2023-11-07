@@ -227,7 +227,7 @@ ggplot(df_long_power, aes(x = x, y = y, color = group)) +
 
 # Table unconditional power 
 thetas = seq(from = 0, to = 1, by = 0.02)
-probsn1 = sapply(theta, 
+probsn1 = sapply(thetas, 
                  function(theta) sapply(1:n, 
                                         function(k) choose(n,k)*(1-theta)^(n-k)*theta^(k)))
 colnames(probsn1) = as.character(thetas)
