@@ -27,26 +27,26 @@
 #' d_MannWhitneyk3(S_Y=Sy, S_X=Sx, alpha=0.1)
 #'
 #'
+#'
+#'
 d_MannWhitneyk3 = function(S_Y,S_X,alpha){
   n = length(S_Y)
   m = length(S_X)
-
-  S_Z = c(S_X, S_Y)
 
   crit = sapply(1:n, function(h){
     N = m+h
     lambda = m/N
     theta = (4*(2-lambda))/(3*(1-lambda)*lambda)
     variance = 64/(45*N*lambda^3*(1-lambda)^3)
-    quantile = stats::qnorm(alpha, mean=(choose(h,2)*choose(m,2))/N*theta+h*(2*h^2-3*h+1)/6-h*(h-1)/2,
+    quantile = stats::qnorm(alpha, mean=(choose(h,2)*choose(m,2))/N*theta+h*(2*h^2-3*h+1)/6+h*(h-1)/2,
                             sd = (choose(h,2)*choose(m,2))/N*sqrt(variance), lower.tail = F)
     return(quantile)
-    })
+  })
 
-  R_i = sapply(1:n, function(i) sum(S_Y[i]>S_Z))
-  U_i = sapply(1:n, function(i) sum(S_Y[i]>S_X))
-  R2_i = R_i^2
-  T3_i = sort(R_i+R2_i, decreasing = T)
+  S_Z = c(S_X, S_Y)
+  R = rank(S_Z)[(m+1):(m+n)]-1
+  R2 = R^2
+  T3_i = sort(R+R2, decreasing = T)
 
   # For each k in {1,...,m} consider the worst case scenario
   # (consider the k smallest U_i)
@@ -57,3 +57,7 @@ d_MannWhitneyk3 = function(S_Y,S_X,alpha){
   return(d)
 
 }
+
+
+
+
