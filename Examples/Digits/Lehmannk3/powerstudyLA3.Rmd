@@ -178,9 +178,9 @@ set.seed(321)
 
 # Initializing parameters
 B = 10^4
-l = 199
-m = 199
-n = 20
+l = 1999
+m = 1999
+n = 200
 alpha = n/(m+1)
 n1s = seq(from=0, to=n, by=1)
 
