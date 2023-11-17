@@ -1,14 +1,12 @@
 ---
-title: "Power study with Lehmann's alternative with $k=3$"
-author: "Chiara Gaia Magnani"
-date: "`r Sys.Date()`"
+title: "Comparison between different local tests: Simes, Simes with Storey and Wilcoxon-Mann-Whitney using the Lehmann alternative distribution with k=3"
 output: pdf_document
+date: "`r Sys.Date()`"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
 
 The aim is to compare on real datasets the performance of three closed testing procedures, which respectively use Simes local test with and without Storey estimator for the proportion of true null hypotheses and Wilcoxon-Mann-Whitney local test. We will simulate outliers distribution so that it will be to the Lehmann's alternative with $k=3$. Denoting inliers distribution by $F$, we are going to simulate the outliers distribution corresponding to $F^k$ with $k=3$ in order to perform a power analysis and to show that closed testing procedure with LMPI test statistic $T_3$ as local test is more powerful than closed testing with Simes local test with and without Storey estimator and than closed testing with Wilcoxon-Mann-Whitney local test.
 
@@ -177,14 +175,128 @@ The dataset is available at http://odds.cs.stonybrook.edu/pendigits-dataset.
 set.seed(321)
 
 # Initializing parameters
-B = 10^4
+B = 10^3
 l = 1999
 m = 1999
 n = 200
 alpha = n/(m+1)
 n1s = seq(from=0, to=n, by=1)
 
+
+data = readMat(paste0(pathDatasets,"\\pendigits.mat"))
+dataset = cbind(data$X, data$y); colnames(dataset)[ncol(dataset)] = "y"
+in_ind = which(dataset[,ncol(dataset)]==0)
+out_ind = which(dataset[,ncol(dataset)]==1)
+theta = length(out_ind)/nrow(dataset) # proportion of outliers in the entire dataset
+
+cluster <- makeCluster(parallel::detectCores())
+registerDoSNOW(cluster)
+clusterEvalQ(cluster, {list(library(isotree), library(nout))})
+clusterExport(cluster, list("n", "m", "l", "in_ind", "out_ind", "dataset", "alpha"))
+
+modeltrain = TrainingIsoForest(l=l, dataset=dataset)
+res = lapply(1:length(n1s), 
+             function(j) CompareMethodLehmannOutliersk3(B=B, k=3, n1=n1s[j], n=n, 
+                                                        dataset=dataset,
+                                                        isofo.model=modeltrain$model, 
+                                                        out_ind=out_ind, 
+                                                        inlier_remaining=modeltrain$inlier_remaining))
+stopCluster(cluster)
+
+results = compact_resultsk3(res)
+
+d_BH = vector()
+d_StoBH = vector()
+d_Sim = vector()
+d_StoSimes = vector()
+d_WMW = vector()
+d_T3 = vector()
+
+pow_BH = vector()
+pow_StoBH = vector()
+pow_Sim = vector()
+pow_StoSimes = vector()
+pow_WMW = vector()
+pow_T3 = vector()
+
+for(j in 1:length(n1s)){
+  d_BH[j] = results[[j]]$mean.lb.d[1]
+  d_StoBH[j] = results[[j]]$mean.lb.d[2]
+  d_Sim[j] = results[[j]]$mean.lb.d[3]
+  d_StoSimes[j] = results[[j]]$mean.lb.d[4]
+  d_WMW[j] = results[[j]]$mean.lb.d[5]
+  d_T3[j] = results[[j]]$mean.lb.d[6]
+  
+  pow_BH[j] = results[[j]]$mean.powerGlobalNull[1]
+  pow_StoBH[j] = results[[j]]$mean.powerGlobalNull[2]
+  pow_Sim[j] = results[[j]]$mean.powerGlobalNull[3]
+  pow_StoSimes[j] = results[[j]]$mean.powerGlobalNull[4]
+  pow_WMW[j] = results[[j]]$mean.powerGlobalNull[5]
+  pow_T3[j] = results[[j]]$mean.powerGlobalNull[6]
+}
+
+# Plot discoveries conditional on n1
+df <- data.frame(
+  x = n1s,
+  BH = d_BH,
+  StoreyBH = d_StoBH,
+  Simes_CT = d_Sim,
+  StoreySimes_CT = d_StoSimes,
+  WMW_CT = d_WMW,
+  T3_CT = d_T3
+)
+df_long <- tidyr::pivot_longer(df, cols = -x, names_to = "group", values_to = "y")
+
+ggplot(df_long, aes(x = x, y = y, color = group)) +
+  geom_line() +
+  geom_point()+
+  scale_color_manual(values = c("#DC143C", "#FFA07A", "#808000", "#BDB76B", 5, "blue")) +
+  labs(x = "n1", y = "d", title = "Mean of the number of discoveries on B replications") +
+  theme_minimal() +
+  theme(legend.title = element_blank())
+
+
+# Plot power conditional on n1
+dfpower <- data.frame(
+  x = n1s,
+  BH = pow_BH,
+  StoreyBH = pow_StoBH,
+  WMW_CT = pow_WMW,
+  T3_CT = pow_T3
+)
+df_long_power <- tidyr::pivot_longer(dfpower, cols = -x, names_to = "group", values_to = "y")
+
+# Plot the lines with different colors and legends
+ggplot(df_long_power, aes(x = x, y = y, color = group)) +
+  geom_line() +
+  geom_point()+
+  scale_color_manual(values = c("#DC143C","#FFA07A",5, "blue")) +
+  labs(x = "n1", y = "power", title = "Mean of the power conditional on n1 values on B replications") +
+  theme_minimal() +
+  theme(legend.title = element_blank())
+
+
+# Table unconditional power 
+thetas = seq(from = 0, to = 1, by = 0.02)
+probsn1 = sapply(thetas, 
+                 function(theta) sapply(1:n, 
+                                        function(k) choose(n,k)*(1-theta)^(n-k)*theta^(k)))
+colnames(probsn1) = as.character(thetas)
+rownames(probsn1) = as.character(1:n)
+unconditional.power = cbind("uncond.pow_BH" = apply(pow_BH[-1]*probsn1, MARGIN = 2, sum),
+                            "uncond.pow_StoreyBH" = apply(pow_StoBH[-1]*probsn1, MARGIN = 2, sum),
+                            "uncond.pow_WMW" = apply(pow_WMW[-1]*probsn1, MARGIN = 2, sum),
+                            "uncond.pow_T3" = apply(pow_T3[-1]*probsn1, MARGIN = 2, sum))
+print(unconditional.power)
+
+resDigits0.1k3 = list("raw.res"=res, 
+                      "unconditional.power" = unconditional.power, 
+                      "compact.results" = results)
+save(resDigits0.1k3, file="~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3")
+
+
 ```
+
 
 
 ```{r warning=FALSE, message=FALSE, eval=FALSE}
@@ -304,9 +416,9 @@ save(resDigits0.1k3, file="~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3")
 
 
 
-```{r warning=FALSE, message=FALSE, eval=FALSE}
+```{r warning=FALSE, message=FALSE}
 
-load(file="~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3")
+# load(file="~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3")
 
 # Compacting intermediate results in a matrix
 
@@ -376,13 +488,8 @@ save(matrixDigits0.1k3,
 
 
 
-
-
-
-
-
 ```{r warning=FALSE, message=FALSE}
-load(file = paste0("~/nout/Examples/Digits/Lehmannk3","/matrixDigits0.1k3"))
+#load(file = paste0("~/nout/Examples/Digits/Lehmannk3","/matrixDigits0.1k3"))
 
 res = matrixDigits0.1k3
 
@@ -453,6 +560,4 @@ ggplot(df_long_power, aes(x = x, y = y, color = group)) +
   theme(legend.title = element_blank())
 
 ```
-
-
 
