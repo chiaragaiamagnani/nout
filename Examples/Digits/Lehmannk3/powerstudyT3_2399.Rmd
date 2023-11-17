@@ -13,21 +13,21 @@ The aim is to compare on real datasets the performance of three closed testing p
 ## Paths
 ```{r warning=FALSE, message=FALSE}
 
-# pathDatasets = file.path("C:", "Users", "chiar", "Documents", 
-#                          "BiomJ - RankTestsForOutlierDetection", "R code", "Datasets",
-#                          fsep="\\")
-# 
-# pathResults = file.path("C:", "Users", "chiar", "Documents", 
-#                         "BiomJ - RankTestsForOutlierDetection", "R code", fsep="\\")
-
-pathDatasets = file.path("G:", "Il mio Drive", "PHD", "Progetto di ricerca", 
-                         "RankTestsForOutlierDetection",
+pathDatasets = file.path("C:", "Users", "chiar", "Documents",
                          "BiomJ - RankTestsForOutlierDetection", "R code", "Datasets",
                          fsep="\\")
 
-pathResults = file.path("G:", "Il mio Drive", "PHD", "Progetto di ricerca", 
-                        "RankTestsForOutlierDetection",
+pathResults = file.path("C:", "Users", "chiar", "Documents",
                         "BiomJ - RankTestsForOutlierDetection", "R code", fsep="\\")
+
+# pathDatasets = file.path("G:", "Il mio Drive", "PHD", "Progetto di ricerca", 
+#                          "RankTestsForOutlierDetection",
+#                          "BiomJ - RankTestsForOutlierDetection", "R code", "Datasets",
+#                          fsep="\\")
+# 
+# pathResults = file.path("G:", "Il mio Drive", "PHD", "Progetto di ricerca", 
+#                         "RankTestsForOutlierDetection",
+#                         "BiomJ - RankTestsForOutlierDetection", "R code", fsep="\\")
 
 ```
 
@@ -175,10 +175,10 @@ The dataset is available at http://odds.cs.stonybrook.edu/pendigits-dataset.
 set.seed(321)
 
 # Initializing parameters
-B = 5
-l = 2999
-m = 2999
-n = 300
+B = 10^3
+l = 2399
+m = 2399
+n = 240
 alpha = n/(m+1)
 n1s = seq(from=0, to=n, by=1)
 
@@ -289,10 +289,10 @@ unconditional.power = cbind("uncond.pow_BH" = apply(pow_BH[-1]*probsn1, MARGIN =
                             "uncond.pow_T3" = apply(pow_T3[-1]*probsn1, MARGIN = 2, sum))
 print(unconditional.power)
 
-resDigits0.1k3_2999 = list("raw.res"=res, 
+resDigits0.1k3_2399 = list("raw.res"=res, 
                       "unconditional.power" = unconditional.power, 
                       "compact.results" = results)
-save(resDigits0.1k3_2999, file="~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3_2999")
+save(resDigits0.1k3_2399, file="~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3_2399")
 
 
 ```
@@ -301,7 +301,7 @@ save(resDigits0.1k3_2999, file="~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3_
 
 ```{r warning=FALSE, message=FALSE, eval=FALSE}
 
-load(file="~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3_2999")
+load(file="~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3_2399")
 
 # Compacting intermediate results in a matrix
 
@@ -321,19 +321,19 @@ pow.rejGlob_T3 = vector()
 
 
 for(j in 1:length(n1s)){
-  d_BH[j] = resDigits0.1k3_2999$compact.results[[j]]$mean.lb.d[1]
-  d_StoBH[j] = resDigits0.1k3_2999$compact.results[[j]]$mean.lb.d[2]
-  d_Sim[j] = resDigits0.1k3_2999$compact.results[[j]]$mean.lb.d[3]
-  d_StoSimes[j] = resDigits0.1k3_2999$compact.results[[j]]$mean.lb.d[4]
-  d_WMW[j] = resDigits0.1k3_2999$compact.results[[j]]$mean.lb.d[5]
-  d_T3[j] = resDigits0.1k3_2999$compact.results[[j]]$mean.lb.d[6]
+  d_BH[j] = resDigits0.1k3_2399$compact.results[[j]]$mean.lb.d[1]
+  d_StoBH[j] = resDigits0.1k3_2399$compact.results[[j]]$mean.lb.d[2]
+  d_Sim[j] = resDigits0.1k3_2399$compact.results[[j]]$mean.lb.d[3]
+  d_StoSimes[j] = resDigits0.1k3_2399$compact.results[[j]]$mean.lb.d[4]
+  d_WMW[j] = resDigits0.1k3_2399$compact.results[[j]]$mean.lb.d[5]
+  d_T3[j] = resDigits0.1k3_2399$compact.results[[j]]$mean.lb.d[6]
   
-  pow.rejGlob_BH[j] = resDigits0.1k3_2999$compact.results[[j]]$mean.powerGlobalNull[1]
-  pow.rejGlob_StoBH[j] = resDigits0.1k3_2999$compact.results[[j]]$mean.powerGlobalNull[2]
-  pow.rejGlob_Sim[j] = resDigits0.1k3_2999$compact.results[[j]]$mean.powerGlobalNull[3]
-  pow.rejGlob_StoSimes[j] = resDigits0.1k3_2999$compact.results[[j]]$mean.powerGlobalNull[4]
-  pow.rejGlob_WMW[j] = resDigits0.1k3_2999$compact.results[[j]]$mean.powerGlobalNull[5]
-  pow.rejGlob_T3[j] = resDigits0.1k3_2999$compact.results[[j]]$mean.powerGlobalNull[6]
+  pow.rejGlob_BH[j] = resDigits0.1k3_2399$compact.results[[j]]$mean.powerGlobalNull[1]
+  pow.rejGlob_StoBH[j] = resDigits0.1k3_2399$compact.results[[j]]$mean.powerGlobalNull[2]
+  pow.rejGlob_Sim[j] = resDigits0.1k3_2399$compact.results[[j]]$mean.powerGlobalNull[3]
+  pow.rejGlob_StoSimes[j] = resDigits0.1k3_2399$compact.results[[j]]$mean.powerGlobalNull[4]
+  pow.rejGlob_WMW[j] = resDigits0.1k3_2399$compact.results[[j]]$mean.powerGlobalNull[5]
+  pow.rejGlob_T3[j] = resDigits0.1k3_2399$compact.results[[j]]$mean.powerGlobalNull[6]
   
 }
 
@@ -360,10 +360,10 @@ pow.rejGlob[,4] = pow.rejGlob_StoSimes
 pow.rejGlob[,5] = pow.rejGlob_WMW
 pow.rejGlob[,6] = pow.rejGlob_T3
 
-matrixDigits0.1k3_2999 = list("lb.d.matrix" = lb.d, 
+matrixDigits0.1k3_2399 = list("lb.d.matrix" = lb.d, 
                          "pow.rejGlob.matrix" = pow.rejGlob)
-save(matrixDigits0.1k3_2999, 
-     file = paste0("~/nout/Examples/Digits/Lehmannk3","/matrixDigits0.1k3_2999"))
+save(matrixDigits0.1k3_2399, 
+     file = paste0("~/nout/Examples/Digits/Lehmannk3","/matrixDigits0.1k3_2399"))
 
 ```
 
@@ -372,9 +372,9 @@ save(matrixDigits0.1k3_2999,
 
 
 ```{r warning=FALSE, message=FALSE}
-load(file = paste0("~/nout/Examples/Digits/Lehmannk3","/matrixDigits0.1k3_2999"))
+#load(file = paste0("~/nout/Examples/Digits/Lehmannk3","/matrixDigits0.1k3_2399"))
 
-res = matrixDigits0.1k3_2999
+res = matrixDigits0.1k3_2399
 
 thetas = seq(0,1, length.out=51)
 
