@@ -13,21 +13,21 @@ The aim is to compare on real datasets the performance of three closed testing p
 ## Paths
 ```{r warning=FALSE, message=FALSE}
 
-pathDatasets = file.path("C:", "Users", "chiar", "Documents",
-                         "BiomJ - RankTestsForOutlierDetection", "R code", "Datasets",
-                         fsep="\\")
-
-pathResults = file.path("C:", "Users", "chiar", "Documents",
-                        "BiomJ - RankTestsForOutlierDetection", "R code", fsep="\\")
-
-# pathDatasets = file.path("G:", "Il mio Drive", "PHD", "Progetto di ricerca", 
-#                          "RankTestsForOutlierDetection",
+# pathDatasets = file.path("C:", "Users", "chiar", "Documents",
 #                          "BiomJ - RankTestsForOutlierDetection", "R code", "Datasets",
 #                          fsep="\\")
 # 
-# pathResults = file.path("G:", "Il mio Drive", "PHD", "Progetto di ricerca", 
-#                         "RankTestsForOutlierDetection",
+# pathResults = file.path("C:", "Users", "chiar", "Documents",
 #                         "BiomJ - RankTestsForOutlierDetection", "R code", fsep="\\")
+
+pathDatasets = file.path("G:", "Il mio Drive", "PHD", "Progetto di ricerca",
+                         "RankTestsForOutlierDetection",
+                         "BiomJ - RankTestsForOutlierDetection", "R code", "Datasets",
+                         fsep="\\")
+
+pathResults = file.path("G:", "Il mio Drive", "PHD", "Progetto di ricerca",
+                        "RankTestsForOutlierDetection",
+                        "BiomJ - RankTestsForOutlierDetection", "R code", fsep="\\")
 
 ```
 
@@ -189,6 +189,10 @@ in_ind = which(dataset[,ncol(dataset)]==0)
 out_ind = which(dataset[,ncol(dataset)]==1)
 theta = length(out_ind)/nrow(dataset) # proportion of outliers in the entire dataset
 
+```
+
+
+```{r warning=FALSE, message=FALSE, eval=FALSE}
 cluster <- makeCluster(parallel::detectCores())
 registerDoSNOW(cluster)
 clusterEvalQ(cluster, {list(library(isotree), library(nout))})
@@ -301,7 +305,7 @@ save(resDigits0.1k3_2399, file="~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3_
 
 ```{r warning=FALSE, message=FALSE, eval=FALSE}
 
-load(file="~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3_2399")
+# load(file="~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3_2399")
 
 # Compacting intermediate results in a matrix
 
@@ -372,7 +376,7 @@ save(matrixDigits0.1k3_2399,
 
 
 ```{r warning=FALSE, message=FALSE}
-#load(file = paste0("~/nout/Examples/Digits/Lehmannk3","/matrixDigits0.1k3_2399"))
+load(file = paste0("~/nout/Examples/Digits/Lehmannk3","/matrixDigits0.1k3_2399"))
 
 res = matrixDigits0.1k3_2399
 
@@ -441,6 +445,11 @@ ggplot(df_long_power, aes(x = x, y = y, color = group)) +
   labs(x = "Number of outliers n1", y = "Power to reject the global null") +
   theme_minimal() +
   theme(legend.title = element_blank())
+
+
+pow_WMW
+
+pow_T3
 
 ```
 
