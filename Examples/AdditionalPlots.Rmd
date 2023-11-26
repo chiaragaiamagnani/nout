@@ -1,29 +1,16 @@
-# Further analysis on Digits dataset
+---
+title: "Power analysis of closed testing methods with Simes, Wilcoxon-Mann-Whitney and LMPI T3 as local tests considering Lehmann's alternative of order k"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
 
-# ---------------------------------------------------------------------------------- #
-# 1. Ties in the score vector?
-# ---------------------------------------------------------------------------------- #
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
-load("~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3_1999")
+## Libraries and functions
 
-m = 1999
-n = 200
-B = 10^4
-
-S_Z = vector()
-
-for(n1 in 1:(n+1)){
-  S_Z[n1] = mean(unlist(resDigits0.1k3_1999$raw.res[[n1]]["uniques",]))/(m+n)
-}
-
-S_Z
-
-
-
-
-# ---------------------------------------------------------------------------------- #
-# 2. Same plot as in Fig.3 of the arxiv with k=2,3,4,5 and theta = 1% and theta = 5%
-# ---------------------------------------------------------------------------------- #
+```{r warning=FALSE, message=FALSE}
 
 library(tidyverse)
 library(doSNOW)
@@ -150,15 +137,14 @@ compact_results = function(res, ks, n1.index, n){
 }
 
 
+```
 
 
-
-
-
+```{r warning=FALSE, message=FALSE}
 
 set.seed(321)
 
-B = 10
+B = 10^4
 
 m = 1999
 n = 200
@@ -166,33 +152,25 @@ alpha = n/(m+1)
 
 thetas = c(0.01, 0.05, 0.1)
 n1s = floor(n*thetas)
-ks = 2:5
 
-# Create a data frame of all combinations of ks and thetas
-# gridd <- expand.grid(k = ks, n1 = n1s)
+# Order of the Lehmann's alternative
+ks = 2:5
 
 cluster <- makeCluster(parallel::detectCores()-1)
 registerDoSNOW(cluster)
 clusterEvalQ(cluster, {list(library(isotree), library(nout))})
 clusterExport(cluster, list("n", "m", "ks", "n1s", "alpha", "gen.data", "gen.scores_Lehmann"))
 
-# Apply the CompareT2T3 function to each row of the combinations data frame
 res <- lapply(1:length(ks), function(i){
   lapply( 1:length(n1s), function(j) compute_lb.d(B=B, m=m, n=n,
                                                   n1=n1s[j], k=ks[i], alpha=alpha))
   }
 )
 
-
-
-
 stopCluster(cluster)
-
 
 results = lapply(1:length(n1s),
                  function(j) compact_results(res=res, ks=ks, n=n, n1.index=j) )
-
-
 
 pp = list()
 for(i in 1:length(n1s)){
@@ -223,9 +201,6 @@ for(i in 1:length(n1s)){
   print(cbind(pow_BH, pow_StoBH, pow_WMW, pow_T3))
 }
 
-
-
-
-
+```
 
 
