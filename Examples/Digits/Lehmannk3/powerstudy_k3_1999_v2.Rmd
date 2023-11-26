@@ -13,21 +13,21 @@ The aim is to compare on real datasets the performance of three closed testing p
 ## Paths
 ```{r warning=FALSE, message=FALSE}
 
-pathDatasets = file.path("C:", "Users", "chiar", "Documents",
-                         "BiomJ - RankTestsForOutlierDetection", "R code", "Datasets",
-                         fsep="\\")
-
-pathResults = file.path("C:", "Users", "chiar", "Documents",
-                        "BiomJ - RankTestsForOutlierDetection", "R code", fsep="\\")
-
-# pathDatasets = file.path("G:", "Il mio Drive", "PHD", "Progetto di ricerca", 
-#                          "RankTestsForOutlierDetection",
+# pathDatasets = file.path("C:", "Users", "chiar", "Documents",
 #                          "BiomJ - RankTestsForOutlierDetection", "R code", "Datasets",
 #                          fsep="\\")
 # 
-# pathResults = file.path("G:", "Il mio Drive", "PHD", "Progetto di ricerca", 
-#                         "RankTestsForOutlierDetection",
+# pathResults = file.path("C:", "Users", "chiar", "Documents",
 #                         "BiomJ - RankTestsForOutlierDetection", "R code", fsep="\\")
+
+pathDatasets = file.path("G:", "Il mio Drive", "PHD", "Progetto di ricerca",
+                         "RankTestsForOutlierDetection",
+                         "BiomJ - RankTestsForOutlierDetection", "R code", "Datasets",
+                         fsep="\\")
+
+pathResults = file.path("G:", "Il mio Drive", "PHD", "Progetto di ricerca",
+                        "RankTestsForOutlierDetection",
+                        "BiomJ - RankTestsForOutlierDetection", "R code", fsep="\\")
 
 ```
 
@@ -84,9 +84,11 @@ TrainingIsoForest = function(l, dataset){
   
   tr_ind = sample(in_ind, size = l)
   tr = dataset[tr_ind,]
-  isofo.model = isotree::isolation.forest(tr, ndim=ncol(dataset), ntrees=10, nthreads=1,
-                            scoring_metric = "depth", output_score = TRUE)$model
-  in_index2 = setdiff(in_ind, tr_ind)
+  isofo.model = isotree::isolation.forest(tr, ndim=ncol(dataset), ntrees=10, 
+                                          nthreads=1,
+                                          scoring_metric = "depth", 
+                                          output_score = TRUE)$model
+  in_index2 = in_ind[! (in:ind %in% tr_ind)]
   
   return(list("model"=isofo.model, "inlier_remaining" = in_index2))
   
@@ -113,7 +115,7 @@ CompareMethodLehmannOutliersk3 = function(B, n1, n, k, inliers_score, isofo.mode
     N = n0 + m + k*n1
     
     S_cal = sample(inliers_score, size = N)
-    S_remaining = inliers_score[! inliers_score %in% S_cal]
+    S_remaining = inliers_score[! (inliers_score %in% S_cal)]
 
     if(n1==0) 
       S_te = sample(S_remaining, size = n0)
@@ -177,7 +179,7 @@ theta = length(out_ind)/nrow(dataset) # proportion of outliers in the entire dat
 
 ```{r warning=FALSE, message=FALSE} 
 #,eval = FALSE
-cluster <- makeCluster(parallel::detectCores()-1)
+cluster <- makeCluster(parallel::detectCores())
 registerDoSNOW(cluster)
 clusterEvalQ(cluster, {list(library(isotree), library(nout))})
 clusterExport(cluster, list("n", "m", "l", "in_ind", "out_ind", "dataset", "alpha"))
@@ -185,8 +187,8 @@ clusterExport(cluster, list("n", "m", "l", "in_ind", "out_ind", "dataset", "alph
 modeltrain = TrainingIsoForest(l=l, dataset=dataset)
 scores = PredictIsoForest(isofo=modeltrain, dataset=dataset)
 
-scores_1999 = scores
-save(scores_1999, file="~/nout/Examples/Digits/Lehmannk3/scores_1999")
+scores_1999_v2 = scores
+save(scores_1999_v2, file="~/nout/Examples/Digits/Lehmannk3/scores_1999_v2")
 
 stopCluster(cluster)
 
@@ -194,7 +196,7 @@ stopCluster(cluster)
 
 
 ```{r warning=FALSE, message=FALSE}
-cluster <- makeCluster(parallel::detectCores()-1)
+cluster <- makeCluster(parallel::detectCores())
 registerDoSNOW(cluster)
 clusterEvalQ(cluster, {list(library(isotree), library(nout))})
 clusterExport(cluster, list("n", "m", "l", "in_ind", "out_ind", "dataset", "alpha"))
@@ -205,8 +207,9 @@ res = lapply(1:length(n1s),
                                                         isofo.model=modeltrain$model,                                                      inliers_score=modeltrain$inlier_remaining))
 stopCluster(cluster)
 
-resDigits0.1k3_1999 = list("raw.res"=res)
-save(resDigits0.1k3_1999, file="~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3_1999")
+resDigits0.1k3_1999_v2 = list("raw.res"=res)
+save(resDigits0.1k3_1999_v2,
+     file="~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3_1999_v2")
 
 results = compact_resultsk3(res)
 
@@ -362,10 +365,10 @@ pow.rejGlob[,4] = pow.rejGlob_StoSimes
 pow.rejGlob[,5] = pow.rejGlob_WMW
 pow.rejGlob[,6] = pow.rejGlob_T3
 
-matrixDigits0.1k3_1999 = list("lb.d.matrix" = lb.d, 
+matrixDigits0.1k3_1999_v2 = list("lb.d.matrix" = lb.d, 
                               "pow.rejGlob.matrix" = pow.rejGlob)
-save(matrixDigits0.1k3_1999, 
-     file = paste0("~/nout/Examples/Digits/Lehmannk3","/matrixDigits0.1k3_1999"))
+save(matrixDigits0.1k3_1999_v2, 
+     file = paste0("~/nout/Examples/Digits/Lehmannk3","/matrixDigits0.1k3_1999_v2"))
 
 ```
 
@@ -376,7 +379,7 @@ save(matrixDigits0.1k3_1999,
 ```{r warning=FALSE, message=FALSE}
 # load(file = paste0("~/nout/Examples/Digits/Lehmannk3","/matrixDigits0.1k3_1999"))
 
-res = matrixDigits0.1k3_1999
+res = matrixDigits0.1k3_1999_v2
 
 thetas = seq(0,1, length.out=51)
 
@@ -422,7 +425,7 @@ df_long <- tidyr::pivot_longer(df, cols = -x, names_to = "group", values_to = "y
 ggplot(df_long, aes(x = x, y = y, color = group)) +
   geom_line(size=1) +
   scale_color_manual(values = c("black","gray","blue", "cyan","purple","red")) +
-  labs(x = "Number of outliers n1", y = "Average lower bound d") + 
+  labs(x = "theta", y = "Average lower bound d") + 
   theme_minimal() +
   theme(legend.title = element_blank())
 
@@ -440,7 +443,7 @@ df_long_power <- tidyr::pivot_longer(dfpower, cols = -x, names_to = "group", val
 ggplot(df_long_power, aes(x = x, y = y, color = group)) +
   geom_line(size=1) +
   scale_color_manual(values = c("blue","black","purple","red")) +
-  labs(x = "Number of outliers n1", y = "Power to reject the global null") +
+  labs(x = "theta", y = "Power to reject the global null") +
   theme_minimal() +
   theme(legend.title = element_blank())
 
