@@ -88,7 +88,7 @@ TrainingIsoForest = function(l, dataset){
                                           nthreads=1,
                                           scoring_metric = "depth", 
                                           output_score = TRUE)$model
-  in_index2 = in_ind[! (in:ind %in% tr_ind)]
+  in_index2 = in_ind[! (in_ind %in% tr_ind)]
   
   return(list("model"=isofo.model, "inlier_remaining" = in_index2))
   
@@ -187,10 +187,10 @@ clusterExport(cluster, list("n", "m", "l", "in_ind", "out_ind", "dataset", "alph
 modeltrain = TrainingIsoForest(l=l, dataset=dataset)
 scores = PredictIsoForest(isofo=modeltrain, dataset=dataset)
 
+stopCluster(cluster)
 scores_1999_v2 = scores
 save(scores_1999_v2, file="~/nout/Examples/Digits/Lehmannk3/scores_1999_v2")
 
-stopCluster(cluster)
 
 ```
 
@@ -204,7 +204,8 @@ clusterExport(cluster, list("n", "m", "l", "in_ind", "out_ind", "dataset", "alph
 res = lapply(1:length(n1s), 
              function(j) CompareMethodLehmannOutliersk3(B=B, k=3, n1=n1s[j], n=n, 
                                                         dataset=dataset,
-                                                        isofo.model=modeltrain$model,                                                      inliers_score=modeltrain$inlier_remaining))
+                                                        isofo.model=modeltrain$model,
+                                                        inliers_score=scores$inliers.score))
 stopCluster(cluster)
 
 resDigits0.1k3_1999_v2 = list("raw.res"=res)
