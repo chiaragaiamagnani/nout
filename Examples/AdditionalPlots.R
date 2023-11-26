@@ -49,7 +49,7 @@ gen.scores_Lehmann <- function(m, n, n1, k){
   }
 
   if(0<n1&n1<n){
-    augmented.S_Z = gen.data(m,n-n1+n1*k)
+    augmented.S_Z = gen.data(m=m,n=n-n1+n1*k)
     S_cal = augmented.S_Z[1:m]
     augmented.S_te = augmented.S_Z[(m+1):length(augmented.S_Z)]
     inlier.S_te = augmented.S_te[1:(n-n1)]
@@ -66,13 +66,15 @@ gen.scores_Lehmann <- function(m, n, n1, k){
 
 
 
-compute_lb.d = function(B, theta, m, n, n1, k, alpha){
+compute_lb.d = function(B, m, n, n1, k, alpha){
 
   foreach(b = 1:B, .combine=cbind) %dopar% {
 
     scores = gen.scores_Lehmann(m, n, n1, k)
     S_cal = scores$S_cal
     S_te = scores$S_te
+    d_T3 = nout::d_MannWhitneyk3(S_Y = S_te, S_X = S_cal, alpha=alpha)
+    d_T3
 
     d_WMW = nout::d_MannWhitney(S_Y = S_te, S_X = S_cal, alpha=alpha)
     d_T3 = nout::d_MannWhitneyk3(S_Y = S_te, S_X = S_cal, alpha=alpha)
