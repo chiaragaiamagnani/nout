@@ -110,12 +110,13 @@ PredictIsoForest = function(isofo, dataset){
 CompareMethodLehmannOutliersk3 = function(B, n1, n, k, inliers_score, isofo.model, dataset){
   
   n0 = n-n1
+  N = n0 + m + k*n1
+
   foreach(b = 1:B, .combine=cbind) %dopar% {
     
-    N = n0 + m + k*n1
-    
-    S_cal = sample(inliers_score, size = N)
-    S_remaining = inliers_score[! (inliers_score %in% S_cal)]
+    S_cal.te = sample(inliers_score, size = N)
+    S_cal = S_cal.te[1:m]
+    S_remaining = S_cal.te[(m+1):N]
 
     if(n1==0) 
       S_te = sample(S_remaining, size = n0)
@@ -125,25 +126,24 @@ CompareMethodLehmannOutliersk3 = function(B, n1, n, k, inliers_score, isofo.mode
       S_te = c(S_remaining[(1+k*n1):(n0+k*n1)], 
                     sapply(1:n1, FUN=function(i) max(S_remaining[(1+k*(i-1)):(i*k)])))
      
-      d_WMW = nout::d_MannWhitney(S_Y = S_te, S_X = S_cal, alpha=alpha)
-      d_T3 = nout::d_MannWhitneyk3(S_Y = S_te, S_X = S_cal, alpha=alpha)
-      d_Sim = nout::d_Simes(S_X = S_cal, S_Y = S_te, alpha = alpha)
-      StoSimes = nout::d_StoreySimes(S_X = S_cal, S_Y = S_te, alpha = alpha)
-      d_StoSimes = StoSimes$d
-      pi.not = StoSimes$pi.not
-      d_BH = nout::d_benjhoch(S_X = S_cal, S_Y = S_te, alpha = alpha)
-      d_StoBH = nout::d_StoreyBH(S_X = S_cal, S_Y = S_te, alpha = alpha)
-      uniques = length(unique(c(S_cal, S_te)))
-      
-      return(list("d_BH" = d_BH,
-                  "d_StoBH" = d_StoBH,
-                  "d_Sim" = d_Sim,
-                  "d_StoSimes" = d_StoSimes,
-                  "d_WMW" = d_WMW,
-                  "d_T3" = d_T3,
-                  "n1" = n1,
-                  "pi.not" = pi.not,
-                  "alpha" = alpha))
+    d_WMW = nout::d_MannWhitney(S_Y = S_te, S_X = S_cal, alpha=alpha)
+    d_T3 = nout::d_MannWhitneyk3(S_Y = S_te, S_X = S_cal, alpha=alpha)
+    d_Sim = nout::d_Simes(S_X = S_cal, S_Y = S_te, alpha = alpha)
+    StoSimes = nout::d_StoreySimes(S_X = S_cal, S_Y = S_te, alpha = alpha)
+    d_StoSimes = StoSimes$d
+    pi.not = StoSimes$pi.not
+    d_BH = nout::d_benjhoch(S_X = S_cal, S_Y = S_te, alpha = alpha)
+    d_StoBH = nout::d_StoreyBH(S_X = S_cal, S_Y = S_te, alpha = alpha)
+
+    return(list("d_BH" = d_BH,
+                "d_StoBH" = d_StoBH,
+                "d_Sim" = d_Sim,
+                "d_StoSimes" = d_StoSimes,
+                "d_WMW" = d_WMW,
+                "d_T3" = d_T3,
+                "n1" = n1,
+                "pi.not" = pi.not,
+                "alpha" = alpha))
   }
 }
 
@@ -177,7 +177,7 @@ theta = length(out_ind)/nrow(dataset) # proportion of outliers in the entire dat
 
 ```
 
-```{r warning=FALSE, message=FALSE} 
+```{r warning=FALSE, message=FALSE, eval=FALSE} 
 #,eval = FALSE
 cluster <- makeCluster(parallel::detectCores())
 registerDoSNOW(cluster)
@@ -195,7 +195,7 @@ save(scores_1999_v2, file="~/nout/Examples/Digits/Lehmannk3/scores_1999_v2")
 ```
 
 
-```{r warning=FALSE, message=FALSE}
+```{r warning=FALSE, message=FALSE, eval=FALSE}
 cluster <- makeCluster(parallel::detectCores())
 registerDoSNOW(cluster)
 clusterEvalQ(cluster, {list(library(isotree), library(nout))})
@@ -212,7 +212,18 @@ resDigits0.1k3_1999_v2 = list("raw.res"=res)
 save(resDigits0.1k3_1999_v2,
      file="~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3_1999_v2")
 
+
+
+```
+
+
+```{r warning=FALSE, message=FALSE, eval=FALSE}
+
 results = compact_resultsk3(res)
+
+# load(file="~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3_1999_v2")
+# results = compact_resultsk3(resDigits0.1k3_1999_v2$raw.res)
+
 
 d_BH = vector()
 d_StoBH = vector()
@@ -288,14 +299,17 @@ ggplot(df_long_power, aes(x = x, y = y, color = group)) +
 # Table unconditional power 
 thetas = seq(from = 0, to = 1, by = 0.02)
 probsn1 = sapply(thetas, 
-                 function(theta) sapply(1:n, 
+                 function(theta) sapply(0:n, 
                                         function(k) choose(n,k)*(1-theta)^(n-k)*theta^(k)))
 colnames(probsn1) = as.character(thetas)
-rownames(probsn1) = as.character(1:n)
-unconditional.power = cbind("uncond.pow_BH" = apply(pow_BH[-1]*probsn1, MARGIN = 2, sum),
-                            "uncond.pow_StoreyBH" = apply(pow_StoBH[-1]*probsn1, MARGIN = 2, sum),
-                            "uncond.pow_WMW" = apply(pow_WMW[-1]*probsn1, MARGIN = 2, sum),
-                            "uncond.pow_T3" = apply(pow_T3[-1]*probsn1, MARGIN = 2, sum))
+rownames(probsn1) = as.character(0:n)
+
+
+
+unconditional.power = cbind("uncond.pow_BH" = apply(pow_BH*probsn1, MARGIN = 2, sum),
+                            "uncond.pow_StoreyBH" = apply(pow_StoBH*probsn1, MARGIN = 2, sum),
+                            "uncond.pow_WMW" = apply(pow_WMW*probsn1, MARGIN = 2, sum),
+                            "uncond.pow_T3" = apply(pow_T3*probsn1, MARGIN = 2, sum))
 print(unconditional.power)
 
 
@@ -304,10 +318,10 @@ print(unconditional.power)
 
 
 
-```{r warning=FALSE, message=FALSE}
+```{r warning=FALSE, message=FALSE, eval=FALSE}
 
-# load(file="~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3_1999")
-# results = compact_resultsk3(resDigits0.1k3_1999$raw.res)
+# load(file="~/nout/Examples/Digits/Lehmannk3/resDigits0.1k3_1999_v2")
+# results = compact_resultsk3(resDigits0.1k3_1999_v2$raw.res)
 
 # Compacting intermediate results in a matrix
 
@@ -378,7 +392,7 @@ save(matrixDigits0.1k3_1999_v2,
 
 
 ```{r warning=FALSE, message=FALSE}
-# load(file = paste0("~/nout/Examples/Digits/Lehmannk3","/matrixDigits0.1k3_1999"))
+load(file = paste0("~/nout/Examples/Digits/Lehmannk3","/matrixDigits0.1k3_1999_v2"))
 
 res = matrixDigits0.1k3_1999_v2
 
