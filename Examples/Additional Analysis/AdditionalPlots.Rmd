@@ -60,17 +60,15 @@ compute_lb.d = function(B, m, n, n1, k, alpha){
     scores = gen.scores_Lehmann(m, n, n1, k)
     S_cal = scores$S_cal
     S_te = scores$S_te
-    d_T3 = nout::d_MannWhitneyk3(S_Y = S_te, S_X = S_cal, alpha=alpha)
-    d_T3
 
     d_WMW = nout::d_MannWhitney(S_Y = S_te, S_X = S_cal, alpha=alpha)
     d_T3 = nout::d_MannWhitneyk3(S_Y = S_te, S_X = S_cal, alpha=alpha)
     d_Sim = nout::d_Simes(S_X = S_cal, S_Y = S_te, alpha = alpha)
-    StoSimes = nout::d_StoreySimes(S_X = S_cal, S_Y = S_te, alpha = alpha)
-    d_StoSimes = StoSimes$d
-    pi.not = StoSimes$pi.not
+    # StoSimes = nout::d_StoreySimes(S_X = S_cal, S_Y = S_te, alpha = alpha)
+    # d_StoSimes = StoSimes$d
+    # pi.not = StoSimes$pi.not
     d_BH = nout::d_benjhoch(S_X = S_cal, S_Y = S_te, alpha = alpha)
-    d_StoBH = nout::d_StoreyBH(S_X = S_cal, S_Y = S_te, alpha = alpha)
+    # d_StoBH = nout::d_StoreyBH(S_X = S_cal, S_Y = S_te, alpha = alpha)
 
     return(list("m" = m,
                 "n" = n,
@@ -80,12 +78,13 @@ compute_lb.d = function(B, m, n, n1, k, alpha){
                 "S_cal" = S_cal,
                 "S_te" = S_te,
                 "d_BH" = d_BH,
-                "d_StoBH" = d_StoBH,
+                #"d_StoBH" = d_StoBH,
                 "d_Sim" = d_Sim,
-                "d_StoSimes" = d_StoSimes,
+                #"d_StoSimes" = d_StoSimes,
                 "d_WMW" = d_WMW,
-                "d_T3" = d_T3,
-                "pi.not" = pi.not))
+                "d_T3" = d_T3
+                #"pi.not" = pi.not
+                ))
   }
 }
 
@@ -93,39 +92,41 @@ compute_lb.d = function(B, m, n, n1, k, alpha){
 
 compact_results = function(res, ks, n1.index, n){
 
-  mean.lb.d_n1_k =  matrix(nrow = length(ks), ncol = 6)
+  mean.lb.d_n1_k =  matrix(nrow = length(ks), ncol = 4)
 
   rnames = vector()
   for(i in 1:length(ks)){
     rnames[i] = paste0("k=", ks[i])
   }
-  cnames.lb.d = c("mean.lb.d_BH", "mean.lb.d_StoBH", "mean.lb.d_Sim",
-                  "mean.lb.d_StoSim", "mean.lb.d_WMW", "mean.lb.d_T3")
+  # cnames.lb.d = c("mean.lb.d_BH", "mean.lb.d_StoBH", "mean.lb.d_Sim",
+  #                 "mean.lb.d_StoSim", "mean.lb.d_WMW", "mean.lb.d_T3")
+  cnames.lb.d = c("mean.lb.d_BH", "mean.lb.d_Sim",
+                  "mean.lb.d_WMW", "mean.lb.d_T3")
   rownames(mean.lb.d_n1_k) = rnames
   colnames(mean.lb.d_n1_k) = cnames.lb.d
 
   for(i in 1:length(ks)){
     mean.lb.d_n1_k[i,"mean.lb.d_BH"] = mean(unlist(res[[i]][[n1.index]]["d_BH",]))
-    mean.lb.d_n1_k[i,"mean.lb.d_StoBH"] = mean(unlist(res[[i]][[n1.index]]["d_StoBH",]))
+    #mean.lb.d_n1_k[i,"mean.lb.d_StoBH"] = mean(unlist(res[[i]][[n1.index]]["d_StoBH",]))
     mean.lb.d_n1_k[i,"mean.lb.d_Sim"] = mean(unlist(res[[i]][[n1.index]]["d_Sim",]))
-    mean.lb.d_n1_k[i,"mean.lb.d_StoSim"] = mean(unlist(res[[i]][[n1.index]]["d_StoSimes",]))
+    #mean.lb.d_n1_k[i,"mean.lb.d_StoSim"] = mean(unlist(res[[i]][[n1.index]]["d_StoSimes",]))
     mean.lb.d_n1_k[i,"mean.lb.d_WMW"] = mean(unlist(res[[i]][[n1.index]]["d_WMW",]))
     mean.lb.d_n1_k[i,"mean.lb.d_T3"] = mean(unlist(res[[i]][[n1.index]]["d_T3",]))
   }
 
 
-  mean.power_n1_k =  matrix(nrow = length(ks), ncol = 6)
+  mean.power_n1_k =  matrix(nrow = length(ks), ncol = 4)
 
-  cnames.power = c("mean.power_BH", "mean.power_StoBH", "mean.power_Sim",
-                   "mean.power_StoSim", "mean.power_WMW", "mean.power_T3")
+  cnames.power = c("mean.power_BH", "mean.power_Sim",
+                   "mean.power_WMW", "mean.power_T3")
   rownames(mean.power_n1_k) = rnames
   colnames(mean.power_n1_k) = cnames.power
 
   for(i in 1:length(ks)){
     mean.power_n1_k[i,"mean.power_BH"] = mean(unlist(res[[i]][[n1.index]]["d_BH",])>0)
-    mean.power_n1_k[i,"mean.power_StoBH"] = mean(unlist(res[[i]][[n1.index]]["d_StoBH",])>0)
+    #mean.power_n1_k[i,"mean.power_StoBH"] = mean(unlist(res[[i]][[n1.index]]["d_StoBH",])>0)
     mean.power_n1_k[i,"mean.power_Sim"] = mean(unlist(res[[i]][[n1.index]]["d_Sim",])>0)
-    mean.power_n1_k[i,"mean.power_StoSim"] = mean(unlist(res[[i]][[n1.index]]["d_StoSimes",])>0)
+    #mean.power_n1_k[i,"mean.power_StoSim"] = mean(unlist(res[[i]][[n1.index]]["d_StoSimes",])>0)
     mean.power_n1_k[i,"mean.power_WMW"] = mean(unlist(res[[i]][[n1.index]]["d_WMW",])>0)
     mean.power_n1_k[i,"mean.power_T3"] = mean(unlist(res[[i]][[n1.index]]["d_T3",])>0)
   }
@@ -144,17 +145,17 @@ compact_results = function(res, ks, n1.index, n){
 
 set.seed(321)
 
-B = 10^4
+B = 10^5
 
-m = 1999
-n = 200
+m = 3999
+n = 400
 alpha = n/(m+1)
 
-thetas = c(0.01, 0.05, 0.1)
+thetas = c(0, 0.005, 0.01, 0.05, 0.1)
 n1s = floor(n*thetas)
 
 # Order of the Lehmann's alternative
-ks = 2:5
+ks = 2:10
 
 cluster <- makeCluster(parallel::detectCores()-1)
 registerDoSNOW(cluster)
@@ -175,16 +176,13 @@ results = lapply(1:length(n1s),
 pp = list()
 for(i in 1:length(n1s)){
   pow_BH = results[[i]]$mean.power_n1_k[,"mean.power_BH"]
-  pow_StoBH = results[[i]]$mean.power_n1_k[,"mean.power_StoBH"]
   pow_Sim = results[[i]]$mean.power_n1_k[,"mean.power_Sim"]
-  pow_StoSim = results[[i]]$mean.power_n1_k[,"mean.power_StoSim"]
   pow_WMW = results[[i]]$mean.power_n1_k[,"mean.power_WMW"]
   pow_T3 = results[[i]]$mean.power_n1_k[,"mean.power_T3"]
 
   dfpower <- data.frame(
     x = ks,
     Simes = pow_BH,
-    ASimes = pow_StoBH,
     WMW = pow_WMW,
     T3 = pow_T3
   )
@@ -192,13 +190,13 @@ for(i in 1:length(n1s)){
 
   pp[[i]] = ggplot(df_long_power, aes(x = x, y = y, color = group)) +
                    geom_line(size=1) +
-                   scale_color_manual(values = c("blue","black","purple","red")) +
+                   scale_color_manual(values = c("black","blue","red")) +
                    ggtitle(paste0("Conditional on n1 = ", n1s[i], "(theta=", thetas[i], ")")) +
                    labs(x = "k", y = "Power to reject the global null") +
                    theme_minimal() +
                    theme(legend.title = element_blank())
   print(pp[[i]])
-  print(cbind(pow_BH, pow_StoBH, pow_WMW, pow_T3))
+  print(cbind(pow_BH, pow_WMW, pow_T3))
 }
 
 ```
