@@ -47,50 +47,41 @@ calc.theory.mean.k <- function(m,n,k) {
 }
 
 
-aus_e3 = function(k){
 
-  out = 1/((2*k+1))*1/(2^(2*k-2))+
-    (k-1)^2 * sum( choose(2*k-2, (0:(2*k-2))) * (-1)^(0:(2*k-2)) / (3:(2*k+1))) +
-    (k-1)/(2^(k-2)) * sum(choose(2*k-1, (0:(2*k-1))) * (-1)^(0:(2*k-1)) / (2:(2*k+1)))
+aus_E3 = function(k){
 
-  return(out)
-}
+  f1 = sapply(0:(k-1), function(h) {
+    den1 = (factorial(k-h)*factorial(h))^2
+
+    f1.v = sapply(0:(2*k-2*h), function(s) {
+      choose(2*k-2*h, s)*(-1)^s/(2*h+s+1)
+    })
+    sum(f1.v) / den1
+  })
+
+  f1.out = sum(f1)
 
 
-ausss_E3 = function(k){
+  f2 = lapply(0:(k-1), function(h) {
+    if((h+1)<(k-1) || (h+1)==(k-1)){
 
-  f1 = sum(sapply(1:(k-1),
-                  function(h) {
-                    sum(sapply(0:(2*h), function(s) choose(2*h,s)*(-1)^s /  (2*k-2*h+s+1)  ) ) /
-                      ( (factorial(k-h)*factorial(h))^2 )
-                  }
-  )
-  )
+      sapply((h+1):(k-1), function(t) {
+        den2 = factorial(k-h)*factorial(h)*factorial(k-t)*factorial(t)
 
-  f2 = 1/((2*k+1)*factorial(k)^2)
+        f2.v = sapply(0:(2*k-h-t), function(s) {
+          choose(2*k-h-t, s)*(-1)^s/(h+s+t+1)
+        })
+        sum(f2.v) / den2
+      })
+    }
+  })
 
-  f3 = 2*sum(sapply(1:(k-1),
-                    function(h) {
-                      sum(sapply(0:(k+h), function(s) choose(k+h,s)*(-1)^s / (k-h+s+1))) /
-                        ( factorial(k)*factorial(h)*factorial(k-h) )
-                    }
-  )
-  )
+  f2.vv = sapply(f2, function(x) sum(x))
 
-  f4 = 2*sum(sapply(1:(k-1),
-                    function(h) {
-                      sum(sapply((h+1):(k-1),
-                                 function(t){
-                                   sum(sapply(0:(h+t), function(s) choose(h+t,s)*(-1)^s / (2*k-h-t+s+1))) /
-                                     ( factorial(h)*factorial(k-h)*factorial(t)*factorial(k-t))
-                                 }
-                      )
-                      )
-                    }
-  )
-  )
+  f2.out = 2*sum(f2.vv)
 
-  out = f1+f2+f3+f4
+
+  out = f1.out+f2.out
 
   return(out)
 }
@@ -100,30 +91,29 @@ ausss_E3 = function(k){
 
 Ehh00 = function(k, lambda){
 
-  out <- (factorial(k))^4/((1-lambda)^(2*k-2))*ausss_E3(k)
+  out <- (factorial(k))^4/((1-lambda)^(2*k-2))*aus_E3(k)
 
   return(out)
 }
-
-
 
 
 
 Ehhr0 = function(k, lambda){
 
-  r_seq <- 1:(k-1)
+  r_values = 1:(k-1)
+  num_r0 = factorial(k)^2*choose(k,r_values)*factorial(k-r_values)*factorial(k-r_values-1)*(factorial(r_values))^2
+  den_r0 = k*lambda^r_values*(1-lambda)^(2*k-r_values-2)
+  coeff_r0 = num_r0/den_r0
 
-  coeff_r0 <- (factorial(k))^2 * pascalTriangle(k)[2:k] * factorial(k-r_seq) * factorial(k-r_seq-1) * factorial(r_seq)^2 /
-    ( k*lambda^(r_seq)*(1-lambda)^(2*k-r_seq-2) )
-  E_r0 <- choose(k-1,k-r_seq-1)*choose(k,1)^2*choose(k-1,r_seq) * ausss_E3(k) +
-    choose(k-1,k-r_seq) * choose(k,1)^2 * choose(k-1,r_seq)/(k+1)^2
+  f1_r0 = choose(k-1,k-r_values-1)*k^2*choose(k-1,r_values)*aus_E3(k=k)
+  f2_r0 = choose(k-1,k-r_values)*k^2*choose(k-1,r_values)/(k+1)^2
 
-  out <- sum(coeff_r0*E_r0)
+  a_r0 = coeff_r0*(f1_r0+f2_r0)
+
+  out = sum(a_r0)
 
   return(out)
 }
-
-
 
 
 Ehhrs = function(k, lambda){
@@ -152,7 +142,7 @@ Ehhrs = function(k, lambda){
   weights3_s = choose(k-1, k-s_seq-1) * choose(k,1) * choose(k-1, s_seq)
   weights3_rs = outer(weights3_r, weights3_s, "*")
 
-  E_rs =  weights1_rs / (k+1)^2 + 2 * weights2_rs / (k+1)^2 + weights3_rs * ausss_E3(k)
+  E_rs =  weights1_rs / (k+1)^2 + 2 * weights2_rs / (k+1)^2 + weights3_rs * aus_E3(k)
 
   out <- sum(coeff_rs*E_rs)
 

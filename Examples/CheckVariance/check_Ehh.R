@@ -1,40 +1,39 @@
 
 
+aus_E3 = function(k){
 
-ausss_E3 = function(k){
+  f1 = sapply(0:(k-1), function(h) {
+    den1 = (factorial(k-h)*factorial(h))^2
 
-  f1 = sum(sapply(1:(k-1),
-             function(h) {
-               sum(sapply(0:(2*h), function(s) choose(2*h,s)*(-1)^s /  (2*k-2*h+s+1)  ) ) /
-                 ( (factorial(k-h)*factorial(h))^2 )
-               }
-             )
-  )
+    f1.v = sapply(0:(2*k-2*h), function(s) {
+      choose(2*k-2*h, s)*(-1)^s/(2*h+s+1)
+    })
+    sum(f1.v) / den1
+  })
 
-  f2 = 1/((2*k+1)*factorial(k)^2)
+  f1.out = sum(f1)
 
-  f3 = 2*sum(sapply(1:(k-1),
-                  function(h) {
-                    sum(sapply(0:(k+h), function(s) choose(k+h,s)*(-1)^s / (k-h+s+1))) /
-                      ( factorial(k)*factorial(h)*factorial(k-h) )
-                    }
-                  )
-           )
 
-  f4 = 2*sum(sapply(1:(k-1),
-                    function(h) {
-                      sum(sapply((h+1):(k-1),
-                                 function(t){
-                                   sum(sapply(0:(h+t), function(s) choose(h+t,s)*(-1)^s / (2*k-h-t+s+1))) /
-                                     ( factorial(h)*factorial(k-h)*factorial(t)*factorial(k-t))
-                                   }
-                                 )
-                      )
-                      }
-                    )
-             )
+  f2 = lapply(0:(k-1), function(h) {
+    if((h+1)<(k-1) || (h+1)==(k-1)){
 
-  out = f1+f2+f3+f4
+      sapply((h+1):(k-1), function(t) {
+        den2 = factorial(k-h)*factorial(h)*factorial(k-t)*factorial(t)
+
+        f2.v = sapply(0:(2*k-h-t), function(s) {
+          choose(2*k-h-t, s)*(-1)^s/(h+s+t+1)
+        })
+        sum(f2.v) / den2
+      })
+    }
+  })
+
+  f2.vv = sapply(f2, function(x) sum(x))
+
+  f2.out = 2*sum(f2.vv)
+
+
+  out = f1.out+f2.out
 
   return(out)
 }
@@ -149,17 +148,6 @@ kernel.h = function(k, X, Y, lambda){
 
 
 aa = combn(i.ind, k-r_seq[1])
-
-
-aus_E3 = function(k){
-
-  out = 1/((2*k+1)*2^(2*k-2))+
-    (k-1)^2 * sum( choose(2*k-2, (0:(2*k-2))) * (-1)^(0:(2*k-2)) / (3:(2*k+1))) +
-    (k-1)/(2^(k-2)) * sum(choose(2*k-1, (0:(2*k-1))) * (-1)^(0:(2*k-1)) / (2:(2*k+1)))
-
-  return(out)
-}
-
 
 
 Ehh00 = function(k, lambda){
