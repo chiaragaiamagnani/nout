@@ -68,14 +68,53 @@ aus_E3 = function(k){
 }
 
 
+aus_E3 = function(k){
 
-Ehh00 = function(k, lambda){
+  f1 = sapply(0:(k-1), function(h) {
+    den1 = (factorial(k-h)*factorial(h))^2
 
-  out <- (factorial(k))^4*aus_E3(k)/((1-lambda)^(2*k-2))
+    f1.v = sapply(0:(2*k-2*h), function(s) {
+      choose(2*k-2*h, s)*(-1)^s/(2*h+s+1)
+    })
+    sum(f1.v) / den1
+  })
+
+  f1.out = sum(f1)
+
+
+  f2 = lapply(0:(k-1), function(h) {
+    if((h+1)<(k-1) || (h+1)==(k-1)){
+
+      sapply((h+1):(k-1), function(t) {
+        den2 = factorial(k-h)*factorial(h)*factorial(k-t)*factorial(t)
+
+        f2.v = sapply(0:(2*k-h-t), function(s) {
+          choose(2*k-h-t, s)*(-1)^s/(h+s+t+1)
+        })
+        sum(f2.v) / den2
+      })
+    }
+  })
+
+  f2.vv = sapply(f2, function(x) sum(x))
+
+  f2.out = 2*sum(f2.vv)
+
+
+  out = f1.out+f2.out
 
   return(out)
 }
 
+
+
+
+Ehh00 = function(k, lambda){
+
+  out <- (factorial(k))^4/((1-lambda)^(2*k-2))*aus_E3(k)
+
+  return(out)
+}
 
 
 
@@ -126,9 +165,39 @@ Ehhrs = function(k, lambda){
   weights3_s = choose(k-1, k-s_seq-1) * choose(k,1) * choose(k-1, s_seq)
   weights3_rs = outer(weights3_r, weights3_s, "*")
 
-  E_rs =  weights1_rs / (k+1)^2 + 2 * weights2_rs / (k+1)^2 + weights3_rs * ausss_E3(k)
+  E_rs =  weights1_rs / (k+1)^2 + 2 * weights2_rs / (k+1)^2 + weights3_rs * aus_E3(k)
 
   out <- sum(coeff_rs*E_rs)
+
+  return(out)
+}
+
+
+
+
+
+
+Ehhrs = function(k, lambda){
+
+  num_rs = matrix(0, nrow = k-1, ncol = k-1)
+  den_rs = matrix(0, nrow = k-1, ncol = k-1)
+  f1_rs = matrix(0, nrow = k-1, ncol = k-1)
+  f2_rs = matrix(0, nrow = k-1, ncol = k-1)
+  f3_rs = matrix(0, nrow = k-1, ncol = k-1)
+
+  for(r in 1:(k-1)){
+    for(s in 1:(k-1)){
+      num_rs[r,s] = choose(k,r)*choose(k,s)*factorial(k-r)*factorial(k-r-1)*
+        factorial(r)^2*factorial(k-s)*factorial(k-s-1)*factorial(s)^2
+      den_rs[r,s] = lambda^(r+s)*(1-lambda)^(2*k-r-s-2)
+
+      f1_rs[r,s] = choose(k-1,k-r)*choose(k-1,r)*choose(k-1,k-s)*choose(k-1,s)*k^2/(k+1)^2
+      f2_rs[r,s] = 2*choose(k-1,k-r)*choose(k-1,r)*choose(k-1,k-s-1)*choose(k-1,s)*k^2/(k+1)^2
+      f3_rs[r,s] = choose(k-1,k-r-1)*choose(k-1,r)*choose(k-1,k-s-1)*choose(k-1,s)*k^2*aus_E3(k=k)
+    }
+  }
+  coeff_rs = num_rs/den_rs
+  out = sum(coeff_rs*(f1_rs+f2_rs+f3_rs))
 
   return(out)
 }
@@ -186,11 +255,12 @@ for(id1 in 1:L1) {
         lambda <- m/N
         stats <- sapply(1:B, function(b) {
             Z <- gen.data(m,n)
-            calc.Tk.tilde(Z,m)
+            calc.Tk.tilde(Z,m,k)
         })
-        mean.theory <- calc.theory.mean.k(m,n)
-        variance.theory <- calc.theory.variance.k(m,n)
+        mean.theory <- calc.theory.mean.k(m=m,n=n,k=k)
+        variance.theory <- calc.theory.variance.k(m=m,n=n,k=k,theta=mean.theory)
         n.list.out[id] <- n
+        lambda.list[id] <- lambda
         empirical.mean.list[id] <- mean(stats)
         theoretical.mean.list[id] <- mean.theory
         empirical.variance.list[id] <- var(stats)
@@ -204,6 +274,16 @@ df <- tibble(n=n.list.out,
              Empirical.variance=empirical.variance.list,
              Theoretical.variance=theoretical.variance.list)
 
+ppm <- df %>%
+  gather(Empirical.mean, Theoretical.mean, key="Mean", value="Value") %>%
+  ggplot(aes(x=Lambda, y=Value, color=Mean, shape=Mean)) +
+  geom_point() +
+  geom_line() +
+  scale_y_log10() +
+  facet_wrap(.~n, labeller = "label_both") +
+  theme_bw()
+ppm
+
 ppv <- df %>%
   gather(Empirical.variance, Theoretical.variance, key="Variance", value="Value") %>%
   ggplot(aes(x=Lambda, y=Value, color=Variance, shape=Variance)) +
@@ -215,3 +295,111 @@ ppv <- df %>%
 ppv
 
 # ggsave("plot_mean.pdf", ppv, width=6, height=2.5)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+B <- 100
+n <- 1000
+k <- 3
+n.list <- c(10,100,1000)
+m.list <- c(0.1,0.2,0.5,1,2,5,10)
+L1 = length(n.list)
+L2 = length(m.list)
+L = L1*L2
+n.list.out <- rep(0,L)
+lambda.list <- rep(0, L)
+empirical.mean.list <- rep(0, L)
+theoretical.mean.list <- rep(0, L)
+empirical.variance.list <- rep(0, L)
+theoretical.variance.list <- rep(0, L)
+
+for(id1 in 1:L1) {
+  n <- n.list[id1]
+  for(id2 in 1:L2) {
+    id = (id1-1)*L2+id2
+    m <- round(m.list[id2]*n)
+    print(c(id,n,m))
+    N <- n+m
+    lambda <- m/N
+    stats <- sapply(1:B, function(b) {
+      Z <- gen.data(m,n)
+      calc.Tk.tilde(Z,m,k)
+    })
+    mean.theory <- calc.theory.mean.k(m=m,n=n,k=k)
+    variance.theory <- calc.theory.variance.k(m=m,n=n,k=k,theta=mean.theory)
+    n.list.out[id] <- n
+    lambda.list[id] <- lambda
+    empirical.mean.list[id] <- mean(stats)
+    theoretical.mean.list[id] <- mean.theory
+    empirical.variance.list[id] <- var(stats)
+    theoretical.variance.list[id] <- variance.theory
+  }
+}
+df <- tibble(n=n.list.out,
+             Lambda=lambda.list,
+             Empirical.mean=empirical.mean.list,
+             Theoretical.mean=theoretical.mean.list,
+             Empirical.variance=empirical.variance.list,
+             Theoretical.variance=theoretical.variance.list)
+
+ppm <- df %>%
+  gather(Empirical.mean, Theoretical.mean, key="Mean", value="Value") %>%
+  ggplot(aes(x=Lambda, y=Value, color=Mean, shape=Mean)) +
+  geom_point() +
+  geom_line() +
+  scale_y_log10() +
+  facet_wrap(.~n, labeller = "label_both") +
+  theme_bw()
+ppm
+
+
+
+
+
+# Filter the data frame
+df_filtered <- df %>%
+  gather(Empirical.variance, Theoretical.variance, key="Variance", value="Value") %>%
+  filter(Variance == "Theoretical.variance")
+
+# Plot the filtered data
+ppv <- df_filtered %>%
+  ggplot(aes(x=Lambda, y=Value, color=Variance, shape=Variance)) +
+  geom_point() +
+  geom_line() +
+  #scale_y_log10() +
+  facet_wrap(.~n, labeller = "label_both") +
+  theme_bw()
+
+ppv
+
+
+
+
+# Filter the data frame
+df_filtered <- df %>%
+  gather(Empirical.variance, Theoretical.variance, key="Variance", value="Value") %>%
+  filter(Variance == "Empirical.variance")
+
+# Plot the filtered data
+ppv <- df_filtered %>%
+  ggplot(aes(x=Lambda, y=Value, color=Variance, shape=Variance)) +
+  geom_point() +
+  geom_line() +
+  scale_y_log10() +
+  facet_wrap(.~n, labeller = "label_both") +
+  theme_bw()
+
+ppv
+
+

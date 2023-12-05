@@ -40,6 +40,45 @@ aus_E3 = function(k){
 
 
 
+# O equivalentemente
+
+# aus_E3 = function(k){
+#
+#   f1 = sum(sapply(0:(k-1),
+#                   function(h) {
+#                     sum(sapply(0:(2*k-2*h), function(s) choose(2*k-2*h,s)*(-1)^s /  (2*h+s+1)  ) ) /
+#                       ( (factorial(k-h)*factorial(h))^2 )
+#                   }
+#   )
+#   )
+#
+#   f2 = 2*sum(sapply(0:(k-1),
+#                     function(h) {
+#                       ifelse((h+1)>(k-1),
+#                              0,
+#                              sum(sapply((h+1):(k-1),
+#                                         function(t){
+#                                           sum(sapply(0:(2*k-h-t), function(s) choose(2*k-h-t,s)*(-1)^s / (h+t+s+1))) /
+#                                             ( factorial(h)*factorial(k-h)*factorial(t)*factorial(k-t))
+#                                         }
+#                              )
+#                              )
+#                       )
+#                     }
+#   )
+#   )
+#
+#   out = f1+f2
+#
+#   return(out)
+# }
+
+
+# aus_E3(k=2)
+# 2/15
+
+
+
 hh00 = function(k, m, n){
 
   N = m+n

@@ -98,6 +98,7 @@ Ehh00 = function(k, lambda){
 
 
 
+
 Ehhr0 = function(k, lambda){
 
   r_values = 1:(k-1)
@@ -114,6 +115,8 @@ Ehhr0 = function(k, lambda){
 
   return(out)
 }
+
+
 
 
 Ehhrs = function(k, lambda){
@@ -148,6 +151,46 @@ Ehhrs = function(k, lambda){
 
   return(out)
 }
+
+
+
+
+
+
+Ehhrs = function(k, lambda){
+
+  num_rs = matrix(0, nrow = k-1, ncol = k-1)
+  den_rs = matrix(0, nrow = k-1, ncol = k-1)
+  f1_rs = matrix(0, nrow = k-1, ncol = k-1)
+  f2_rs = matrix(0, nrow = k-1, ncol = k-1)
+  f3_rs = matrix(0, nrow = k-1, ncol = k-1)
+
+  for(r in 1:(k-1)){
+    for(s in 1:(k-1)){
+      num_rs[r,s] = choose(k,r)*choose(k,s)*factorial(k-r)*factorial(k-r-1)*
+        factorial(r)^2*factorial(k-s)*factorial(k-s-1)*factorial(s)^2
+      den_rs[r,s] = lambda^(r+s)*(1-lambda)^(2*k-r-s-2)
+
+      f1_rs[r,s] = choose(k-1,k-r)*choose(k-1,r)*choose(k-1,k-s)*choose(k-1,s)*k^2/(k+1)^2
+      f2_rs[r,s] = 2*choose(k-1,k-r)*choose(k-1,r)*choose(k-1,k-s-1)*choose(k-1,s)*k^2/(k+1)^2
+      f3_rs[r,s] = choose(k-1,k-r-1)*choose(k-1,r)*choose(k-1,k-s-1)*choose(k-1,s)*k^2*aus_E3(k=k)
+    }
+  }
+  coeff_rs = num_rs/den_rs
+  out = sum(coeff_rs*(f1_rs+f2_rs+f3_rs))
+
+  return(out)
+}
+
+
+
+
+Ehhrs(k=2, lambda = 0.5)
+16/0.5^2*(1/3+2/15)
+
+Ehhrs(k=3, lambda = 0.5)
+
+
 
 
 
@@ -258,7 +301,7 @@ pp
 
 
 k <- 3
-B <- 5000
+B <- 1000
 
 n <- 10000
 m <- 10000
