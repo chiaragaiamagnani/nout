@@ -26,7 +26,7 @@
 #' \item alpha significance level of the local test
 #' \item crit.vals vector of critical values of the Wilcoxon-Mann-Whitney
 #' statistic \eqn{U(n,k)}, \eqn{k=m,\ldots,1} (first element of the vector
-#' corresponds to \eqn{k=m} and the last one to \eqn{k=1}. Given two samples
+#' corresponds to \eqn{k=m} and the last one to \eqn{k=1.} Given two samples
 #' \eqn{(X_1,\ldots,X_n)} and \eqn{(Y_1,\ldots,Y_k)}, the Wilcoxon-Mann-Whitney
 #' statistic is computed as \deqn{U(n,k) = \sum_{i = 1}^{n}\sum_{j = 1}^{k} \mathbb{1}\{X_i > Y_j\}}
 #' and it has mean \eqn{kn/2} and variance \eqn{kn(k+n+1)/12}.
