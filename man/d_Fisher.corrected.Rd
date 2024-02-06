@@ -20,8 +20,8 @@ An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
 the number of true discoveries in closed testing procedure using
 the corrected Fisher local test applied to conformal \emph{p}-values, that rejects
 the global null hypothesis when
-\deqn{\frac{-2\sum_{i=1}^n\log(p_i)+2n(\sqrt(1+\gamma)-1)}{\sqrt(1+\gamma)}\geq \chi^2_{2n}(1-\alpha),}
-where \chi^2_{2n}(1-\alpha) is the \eqn{(1-\alpha)} quantile of the chi-squared
+\deqn{\frac{-2\sum_{i=1}^n\log(p_i)+2n(\sqrt(1+\gamma)-1)}{\sqrt(1+\gamma)}\geq \chi^2_{2n}(1-\alpha)},
+where \eqn{\chi^2_{2n}(1-\alpha)} is the \eqn{(1-\alpha)} quantile of the chi-squared
 distribution with \eqn{2n} degree of freedom.
 The selection set, i.e. the set of hypothesis
 indices that we are interested in is \eqn{[n]=:\{1,...,n\}} by default.
