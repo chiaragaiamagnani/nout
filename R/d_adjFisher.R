@@ -2,7 +2,7 @@
 
 
 
-#' d_Fisher.corrected
+#' d_adjFisher
 #'
 #' @param S_Y : score vector for the test set
 #' @param S_X : score vector for the calibration set
@@ -25,8 +25,8 @@
 #' Sxy = sample(x=1:1000, size=100)
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
-#' d_Fisher.corrected(S_Y=Sy, S_X=Sx, alpha=0.1)
-d_Fisher.corrected = function(S_Y, S_X, gamma=NULL, alpha = 0.1){
+#' d_adjFisher(S_Y=Sy, S_X=Sx, alpha=0.1)
+d_adjFisher = function(S_Y, S_X, gamma=NULL, alpha = 0.1){
 
   n = length(S_Y)
   m = length(S_X)
@@ -42,10 +42,10 @@ d_Fisher.corrected = function(S_Y, S_X, gamma=NULL, alpha = 0.1){
   # p-values sorted in decreasing order
   pval = sort(sapply(1:n, function(i) (1+sum(S_X >= S_Y[i]))/(m+1)), decreasing = T)
 
-  Fisher.corrected =
-    sapply(1:n,
+  Fisher.adj =
+    sapply(n:1,
            function(k){
-             (-2*sum(log(pval[1:k]))+2*(n:1)*(sqrt(1+gamma)-1)) / (sqrt(1+gamma))
+             (-2*sum(log(pval[1:k]))+2*k*(sqrt(1+gamma)-1)) / (sqrt(1+gamma))
              })
 
   # Vector of critical values: the first entry is the critical value referred to
@@ -62,7 +62,7 @@ d_Fisher.corrected = function(S_Y, S_X, gamma=NULL, alpha = 0.1){
   # log(sth close to 1) is close to 0 -> the corrected Fisher test statistic is smaller
   # and rejecting the null hypothesis is more difficult)
 
-  d = sum(cumsum(Fisher.corrected >= crit) == 1:n)
+  d = sum(cumsum(Fisher.adj >= crit) == 1:n)
 
   return(d)
 }
