@@ -6,7 +6,6 @@
 #'
 #' @param S_Y : score vector for the test set
 #' @param S_X : score vector for the calibration set
-#' @param gamma : parameter related to the inflation of the variance of the Fisher test statistic when *p*-values are not independent
 #' @param alpha : significance level
 #'
 #' @return An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
@@ -26,18 +25,10 @@
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
 #' d_adjFisher(S_Y=Sy, S_X=Sx, alpha=0.1)
-d_adjFisher = function(S_Y, S_X, gamma=NULL, alpha = 0.1){
+d_adjFisher = function(S_Y, S_X, alpha = 0.1){
 
   n = length(S_Y)
   m = length(S_X)
-
-  if(is.null(gamma)){
-    gamma = n/m
-  }
-
-  if(gamma<0 || gamma==0){
-    stop("Error: gamma must be greater than 0.")
-  }
 
   # p-values sorted in decreasing order
   pval = sort(sapply(1:n, function(i) (1+sum(S_X >= S_Y[i]))/(m+1)), decreasing = T)
@@ -45,7 +36,7 @@ d_adjFisher = function(S_Y, S_X, gamma=NULL, alpha = 0.1){
   Fisher.adj =
     sapply(n:1,
            function(k){
-             (-2*sum(log(pval[1:k]))+2*k*(sqrt(1+gamma)-1)) / (sqrt(1+gamma))
+             (-2*sum(log(pval[1:k]))+2*k*(sqrt(1+k/m)-1)) / (sqrt(1+k/m))
              })
 
   # Vector of critical values: the first entry is the critical value referred to
