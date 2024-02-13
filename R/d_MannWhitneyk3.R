@@ -39,16 +39,18 @@ crit.T3 = function(S_X, S_Y, alpha=0.1, B=10^3, seed = 123){
   m = length(S_X)
   n = length(S_Y)
 
-  T3 = foreach::foreach(b = 1:B, .combine=cbind) %dopar% {
+  crit.v = foreach::foreach(b = 1:B, .combine=cbind) %dopar% {
     N=m+n
     perm = sample(1:N, m)
     S_Z = c(S_X,S_Y)
     S_Z.perm = c(S_Z[perm], S_Z[-perm])
-    U = sapply(1:n, function(j) rank(c(S_Z.perm[1:m], S_Z.perm[m+j]))[m+1]-1)
+    U = rank(S_Z.perm)[(m+1):N]-1
     T3 = sum(U^2 + U)
-    return(T3)
+    crit.v = stats::quantile(as.vector(T3), probs = 1-alpha)
+    return(crit.v)
   }
-  crit = stats::quantile(as.vector(T3), probs = 1-alpha)
+
+  crit = mean(crit.v)
 
   res = list("m" = m, "n" = n, "crit.val" = crit, "alpha" = alpha)
   class(res) = "crit.vals.info"
@@ -112,7 +114,7 @@ d_MannWhitneyk3 = function(S_Y,S_X,n.exact=10,B=10^3, seed=123, alpha=0.1){
     })
   }
   if(min(n,m)<=n.exact){
-    crit = sapply(1:n, function(h) crit.T3(S_X=S_X, S_Y=S_Y[1:h], B=B, alpha=alpha, seed=seed))
+    crit = sapply(1:n, function(h) crit.T3(S_X=S_X, S_Y=S_Y[1:h], B=B, alpha=alpha, seed=seed)$crit.val)
   }
 
   S_Z = c(S_X, S_Y)
