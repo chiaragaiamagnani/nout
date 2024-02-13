@@ -4,12 +4,19 @@
 \alias{d_MannWhitneyk3}
 \title{d_MannWhitneyk3}
 \usage{
-d_MannWhitneyk3(S_Y, S_X, alpha)
+d_MannWhitneyk3(S_Y, S_X, n.exact = 10, B = 10^3, seed = 123, alpha = 0.1)
 }
 \arguments{
 \item{S_Y}{: score vector for the test set}
 
 \item{S_X}{: score vector for the calibration set}
+
+\item{n.exact}{: if \eqn{min\{m,n\}\leq n.exact} the critical values of the LMPI \eqn{T_3}
+statistic are computed via permutation. Default value is set equal to 10.}
+
+\item{B}{: number of interation to approximate \eqn{T_3} distribution via permutation}
+
+\item{seed}{: seed to ensure reproducible results}
 
 \item{alpha}{: significance level}
 }
