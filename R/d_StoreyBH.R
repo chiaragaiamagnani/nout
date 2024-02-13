@@ -32,6 +32,7 @@ d_StoreyBH = function(S_Y, S_X, alpha = 0.1, lambda=0.5){
   n = length(S_X)
   pval = sort(sapply(1:m, function(i) (1+sum(S_X >= S_Y[i]))/(n+1)), decreasing=FALSE)
   pi0Sto = (1+sum(pval>lambda))/(m*(1-lambda))
+  pval[pval>lambda] = 1
   d =  sum(stats::p.adjust(pval,"BH")<=alpha/pi0Sto)
   return(d)
 }

@@ -23,9 +23,9 @@
 #'
 #'
 d_Simes = function(S_Y, S_X, alpha = 0.1){
-  m = length(S_Y)
-  n = length(S_X)
-  pval = sapply(1:m, function(i) (1+sum(S_X >= S_Y[i]))/(n+1))
+  n = length(S_Y)
+  m = length(S_X)
+  pval = sapply(1:n, function(i) (1+sum(S_X >= S_Y[i]))/(m+1))
   d = hommel::discoveries(hommel::hommel(pval), alpha = alpha)
   return(d)
 }
