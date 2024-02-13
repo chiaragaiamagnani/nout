@@ -4,12 +4,16 @@
 \alias{d_MannWhitney}
 \title{d_MannWhitney}
 \usage{
-d_MannWhitney(S_Y, S_X, alpha)
+d_MannWhitney(S_Y, S_X, n.exact = 10, alpha)
 }
 \arguments{
 \item{S_Y}{: score vector for the test set}
 
 \item{S_X}{: score vector for the calibration set}
+
+\item{n.exact}{: maximum value of the sample size of the second sample for which the critical
+values of the Wilcoxon-Mann-Whitney statistic are exactly computed using \emph{\strong{qwilcox}} function.
+Default value is set equal to 10.}
 
 \item{alpha}{: significance level}
 }
@@ -29,7 +33,7 @@ set.seed(321)
 Sxy = sample(x=1:1000, size=100)
 Sx = sample(Sxy, size=70)
 Sy = setdiff(Sxy, Sx)
-crit = critWMW(m=length(Sx), n=length(Sy), alpha=0.1)
+crit = crit.WMW(m=length(Sx), n=length(Sy), alpha=0.1)
 d_MannWhitney(S_Y=Sy, S_X=Sx, alpha=0.1)
 
 }

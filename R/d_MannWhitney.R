@@ -1,20 +1,20 @@
-#' critWMW
+#' crit.WMW
 #'
-#' @description Given the number of observations in the calibration set (\eqn{n}) and the number
-#' of observations in the test set (\eqn{m}), it returns the vector of critical
-#' values \eqn{U(n,k)} of the Wilcoxon-Mann-Whitney test statistic letting \eqn{k} vary between
-#'  \eqn{1} and \eqn{m}, while the size of the first sample is kept fixed equal to \eqn{n}.
+#' @description Given the number of observations in the calibration set (\eqn{m}) and the number
+#' of observations in the test set (\eqn{n}), it returns the vector of critical
+#' values \eqn{U(m,h)} of the Wilcoxon-Mann-Whitney test statistic letting \eqn{h} vary between
+#'  \eqn{1} and \eqn{n}, while the size of the first sample is kept fixed equal to \eqn{m}.
 #'
 #'
-#' @param m  number of observations in the calibration set
-#' @param n  number of observations in the test set
-#' @param alpha  significance level of the local test. Default value is set equal to 0.1
-#' @param n.exact  maximum value of the sample size of the second sample for which the critical
+#' @param m : number of observations in the calibration set
+#' @param n : number of observations in the test set
+#' @param alpha : significance level of the local test. Default value is set equal to 0.1
+#' @param n.exact : maximum value of the sample size of the second sample for which the critical
 #' values of the Wilcoxon-Mann-Whitney statistic are exactly computed using ***qwilcox*** function.
 #' Default value is set equal to 10.
-#' @param exact  logical value. If TRUE, exact computation of critical values is performed for
+#' @param exact : logical value. If TRUE, exact computation of critical values is performed for
 #' all values of \eqn{k\in{1,\ldots,m}} when \eqn{n\leq 20}. Otherwise, exact computation of
-#' critical values is performed for all values of \eqn{k\in\{1,\ldots,m.exact\}} when \eqn{n<1000}.
+#' critical values is performed for all values of \eqn{k\in\{1,\ldots,n.exact\}} when \eqn{n<1000}.
 #' Default value is FALSE.
 #'
 #'
@@ -40,17 +40,17 @@
 #' @export
 #'
 #' @examples
-#' critWMW(n=100,m=2000,alpha=0.1)
+#' crit.WMW(n=100,m=2000,alpha=0.1)
 #'
-#' critWMW(n=100,m=900,alpha=0.1)
+#' crit.WMW(n=100,m=900,alpha=0.1)
 #'
 #' n=10;m=20
-#' crits = critWMW(m=m, n=n,alpha=0.1)$crit.vals
+#' crits = crit.WMW(m=m, n=n,alpha=0.1)$crit.vals
 #' plot(x=1:n, y=crits, xlab="n-k+1", main = "Critical values of WMW statistic for m=20 and k=1,...,n")
 #'
 #'
 #'
-critWMW = function(m, n, alpha, n.exact=10, exact=F){
+crit.WMW = function(m, n, alpha, n.exact=10, exact=F){
 
   # exact=F
   if(exact==F){
@@ -128,6 +128,9 @@ critWMW = function(m, n, alpha, n.exact=10, exact=F){
 #'
 #' @param S_Y : score vector for the test set
 #' @param S_X : score vector for the calibration set
+#' @param n.exact : maximum value of the sample size of the second sample for which the critical
+#' values of the Wilcoxon-Mann-Whitney statistic are exactly computed using ***qwilcox*** function.
+#' Default value is set equal to 10.
 #' @param alpha : significance level
 #'
 #' @return An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
@@ -143,10 +146,10 @@ critWMW = function(m, n, alpha, n.exact=10, exact=F){
 #' Sxy = sample(x=1:1000, size=100)
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
-#' crit = critWMW(m=length(Sx), n=length(Sy), alpha=0.1)
+#' crit = crit.WMW(m=length(Sx), n=length(Sy), alpha=0.1)
 #' d_MannWhitney(S_Y=Sy, S_X=Sx, alpha=0.1)
 #'
-d_MannWhitney = function(S_Y,S_X,alpha){
+d_MannWhitney = function(S_Y,S_X,n.exact=10,alpha){
 
   # if (!inherits(crit, "crit.vals.info")) {
   #   stop("Error: crit class not correct")
@@ -168,7 +171,7 @@ d_MannWhitney = function(S_Y,S_X,alpha){
   n = length(S_Y)
   m = length(S_X)
 
-  crit = nout::critWMW(m=m, n=n,alpha=alpha)$crit.vals
+  crit = nout::crit.WMW(m=m, n=n, n.exact=n.exact, alpha=alpha)$crit.vals
 
   # Ranks of S_Y[i] in (S_X,S_Y[i])
   U_i = sort(sapply(1:n, function(i) sum(S_Y[i]>S_X)),
