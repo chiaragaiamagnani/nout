@@ -31,7 +31,7 @@ set.seed(321)
 Sxy = sample(x=1:1000, size=100)
 Sx = sample(Sxy, size=70)
 Sy = setdiff(Sxy, Sx)
-crit = nout::critWMW(m=length(Sx), n=length(Sy), alpha=0.1)
+crit = nout::crit.WMW(m=length(Sx), n=length(Sy), alpha=0.1)
 dselection.singleton_MannWhitney(S_Y=Sy, S_X=Sx, S=3, alpha=0.1)
 
 }

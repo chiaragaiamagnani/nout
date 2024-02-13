@@ -22,7 +22,7 @@
 #' Sxy = sample(x=1:1000, size=100)
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
-#' crit = nout::critWMW(m=length(Sx), n=length(Sy), alpha=0.1)
+#' crit = nout::crit.WMW(m=length(Sx), n=length(Sy), alpha=0.1)
 #' dselection.singleton_MannWhitney(S_Y=Sy, S_X=Sx, S=3, alpha=0.1)
 #'
 dselection.singleton_MannWhitney = function(S_Y,S_X,S,alpha){
@@ -37,7 +37,7 @@ dselection.singleton_MannWhitney = function(S_Y,S_X,S,alpha){
     stop("Error: S is empty.")
 
   notS = (1:n)[-S]
-  crit = nout::critWMW(m=m, n=n,alpha=alpha)$crit.vals
+  crit = nout::crit.WMW(m=m, n=n,alpha=alpha)$crit.vals
 
   # Ranks of S_Y[i] in (S_X,S_Y[i])
   U_S = sum(S_Y[S]>S_X)
