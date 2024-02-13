@@ -46,7 +46,7 @@ dselection_MannWhitney = function(S_Y, S_X, S, alpha){
 
   if(1<=s & s<n){
     notS = (1:n)[-S]
-    crit = sort(nout::critWMW(m=m, n=s,alpha=alpha)$crit.vals)
+    crit = sort(nout::crit.WMW(m=m, n=s,alpha=alpha)$crit.vals)
 
     u_j = sapply(S, function(j) sum(S_Y[j]>S_X))
     v_j = sapply(notS, function(j) sum(S_Y[j]>S_X))
