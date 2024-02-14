@@ -1,9 +1,8 @@
 #' crit.WMW
 #'
-#' @description Given the number of observations in the calibration set (\eqn{m}) and the number
-#' of observations in the test set (\eqn{n}), it returns the vector of critical
-#' values \eqn{U(m,h)} of the Wilcoxon-Mann-Whitney test statistic letting \eqn{h} vary between
-#'  \eqn{1} and \eqn{n}, while the size of the first sample is kept fixed equal to \eqn{m}.
+#' @description Given \eqn{m} observations in the calibration set and \eqn{n} observations in the test set,
+#' it relies on R function ***qwilcox*** and returns the vector of critical values of the
+#' Wilcoxon-Mann-Whitney test statistic for each level of the closed testing.
 #'
 #'
 #' @param m : number of observations in the calibration set
@@ -19,12 +18,12 @@
 #'
 #'
 #'
-#' @return A R object of class *crit.vals.info*, which is a list consisting
+#' @return A R object of class *crit.val.info*, which is a list consisting
 #' of the following elements: \itemize{
 #' \item m number of test observations
 #' \item n number of calibration observations
 #' \item alpha significance level of the local test
-#' \item crit.vals vector of critical values of the Wilcoxon-Mann-Whitney
+#' \item crit.val vector of critical values of the Wilcoxon-Mann-Whitney
 #' statistic \eqn{U(n,k)}, \eqn{k=m,\ldots,1} (first element of the vector
 #' corresponds to \eqn{k=m} and the last one to \eqn{k=1.} Given two samples
 #' \eqn{(X_1,\ldots,X_n)} and \eqn{(Y_1,\ldots,Y_k)}, the Wilcoxon-Mann-Whitney
@@ -45,7 +44,7 @@
 #' crit.WMW(n=100,m=900,alpha=0.1)
 #'
 #' n=10;m=20
-#' crits = crit.WMW(m=m, n=n,alpha=0.1)$crit.vals
+#' crits = crit.WMW(m=m, n=n,alpha=0.1)$crit.val
 #' plot(x=1:n, y=crits, xlab="n-k+1", main = "Critical values of WMW statistic for m=20 and k=1,...,n")
 #'
 #'
@@ -75,8 +74,8 @@ crit.WMW = function(m, n, alpha, n.exact=10, exact=F){
                                                       lower.tail = FALSE))
       }
     }
-    res = list("m" = m, "n" = n, "crit.vals" = crit, "alpha" = alpha)
-    class(res) = "crit.vals.info"
+    res = list("m" = m, "n" = n, "crit.val" = crit, "alpha" = alpha)
+    class(res) = "crit.val.info"
   }
 
   # exact=T
@@ -110,11 +109,65 @@ crit.WMW = function(m, n, alpha, n.exact=10, exact=F){
     }
   }
 
-  res = list("m" = m, "n" = n, "crit.vals" = crit, "alpha" = alpha)
-  class(res) = "crit.vals.info"
+  res = list("m" = m, "n" = n, "crit.val" = crit, "alpha" = alpha)
+  class(res) = "crit.val.info"
 
   return(res)
 }
+
+
+
+
+
+
+#' exact.crit.WMW
+#'
+#' @description Given \eqn{m} observations in the calibration set and \eqn{n} observations in the test set,
+#' it relies on R function ***qwilcox*** and returns the vector of critical values of the
+#' Wilcoxon-Mann-Whitney test statistic for each level of the closed testing.
+#'
+#'
+#' @param m : number of observations in the calibration set
+#' @param n : number of observations in the test set
+#' @param alpha : significance level of the local test. Default value is set equal to 0.1
+#'
+#'
+#' @return A R object of class *crit.val.info*, which is a list consisting
+#' of the following elements: \itemize{
+#' \item m number of calibration observations
+#' \item n number of test observations
+#' \item alpha significance level of the local test
+#' \item crit.val vector of critical values of the Wilcoxon-Mann-Whitney
+#' statistic \eqn{U(n,k)}, \eqn{k=m,\ldots,1} (first element of the vector
+#' corresponds to \eqn{k=m} and the last one to \eqn{k=1.} Given two samples
+#' \eqn{(X_1,\ldots,X_n)} and \eqn{(Y_1,\ldots,Y_k)}, the Wilcoxon-Mann-Whitney
+#' statistic is computed as \deqn{U(n,k) = \sum_{i = 1}^{n}\sum_{j = 1}^{k} \mathbb{1}\{X_i > Y_j\}}
+#' and it has mean \eqn{kn/2} and variance \eqn{kn(k+n+1)/12}.}
+#'
+#'
+#'
+#' @export
+#'
+#' @examples
+#'
+#' exact.crit.WMW(n=10,m=5,alpha=0.1)
+#'
+#' n=8;m=10
+#' crits = exact.crit.WMW(m=m, n=n,alpha=0.1)$crit.val
+#' plot(x=1:n, y=crits, xlab="n-k+1", main = "Critical values of WMW for m=10 and k=1,...,n=8")
+#'
+#'
+#'
+exact.crit.WMW = function(m, n, alpha=0.1){
+
+  crit = sapply(1:n, function(k) stats::qwilcox(p=alpha, n=n-k+1, m=m,
+                                                lower.tail = FALSE))
+  res = list("m" = m, "n" = n, "crit.val" = crit, "alpha" = alpha)
+  class(res) = "crit.val.info"
+
+  return(res)
+}
+
 
 
 
@@ -131,13 +184,15 @@ crit.WMW = function(m, n, alpha, n.exact=10, exact=F){
 #' @param n.exact : maximum value of the sample size of the second sample for which the critical
 #' values of the Wilcoxon-Mann-Whitney statistic are exactly computed using ***qwilcox*** function.
 #' Default value is set equal to 10.
-#' @param alpha : significance level
+#' @param alpha : significance level. Default level is set equal to 0.1
 #'
 #' @return An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
 #' the number of true discoveries in closed testing procedure using
-#' Wilcoxon-Mann-Whitney local test applied to conformal *p*-values.
-#' The selection set, i.e. the set of hypothesis
-#' indices that we are interested in is \eqn{[n]=:\{1,...,n\}} by default.
+#' Wilcoxon-Mann-Whitney local test that rejects the global null hypothesis at level \eqn{\alpha}
+#' when the test statistic \deqn{\sum_{i=1}^n\sum_{j=1}^m \mathbb{1}\{X_j<Y_i\}} is greater than
+#' the critical value corresponding to the significance level \eqn{\alpha}.
+#' The selection set is trivial, i.e., we are interested in testing all the observations in the test set by default.
+#'
 #'
 #' @export
 #'
@@ -149,14 +204,14 @@ crit.WMW = function(m, n, alpha, n.exact=10, exact=F){
 #' crit = crit.WMW(m=length(Sx), n=length(Sy), alpha=0.1)
 #' d_MannWhitney(S_Y=Sy, S_X=Sx, alpha=0.1)
 #'
-d_MannWhitney = function(S_Y,S_X,n.exact=10,alpha){
+d_MannWhitney = function(S_Y,S_X,n.exact=10,alpha=0.1){
 
-  # if (!inherits(crit, "crit.vals.info")) {
+  # if (!inherits(crit, "crit.val.info")) {
   #   stop("Error: crit class not correct")
   # }
 
   # alpha = crit$alpha
-  # critical_vals = crit$crit.vals
+  # critical_vals = crit$crit.val
   # m = crit$m
   # n = crit$n
 
@@ -171,8 +226,16 @@ d_MannWhitney = function(S_Y,S_X,n.exact=10,alpha){
   n = length(S_Y)
   m = length(S_X)
 
-  crit = nout::crit.WMW(m=m, n=n, n.exact=n.exact, alpha=alpha)$crit.vals
+  if(min(n,m)<=n.exact){
+    if(n.exact>20){
+      stop("Execution stopped: exact computation of critical values is computationally too demanding.")
+    }
+    crit = nout::crit.WMW(m=m, n=n, n.exact=n.exact, alpha=alpha)$crit.val
+  }
 
+  if(min(n,m)>n.exact){
+    crit = nout::crit.WMW(m=m, n=n, n.exact=n.exact, alpha=alpha)$crit.val
+  }
   # Ranks of S_Y[i] in (S_X,S_Y[i])
   U_i = sort(sapply(1:n, function(i) sum(S_Y[i]>S_X)),
              decreasing = TRUE)

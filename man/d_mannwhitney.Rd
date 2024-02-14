@@ -4,7 +4,7 @@
 \alias{d_MannWhitney}
 \title{d_MannWhitney}
 \usage{
-d_MannWhitney(S_Y, S_X, n.exact = 10, alpha)
+d_MannWhitney(S_Y, S_X, n.exact = 10, alpha = 0.1)
 }
 \arguments{
 \item{S_Y}{: score vector for the test set}
@@ -15,14 +15,15 @@ d_MannWhitney(S_Y, S_X, n.exact = 10, alpha)
 values of the Wilcoxon-Mann-Whitney statistic are exactly computed using \emph{\strong{qwilcox}} function.
 Default value is set equal to 10.}
 
-\item{alpha}{: significance level}
+\item{alpha}{: significance level. Default level is set equal to 0.1}
 }
 \value{
 An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
 the number of true discoveries in closed testing procedure using
-Wilcoxon-Mann-Whitney local test applied to conformal \emph{p}-values.
-The selection set, i.e. the set of hypothesis
-indices that we are interested in is \eqn{[n]=:\{1,...,n\}} by default.
+Wilcoxon-Mann-Whitney local test that rejects the global null hypothesis at level \eqn{\alpha}
+when the test statistic \deqn{\sum_{i=1}^n\sum_{j=1}^m \mathbb{1}\{X_j<Y_i\}} is greater than
+the critical value corresponding to the significance level \eqn{\alpha}.
+The selection set is trivial, i.e., we are interested in testing all the observations in the test set by default.
 }
 \description{
 It returns the lower bound for the number of true discoveries in closed testing procedure

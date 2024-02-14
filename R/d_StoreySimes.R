@@ -2,8 +2,7 @@
 #' d_StoreySimes
 #'
 #' @description It returns the lower bound for the number of true discoveries in closed testing procedure
-#' using Simes local test with Storey estimator for the proportion of true
-#' null hypotheses.
+#' using Simes local test with Storey estimator for the proportion of true null hypotheses.
 #'
 #' @param S_Y : score vector of test observations
 #' @param S_X : score vector of calibration observations
@@ -14,12 +13,11 @@
 #' @return An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for the
 #' number of true discoveries in closed testing procedure using Simes local
 #' test with Storey's estimator for the proportion of true null hypotheses applied to conformal *p*-values.
-#' The selection set, i.e. the set of hypothesis indices that we are
-#' interested in is \eqn{[m]=:{1,...,m}} by default.
+#' The selection set is trivial, i.e., we are interested in testing all the observations in the test set by default.
 #' Then, Storey estimator is computed as
-#' \deqn{\hat\pi_0 = \frac{1+\sum_{i=1}^m \mathbb{1}\{p_i>\lambda\}}{m(1-\lambda)}}
-#' where \eqn{\lambda\in(0,1)} and \eqn{p_i} is the *p*-value related
-#' to the null hypothesis \eqn{H_i, \hspace{2mm} i=1,\ldots,m}.
+#' \deqn{\hat\pi_0 = \frac{1+\sum_{i=1}^n \mathbb{1}\{p_i>\lambda\}}{n(1-\lambda)}}
+#' where \eqn{n} is the test sample size, \eqn{\lambda\in(0,1)} is a tuning parameter
+#' and \eqn{p_i} is the *p*-value corresponding to the \eqn{i}th hypothesis in the test set.
 #'
 #' @export
 #'

@@ -4,28 +4,35 @@
 \alias{d_adjFisher}
 \title{d_adjFisher}
 \usage{
-d_adjFisher(S_Y, S_X, alpha = 0.1)
+d_adjFisher(S_Y, S_X, alpha = 0.1, n.exact = 10, B = 10^3, seed = 123)
 }
 \arguments{
 \item{S_Y}{: score vector for the test set}
 
 \item{S_X}{: score vector for the calibration set}
 
-\item{alpha}{: significance level}
+\item{alpha}{: significance level. Default level is set equal to 0.1}
+
+\item{n.exact}{: if \eqn{min\{m,n\}\leq n.exact} the critical values of the adjusted Fisher test
+statistic are computed via permutation. Default value is set equal to 10}
+
+\item{B}{: number of iterations to approximate the adjusted Fisher statistic distribution via permutation}
+
+\item{seed}{: seed to ensure reproducible results}
 }
 \value{
 An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
 the number of true discoveries in closed testing procedure using
-the corrected Fisher local test applied to conformal \emph{p}-values, that rejects
-the global null hypothesis when
-\deqn{\frac{-2\sum_{i=1}^n\log(p_i)+2n(\sqrt(1+\gamma)-1)}{\sqrt(1+\gamma)}\geq \chi^2_{2n}(1-\alpha)},
-where \eqn{\chi^2_{2n}(1-\alpha)} is the \eqn{(1-\alpha)} quantile of the chi-squared
+the adjusted Fisher local test applied to conformal \emph{p}-values. The test rejects
+the global null hypothesis at level \eqn{\alpha} when
+\deqn{\frac{-2\sum_{i=1}^n\log(p_i)+2n(\sqrt{1+\gamma}-1)}{\sqrt{1+\gamma}\geq \chi^2_{2n}(1-\alpha)},}
+where \emph{n} is the size of the test set and \eqn{\chi^2_{2n}(1-\alpha)} is the \eqn{(1-\alpha)} quantile of the chi-squared
 distribution with \eqn{2n} degree of freedom.
-The selection set, i.e. the set of hypothesis
-indices that we are interested in is \eqn{[n]=:\{1,...,n\}} by default.
+The selection set is trivial, i.e., we are interested in testing all the observations in the test set by default.
 }
 \description{
-d_adjFisher
+It returns a confidence lower bound for the number of true discoveries provided
+by closed testing procedure using the adjusted Fisher local test applied to conformal \emph{p}-values.
 }
 \examples{
 set.seed(321)

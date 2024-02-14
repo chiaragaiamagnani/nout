@@ -4,35 +4,34 @@
 \alias{d_MannWhitneyk3}
 \title{d_MannWhitneyk3}
 \usage{
-d_MannWhitneyk3(S_Y, S_X, n.exact = 10, B = 10^3, seed = 123, alpha = 0.1)
+d_MannWhitneyk3(S_Y, S_X, alpha = 0.1, n.exact = 10, B = 10^3, seed = 123)
 }
 \arguments{
 \item{S_Y}{: score vector for the test set}
 
 \item{S_X}{: score vector for the calibration set}
 
+\item{alpha}{: significance level}
+
 \item{n.exact}{: if \eqn{min\{m,n\}\leq n.exact} the critical values of the LMPI \eqn{T_3}
-statistic are computed via permutation. Default value is set equal to 10.}
+statistic are computed via permutation. Default value is set equal to 10}
 
 \item{B}{: number of interation to approximate \eqn{T_3} distribution via permutation}
 
 \item{seed}{: seed to ensure reproducible results}
-
-\item{alpha}{: significance level}
 }
 \value{
 An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
 the number of true discoveries in closed testing procedure using
-the LMPI local test corresponding to \eqn{k=3} applied to conformal \emph{p}-values.
-The selection set is the set of indices corresponding to the observations in the test set that
-we want to test. By default, the selection set is \eqn{[n]=:\{1,...,n\}} and corresponds to the
-entire test set.
+the LMPI \eqn{T_3} local test that rejects the global null hypothesis at level \eqn{\alpha} for large values of
+\deqn{\sum_{j=1}^n R_j(R_j+1),} where \eqn{U_j} is the rank of the
+\eqn{j}th observation in the test set among the pooled score vector \eqn{(S_X,S_Y)} and \eqn{n} is the
+number of observations in the test set. The selection set is trivial, i.e.,
+we are interested in testing all the observations in the test set by default.
 }
 \description{
 It returns the lower bound for the number of true discoveries in closed testing procedure
-using the test statistic \eqn{\sum_{j=1}^n U_j(U_j+1)}, where \eqn{U_j} is the rank of the
-\eqn{j}th observation in the test set among the vector of calibration units and \eqn{n} is the
-number of observations in the test set of the test set.
+using the LMPI \eqn{T_3} test statistic.
 }
 \examples{
 set.seed(321)

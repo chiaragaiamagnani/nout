@@ -23,12 +23,12 @@ critical values is performed for all values of \eqn{k\in\{1,\ldots,n.exact\}} wh
 Default value is FALSE.}
 }
 \value{
-A R object of class \emph{crit.vals.info}, which is a list consisting
+A R object of class \emph{crit.val.info}, which is a list consisting
 of the following elements: \itemize{
 \item m number of test observations
 \item n number of calibration observations
 \item alpha significance level of the local test
-\item crit.vals vector of critical values of the Wilcoxon-Mann-Whitney
+\item crit.val vector of critical values of the Wilcoxon-Mann-Whitney
 statistic \eqn{U(n,k)}, \eqn{k=m,\ldots,1} (first element of the vector
 corresponds to \eqn{k=m} and the last one to \eqn{k=1.} Given two samples
 \eqn{(X_1,\ldots,X_n)} and \eqn{(Y_1,\ldots,Y_k)}, the Wilcoxon-Mann-Whitney
@@ -41,10 +41,9 @@ the normal approximation using continuity correction \deqn{U(n,k) \sim N(kn/2-1/
 }
 }
 \description{
-Given the number of observations in the calibration set (\eqn{m}) and the number
-of observations in the test set (\eqn{n}), it returns the vector of critical
-values \eqn{U(m,h)} of the Wilcoxon-Mann-Whitney test statistic letting \eqn{h} vary between
-\eqn{1} and \eqn{n}, while the size of the first sample is kept fixed equal to \eqn{m}.
+Given \eqn{m} observations in the calibration set and \eqn{n} observations in the test set,
+it relies on R function \emph{\strong{qwilcox}} and returns the vector of critical values of the
+Wilcoxon-Mann-Whitney test statistic for each level of the closed testing.
 }
 \examples{
 crit.WMW(n=100,m=2000,alpha=0.1)
@@ -52,7 +51,7 @@ crit.WMW(n=100,m=2000,alpha=0.1)
 crit.WMW(n=100,m=900,alpha=0.1)
 
 n=10;m=20
-crits = crit.WMW(m=m, n=n,alpha=0.1)$crit.vals
+crits = crit.WMW(m=m, n=n,alpha=0.1)$crit.val
 plot(x=1:n, y=crits, xlab="n-k+1", main = "Critical values of WMW statistic for m=20 and k=1,...,n")
 
 
