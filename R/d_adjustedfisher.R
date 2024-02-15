@@ -69,8 +69,8 @@ perm.crit.adjustedfisher = function(S_X, S_Y, alpha=0.1, B=10^3, seed = 123){
 #' @description It returns a confidence lower bound for the number of true discoveries provided
 #' by closed testing procedure using the adjusted Fisher local test applied to conformal *p*-values.
 #'
-#' @param S_Y : score vector for the test set
 #' @param S_X : score vector for the calibration set
+#' @param S_Y : score vector for the test set
 #' @param alpha : significance level. Default level is set equal to 0.1
 #' @param n.exact : if \eqn{min\{m,n\}\leq n.exact} the critical values of the adjusted Fisher test
 #' statistic are computed via permutation. Default value is set equal to 10
@@ -86,6 +86,10 @@ perm.crit.adjustedfisher = function(S_X, S_Y, alpha=0.1, B=10^3, seed = 123){
 #' distribution with \eqn{2n} degree of freedom.
 #' The selection set is trivial, i.e., we are interested in testing all the observations in the test set by default.
 #'
+#'
+#' @references
+#' Bates S., Candès E., Lei L., Romano Y. and Sesia M. (2023). Testing for outliers with conformal *p*-values. Annals of Statistics, doi: 10.1214/22-AOS2244
+#'
 #' @export
 #'
 #' @examples
@@ -96,7 +100,7 @@ perm.crit.adjustedfisher = function(S_X, S_Y, alpha=0.1, B=10^3, seed = 123){
 #' d_adjustedfisher(S_Y=Sy, S_X=Sx, alpha=0.1)
 #'
 #'
-d_adjustedfisher = function(S_Y, S_X, alpha = 0.1, n.exact=10, B=10^3, seed=123){
+d_adjustedfisher = function(S_X, S_Y, alpha = 0.1, n.exact=10, B=10^3, seed=123){
 
   n = length(S_Y)
   m = length(S_X)
@@ -122,7 +126,7 @@ d_adjustedfisher = function(S_Y, S_X, alpha = 0.1, n.exact=10, B=10^3, seed=123)
     crit = stats::qchisq(p=1-alpha, df=2*(n:1))
   }
   if(min(n,m)<=n.exact){
-    crit = sapply(1:n, function(h) perm.crit.adjustedfisher(S_X=S_X, S_Y=S_Y[1:h], B=B, alpha=alpha, seed=seed)$crit.val)
+    crit = sapply(1:n, function(h) nout::perm.crit.adjustedfisher(S_X=S_X, S_Y=S_Y[1:h], B=B, alpha=alpha, seed=seed)$crit.val)
   }
 
 
