@@ -122,7 +122,7 @@ d_adjustedfisher = function(S_Y, S_X, alpha = 0.1, n.exact=10, B=10^3, seed=123)
     crit = stats::qchisq(p=1-alpha, df=2*(n:1))
   }
   if(min(n,m)<=n.exact){
-    crit = sapply(1:n, function(h) perm.crit.adjFisher(S_X=S_X, S_Y=S_Y[1:h], B=B, alpha=alpha, seed=seed)$crit.val)
+    crit = sapply(1:n, function(h) perm.crit.adjustedfisher(S_X=S_X, S_Y=S_Y[1:h], B=B, alpha=alpha, seed=seed)$crit.val)
   }
 
 

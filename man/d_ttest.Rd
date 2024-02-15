@@ -28,7 +28,7 @@ by closed testing procedure using Dunnett t-test as local test.
 Sxy = sample(x=1:1000, size=100)
 Sx = sample(Sxy, size=70)
 Sy = setdiff(Sxy, Sx)
-d_Simes(S_Y=Sy, S_X=Sx)
+d_ttest(S_Y=Sy, S_X=Sx)
 
 
 }

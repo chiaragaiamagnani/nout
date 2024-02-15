@@ -26,7 +26,7 @@
 #' Sxy = sample(x=1:1000, size=100)
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
-#' d.selection_Simes(S_Y=Sy, S_X=Sx, S = 5:15)
+#' d.selection_simes(S_Y=Sy, S_X=Sx, S = 5:15)
 #'
 d.selection_simes = function(S_Y, S_X, S, alpha = 0.1){
 

@@ -1,4 +1,4 @@
-#' d_Simes
+#' d_simes
 #'
 #' @description It returns the lower bound for the number of true discoveries in closed testing procedure
 #' using Simes local test.
@@ -20,10 +20,10 @@
 #' Sxy = sample(x=1:1000, size=100)
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
-#' d_Simes(S_Y=Sy, S_X=Sx)
+#' d_simes(S_Y=Sy, S_X=Sx)
 #'
 #'
-d_Simes = function(S_Y, S_X, alpha = 0.1){
+d_simes = function(S_Y, S_X, alpha = 0.1){
   n = length(S_Y)
   m = length(S_X)
   pval = sapply(1:n, function(i) (1+sum(S_X >= S_Y[i]))/(m+1))

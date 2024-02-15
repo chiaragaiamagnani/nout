@@ -72,7 +72,7 @@ perm.crit.T3 = function(S_X, S_Y, alpha=0.1, B=10^3, seed = 123){
 #' @param alpha : significance level
 #' @param n.exact : if \eqn{min\{m,n\}\leq n.exact} the critical values of the LMPI \eqn{T_3}
 #' statistic are computed via permutation. Default value is set equal to 10
-#' @param B : number of interation to approximate \eqn{T_3} distribution via permutation
+#' @param B : number of iteration to approximate \eqn{T_3} distribution via permutation
 #' @param seed : seed to ensure reproducible results
 #'
 #' @return An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for

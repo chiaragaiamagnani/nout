@@ -38,14 +38,17 @@ Sx = sample(Sxy, size=70)
 Sy = setdiff(Sxy, Sx)
 
 # Simes closed testing procedure
-d_Simes(S_Y=Sy, S_X=Sx)
+d_simes(S_Y=Sy, S_X=Sx)
 #> [1] 0
 # Simes with Storey closed testing procedure
-d_StoreySimes(S_Y=Sy, S_X=Sx)
+d_storeysimes(S_Y=Sy, S_X=Sx)
+#> $d
 #> [1] 0
+#> 
+#> $pi.not
+#> [1] 0.8666667
 # Wilcoxon-Mann-Whitney closed testing procedure
-crit = critWMW(m=length(Sy), n=length(Sx))
-d_mannwhitney(S_Y=Sy, S_X=Sx, crit=crit)
+d_t2(S_Y=Sy, S_X=Sx, alpha=0.1)
 #> [1] 0
 ```
 

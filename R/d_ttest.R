@@ -20,7 +20,7 @@
 #' Sxy = sample(x=1:1000, size=100)
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
-#' d_Simes(S_Y=Sy, S_X=Sx)
+#' d_ttest(S_Y=Sy, S_X=Sx)
 #'
 #'
 d_ttest = function(S_Y, S_X, alpha = 0.1){

@@ -42,7 +42,7 @@ dselection_MannWhitney = function(S_Y, S_X, S, alpha){
     stop("Error: selected index set should be contained in vector 1:length(S_Y).")
 
   if(s==n)
-    d = d_MannWhitney(S_Y = S_Y, S_X = S_X, alpha = alpha)
+    d = d_t2(S_Y = S_Y, S_X = S_X, alpha = alpha)
 
   if(1<=s & s<n){
     notS = (1:n)[-S]
