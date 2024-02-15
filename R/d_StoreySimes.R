@@ -1,5 +1,5 @@
 
-#' d_StoreySimes
+#' d_storeysimes
 #'
 #' @description It returns the lower bound for the number of true discoveries in closed testing procedure
 #' using Simes local test with Storey estimator for the proportion of true null hypotheses.
@@ -26,11 +26,11 @@
 #' Sxy = sample(x=1:1000, size=100)
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
-#' d_StoreySimes(S_Y=Sy, S_X=Sx)
+#' d_storeysimes(S_Y=Sy, S_X=Sx)
 #'
 #'
 #'
-d_StoreySimes = function(S_Y, S_X, alpha = 0.1, lambda=0.5){
+d_storeysimes = function(S_Y, S_X, alpha = 0.1, lambda=0.5){
   m = length(S_Y)
   n = length(S_X)
   pval = sort(sapply(1:m, function(i)

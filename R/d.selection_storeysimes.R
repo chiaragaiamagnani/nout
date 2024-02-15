@@ -75,20 +75,24 @@ finddStoreySimes = function(input, S, alpha){
 
 
 
-#' dselection_Simes
+#' d.selection_storeysimes
+#'
+#' @description It returns the lower bound for the number of true discoveries in closed testing procedure
+#' using Simes local test for any selection in the test index set.
 #'
 #' @param S_X vector of calibration scores
 #' @param S_Y vector of test scores
 #' @param S set of indices corresponding to the *p*-values to be tested
 #' @param lambda : parameter involved in the computation of Storey estimator.
 #' Default value is set equal to 0.5
-#' @param alpha significance level
+#' @param alpha significance level. Default values is set equal to 0.1
 #'
 #' @return An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
 #' the number of true discoveries in closed testing procedure using
 #' Simes local test with Storey's estimator for the proportion of true null
-#' hypotheses applied to conformal *p*-values. The selection set, i.e. the set of hypothesis
-#' indices that we are interested in can be chosen.
+#' hypotheses applied to conformal *p*-values.
+#' The selection set can be any arbitrary subset in the index set of test observations
+#' according to which test units we want to test.
 #'
 #' @export
 #'
@@ -97,9 +101,9 @@ finddStoreySimes = function(input, S, alpha){
 #' Sxy = sample(x=1:1000, size=100)
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
-#' dselection_StoreySimes(S_Y=Sy, S_X=Sx, S = 1:29, alpha = 0.6)
+#' d.selection_storeysimes(S_Y=Sy, S_X=Sx, S = 1:29, alpha = 0.6)
 #'
-dselection_StoreySimes = function(S_X, S_Y, S, lambda = 0.5, alpha){
+d.selection_storeysimes = function(S_X, S_Y, S, lambda = 0.5, alpha=0.1){
 
   n = length(S_Y)
   m = length(S_X)

@@ -62,7 +62,7 @@ perm.crit.T3 = function(S_X, S_Y, alpha=0.1, B=10^3, seed = 123){
 
 
 
-#' d_MannWhitneyk3
+#' d_t3
 #'
 #' @description It returns the lower bound for the number of true discoveries in closed testing procedure
 #' using the LMPI \eqn{T_3} test statistic.
@@ -91,12 +91,12 @@ perm.crit.T3 = function(S_X, S_Y, alpha=0.1, B=10^3, seed = 123){
 #' Sxy = sample(x=1:1000, size=100)
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
-#' d_MannWhitneyk3(S_Y=Sy, S_X=Sx, alpha=0.1)
+#' d_t3(S_Y=Sy, S_X=Sx, alpha=0.1)
 #'
 #'
 #'
 #'
-d_MannWhitneyk3 = function(S_Y, S_X, alpha=0.1, n.exact=10, B=10^3, seed=123){
+d_t3 = function(S_Y, S_X, alpha=0.1, n.exact=10, B=10^3, seed=123){
   n = length(S_Y)
   m = length(S_X)
 

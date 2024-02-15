@@ -174,7 +174,7 @@ exact.crit.WMW = function(m, n, alpha=0.1){
 
 
 
-#' d_MannWhitney
+#' d_t2
 #'
 #' @description It returns the lower bound for the number of true discoveries in closed testing procedure
 #' using Wilcoxon-Mann-Whitney local test.
@@ -202,9 +202,9 @@ exact.crit.WMW = function(m, n, alpha=0.1){
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
 #' crit = crit.WMW(m=length(Sx), n=length(Sy), alpha=0.1)
-#' d_MannWhitney(S_Y=Sy, S_X=Sx, alpha=0.1)
+#' d_t2(S_Y=Sy, S_X=Sx, alpha=0.1)
 #'
-d_MannWhitney = function(S_Y,S_X,n.exact=10,alpha=0.1){
+d_t2 = function(S_Y,S_X,n.exact=10,alpha=0.1){
 
   # if (!inherits(crit, "crit.val.info")) {
   #   stop("Error: crit class not correct")

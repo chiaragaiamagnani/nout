@@ -10,7 +10,7 @@
 #' @return An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for the
 #' number of true discoveries in closed testing procedure using Simes local
 #' test applied to conformal *p*-values.
-#' #' The selection set is trivial, i.e., we are interested in testing all the observations in the test set by default.
+#' The selection set is trivial, i.e., we are interested in testing all the observations in the test set by default.
 #'
 #'
 #' @export
