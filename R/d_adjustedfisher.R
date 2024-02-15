@@ -1,7 +1,7 @@
 
 
 
-#' perm.crit.adjFisher
+#' perm.crit.adjustedfisher
 #'
 #' @description Given \eqn{m} observations in the calibration set and \eqn{n} observations in the test set,
 #' it returns the vector of critical values at level \eqn{\alpha} of the adjusted Fisher test statistic
@@ -30,10 +30,10 @@
 #'
 #' @importFrom foreach %dopar%
 #' @examples
-#' crits = perm.crit.adjFisher(S_X=runif(10),S_Y=runif(min=0, max=0.5, 5),alpha=0.1)
+#' crits = perm.crit.adjustedfisher(S_X=runif(10),S_Y=runif(min=0, max=0.5, 5),alpha=0.1)
 #'
 #'
-perm.crit.adjFisher = function(S_X, S_Y, alpha=0.1, B=10^3, seed = 123){
+perm.crit.adjustedfisher = function(S_X, S_Y, alpha=0.1, B=10^3, seed = 123){
 
   set.seed(seed)
 
@@ -64,7 +64,7 @@ perm.crit.adjFisher = function(S_X, S_Y, alpha=0.1, B=10^3, seed = 123){
 
 
 
-#' d_adjFisher
+#' d_adjustedfisher
 #'
 #' @description It returns a confidence lower bound for the number of true discoveries provided
 #' by closed testing procedure using the adjusted Fisher local test applied to conformal *p*-values.
@@ -93,8 +93,10 @@ perm.crit.adjFisher = function(S_X, S_Y, alpha=0.1, B=10^3, seed = 123){
 #' Sxy = sample(x=1:1000, size=100)
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
-#' d_adjFisher(S_Y=Sy, S_X=Sx, alpha=0.1)
-d_adjFisher = function(S_Y, S_X, alpha = 0.1, n.exact=10, B=10^3, seed=123){
+#' d_adjustedfisher(S_Y=Sy, S_X=Sx, alpha=0.1)
+#'
+#'
+d_adjustedfisher = function(S_Y, S_X, alpha = 0.1, n.exact=10, B=10^3, seed=123){
 
   n = length(S_Y)
   m = length(S_X)
