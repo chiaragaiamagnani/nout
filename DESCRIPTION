@@ -16,7 +16,8 @@ Imports:
     hommel,
     multcomp,
     Rcpp,
-    stats
+    stats,
+    sumSome
 URL: https://github.com/chiaragaiamagnani/nout
 BugReports: https://github.com/chiaragaiamagnani/nout/issues
 LinkingTo: Rcpp
