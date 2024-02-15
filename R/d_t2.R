@@ -120,7 +120,7 @@ crit.WMW = function(m, n, alpha, n.exact=10, exact=F){
 
 
 
-#' exact.crit.WMW
+#' exact.crit.t2
 #'
 #' @description Given \eqn{m} observations in the calibration set and \eqn{n} observations in the test set,
 #' it relies on R function ***qwilcox*** and returns the vector of critical values of the
@@ -150,15 +150,15 @@ crit.WMW = function(m, n, alpha, n.exact=10, exact=F){
 #'
 #' @examples
 #'
-#' exact.crit.WMW(n=10,m=5,alpha=0.1)
+#' exact.crit.t2(n=10,m=5,alpha=0.1)
 #'
 #' n=8;m=10
-#' crits = exact.crit.WMW(m=m, n=n,alpha=0.1)$crit.val
+#' crits = exact.crit.t2(m=m, n=n,alpha=0.1)$crit.val
 #' plot(x=1:n, y=crits, xlab="n-k+1", main = "Critical values of WMW for m=10 and k=1,...,n=8")
 #'
 #'
 #'
-exact.crit.WMW = function(m, n, alpha=0.1){
+exact.crit.t2 = function(m, n, alpha=0.1){
 
   crit = sapply(1:n, function(k) stats::qwilcox(p=alpha, n=n-k+1, m=m,
                                                 lower.tail = FALSE))
@@ -179,11 +179,10 @@ exact.crit.WMW = function(m, n, alpha=0.1){
 #' @description It returns the lower bound for the number of true discoveries in closed testing procedure
 #' using Wilcoxon-Mann-Whitney local test.
 #'
-#' @param S_Y : score vector for the test set
 #' @param S_X : score vector for the calibration set
-#' @param n.exact : maximum value of the sample size of the second sample for which the critical
-#' values of the Wilcoxon-Mann-Whitney statistic are exactly computed using ***qwilcox*** function.
-#' Default value is set equal to 10.
+#' @param S_Y : score vector for the test set
+#' @param n.exact : if \eqn{min\{m,n\}\leq n.exact} the critical values of the Wilcoxon-Mann-Whitney
+#' statistic are exactly computed using ***qwilcox*** function. Default value is set equal to 10
 #' @param alpha : significance level. Default level is set equal to 0.1
 #'
 #' @return An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
@@ -201,10 +200,9 @@ exact.crit.WMW = function(m, n, alpha=0.1){
 #' Sxy = sample(x=1:1000, size=100)
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
-#' crit = crit.WMW(m=length(Sx), n=length(Sy), alpha=0.1)
 #' d_t2(S_Y=Sy, S_X=Sx, alpha=0.1)
 #'
-d_t2 = function(S_Y,S_X,n.exact=10,alpha=0.1){
+d_t2 = function(S_X,S_Y,n.exact=10,alpha=0.1){
 
   # if (!inherits(crit, "crit.val.info")) {
   #   stop("Error: crit class not correct")
@@ -230,11 +228,11 @@ d_t2 = function(S_Y,S_X,n.exact=10,alpha=0.1){
     if(n.exact>20){
       stop("Execution stopped: exact computation of critical values is computationally too demanding.")
     }
-    crit = nout::crit.WMW(m=m, n=n, n.exact=n.exact, alpha=alpha)$crit.val
+    crit = nout::exact.crit.t2(m=m, n=n, alpha=alpha)$crit.val
   }
 
   if(min(n,m)>n.exact){
-    crit = nout::crit.WMW(m=m, n=n, n.exact=n.exact, alpha=alpha)$crit.val
+    crit = nout::exact.crit.t2(m=m, n=n, alpha=alpha)$crit.val
   }
   # Ranks of S_Y[i] in (S_X,S_Y[i])
   U_i = sort(sapply(1:n, function(i) sum(S_Y[i]>S_X)),

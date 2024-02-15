@@ -2,7 +2,7 @@
 
 
 
-#' perm.crit.T3
+#' perm.crit.t3
 #'
 #' @description Given \eqn{m} observations in the calibration set and \eqn{n} observations in the test set,
 #' it returns the vector of critical values at level \eqn{\alpha} of the LMPI \eqn{T_3} test statistic at level \eqn{\alpha}.
@@ -29,10 +29,10 @@
 #'
 #' @importFrom foreach %dopar%
 #' @examples
-#' perm.crit.T3(S_X=runif(10),S_Y=runif(min=0, max=0.5, 5),alpha=0.1)
+#' perm.crit.t3(S_X=runif(10),S_Y=runif(min=0, max=0.5, 5),alpha=0.1)
 #'
 #'
-perm.crit.T3 = function(S_X, S_Y, alpha=0.1, B=10^3, seed = 123){
+perm.crit.t3 = function(S_X, S_Y, alpha=0.1, B=10^3, seed = 123){
 
   set.seed(seed)
 
@@ -112,7 +112,7 @@ d_t3 = function(S_Y, S_X, alpha=0.1, n.exact=10, B=10^3, seed=123){
     })
   }
   if(min(n,m)<=n.exact){
-    crit = sapply(1:n, function(h) perm.crit.T3(S_X=S_X, S_Y=S_Y[1:h], B=B, alpha=alpha, seed=seed)$crit.val)
+    crit = sapply(1:n, function(h) nout::perm.crit.t3(S_X=S_X, S_Y=S_Y[1:h], B=B, alpha=alpha, seed=seed)$crit.val)
   }
 
   S_Z = c(S_X, S_Y)

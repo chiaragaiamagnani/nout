@@ -4,12 +4,12 @@
 \alias{d_adjustedfisher}
 \title{d_adjustedfisher}
 \usage{
-d_adjustedfisher(S_Y, S_X, alpha = 0.1, n.exact = 10, B = 10^3, seed = 123)
+d_adjustedfisher(S_X, S_Y, alpha = 0.1, n.exact = 10, B = 10^3, seed = 123)
 }
 \arguments{
-\item{S_Y}{: score vector for the test set}
-
 \item{S_X}{: score vector for the calibration set}
+
+\item{S_Y}{: score vector for the test set}
 
 \item{alpha}{: significance level. Default level is set equal to 0.1}
 
@@ -42,4 +42,7 @@ Sy = setdiff(Sxy, Sx)
 d_adjustedfisher(S_Y=Sy, S_X=Sx, alpha=0.1)
 
 
+}
+\references{
+Bates S., Candès E., Lei L., Romano Y. and Sesia M. (2023). Testing for outliers with conformal \emph{p}-values. Annals of Statistics, doi: 10.1214/22-AOS2244
 }
