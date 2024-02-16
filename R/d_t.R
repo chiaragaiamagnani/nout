@@ -6,8 +6,7 @@ stat.T2 <- function(Z, m) {
 }
 
 asymptotic.critical.T2 <- function(m, n, alpha) {
-    ## TODO: Chiara please correct this
-    critical.value = stats::qnorm(alpha, mean=(n*m/2), sd = sqrt(n*m*(n+m+1)/12), lower.tail = F)
+    critical.value = stats::qnorm(alpha, mean=((n*(m+n+1))/2), sd = sqrt(n*m*(n+m+1)/12), lower.tail = F)
     return(critical.value)
 }
 
