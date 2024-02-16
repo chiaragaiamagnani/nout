@@ -69,7 +69,7 @@ perm.crit.T <- function(m, n, stat.func, alpha=0.1, B=10^3, seed=123){
 compute.critical.values <- function(m, n, alpha, stat.func, asymptotic.critical.func, n_perm=10, B=10^3, critical_values=NULL, seed=123){
 
     crit = sapply(1:n, function(h) {
-        if(max(m,h)<=n_perm) {
+        if(min(m,h)<=n_perm) {
             found.value = FALSE
             if(!is.null(critical_values)) {
                 if(length(critical_values)>=h) {
