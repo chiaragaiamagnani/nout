@@ -27,8 +27,15 @@ d_simes = function(S_Y, S_X, alpha = 0.1){
   n = length(S_Y)
   m = length(S_X)
   pval = sapply(1:n, function(i) (1+sum(S_X >= S_Y[i]))/(m+1))
-  d = hommel::discoveries(hommel::hommel(pval), alpha = alpha)
-  return(d)
+  hom = hommel::hommel(pval)
+  d = hommel::discoveries(hom, alpha = alpha)
+
+  ## Compute p-value for the global null
+  ## TODO: Chiara make sure this is correct
+  pval.global = hommel::localtest(hom)
+  
+  out = list("lower.bound" = d, "global.p.value" = pval.global)
+  return(out)
 }
 
 #' d_storeysimes
@@ -87,6 +94,9 @@ d_storeysimes = function(S_Y, S_X, alpha = 0.1, lambda=0.5){
   thr = alpha/(coeff*pi.not)
 
   d = sum(cumsum(simes.pval <= thr) == 1:m)
+  
+  ## TODO: Chiara: should we also return a global p-value here?
+  pval.global = NA
 
   return(list("d"=d, "pi.not"=pi.not[1]))
 }

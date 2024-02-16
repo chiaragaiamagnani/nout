@@ -80,8 +80,32 @@ perm.crit.T <- function(m, n, stat.func, alpha=0.1, B=10^3, seed=123){
     return(crit)
 }
 
+# Returns the p-value for the global null obtained via permutation
+compute.perm.pval <- function(T.obs, m, n, stat.func, B=10^3, seed=123) {
+    set.seed(seed)
 
+    T.v = foreach::foreach(b = 1:B, .combine=cbind) %dopar% {
+        N=m+n
+        Z = runif(N)
+        T = sum(stat.func(Z, m))
+        return(T)
+    }
 
+    # Compute the permutation p-value
+    pval = (1+sum(T.v <= T.obs)) / (1 + length(T.v))
+
+    return(pval)
+}
+
+compute.global.pvalue <- function(T.obs, m, n, stat.func, n_perm=n_perm, B=100, seed=seed) {
+
+    # TODO: Chiara, please improve this code so that permutations are only used if the sample size is small
+    # Otherwise, use the asymptotic approximation to compute an approximate p-value for the global null
+
+    pval.perm = compute.perm.pval(T.obs, m, n, stat.func, B=B, seed=seed)
+    return(pval.perm)
+}
+    
 #' compute.critical.values
 #'
 #' @param m : calibration size
@@ -196,5 +220,13 @@ d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical
     ## Compare the worst-case statistics to the critical values for k in {n,...,1}, starting from the max cardinality
     d = sum(cumsum(rev(T_wc) >= rev(crit)) == 1:n)
 
-    return(d)
+    ## Compute p-value for the global null
+    T.global = sum(R)
+    pval.global = compute.global.pvalue(T.global, m, n, stat.func, n_perm=n_perm, B=B, seed=seed)
+    ##if( (pval.global < alpha) && (d>0) ){
+    ##    cat(sprintf("STRANGE. pval.global=%.3f, d=%d.\n", pval.global, d))
+    ##}
+    out = list("lower.bound" = d, "global.p.value" = pval.global)
+    
+    return(out)
 }
