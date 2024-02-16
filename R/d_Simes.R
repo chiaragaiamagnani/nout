@@ -31,7 +31,6 @@ d_simes = function(S_Y, S_X, alpha = 0.1){
   d = hommel::discoveries(hom, alpha = alpha)
 
   ## Compute p-value for the global null
-  ## TODO: Chiara make sure this is correct
   pval.global = hommel::localtest(hom)
   
   out = list("lower.bound" = d, "global.p.value" = pval.global)
@@ -70,34 +69,34 @@ d_simes = function(S_Y, S_X, alpha = 0.1){
 #'
 #'
 d_storeysimes = function(S_Y, S_X, alpha = 0.1, lambda=0.5){
-  m = length(S_Y)
-  n = length(S_X)
-  pval = sort(sapply(1:m, function(i)
-    (1+sum(S_X >= S_Y[i]))/(n+1)), decreasing=FALSE)
+  n = length(S_Y)
+  m = length(S_X)
+  pval = sort(sapply(1:n, function(i)
+    (1+sum(S_X >= S_Y[i]))/(m+1)), decreasing=FALSE)
 
-  simes.pval = sapply(1:m, function(i)
-    min(pval[i:m]/seq(from=1, to=m-i+1, by=1)))
+  simes.pval = sapply(1:n, function(i)
+    min(pval[i:n]/seq(from=1, to=n-i+1, by=1)))
 
   # Building the levels of Simes test with Storey estimator
-  # pi.not = sapply(1:m, function(i)
-  #   (1+sum(pval[i:m]>lambda))/((m-i+1)*(1-lambda)))
+  # pi.not = sapply(1:n, function(i)
+  #   (1+sum(pval[i:n]>lambda))/((n-i+1)*(1-lambda)))
 
   # Building the levels of Simes test with Storey estimator.
   # Storey estimator will be used in the closed testing procedure
   # in every levels except for lowest ones, when the set of
   # considered pvalues has cardinality less than or equal to 2.
 
-  pi.not.highlevels = sapply(1:(m-2), function(i)
-      (1+sum(pval[i:m]>lambda))/((m-i+1)*(1-lambda)))
+  pi.not.highlevels = sapply(1:(n-2), function(i)
+      (1+sum(pval[i:n]>lambda))/((n-i+1)*(1-lambda)))
   pi.not = c(pi.not.highlevels,1,1)
-  coeff = seq(from = m, to = 1, by = -1)
+  coeff = seq(from = n, to = 1, by = -1)
   thr = alpha/(coeff*pi.not)
 
-  d = sum(cumsum(simes.pval <= thr) == 1:m)
+  d = sum(cumsum(simes.pval <= thr) == 1:n)
   
-  ## TODO: Chiara: should we also return a global p-value here?
-  pval.global = NA
+  ## Calculate the p-value for the global null
+  pval.global = min(1, simes.pval[1] * pi.not * n)
 
-  return(list("d"=d, "pi.not"=pi.not[1]))
+  return(list("d"=d, "global.p.value" = pval.global, "pi.not"=pi.not[1]))
 }
 
