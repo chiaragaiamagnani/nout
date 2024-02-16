@@ -15,7 +15,6 @@ Imports:
     foreach,
     hommel,
     multcomp,
-    Rcpp,
     stats,
     sumSome
 URL: https://github.com/chiaragaiamagnani/nout
