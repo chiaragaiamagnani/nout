@@ -14,6 +14,13 @@ asymptotic.critical.T2 <- function(m, n, alpha) {
   return(critical.value)
 }
 
+# Returns the approximated pvalue of theLMPI T2 statistic based on asymptotic normal approximation
+asymptotic.pvalue.T2 <- function(m, n, T.obs) {
+  # to add continuity correction modify the mean as: mean=((n*(m+n+1)-1)/2)
+  p.value = stats::pnorm(q=T.obs, mean=((n*(m+n+1))/2), sd = sqrt(n*m*(n+m+1)/12), lower.tail = F)
+  return(p.value)
+}
+
 
 
 # Returns vector of values of the LMPI T3 statistic for each test observation
@@ -36,6 +43,17 @@ asymptotic.critical.T3 <- function(m, n, alpha) {
   return(critical.value)
 }
 
+# Returns the approximated pvalue of theLMPI T3 statistic based on asymptotic normal approximation
+asymptotic.pvalue.T3 <- function(m, n, T.obs) {
+  N = m+n
+  lambda = m/N
+  theta = (4*(2-lambda))/(3*(1-lambda)*lambda)
+  variance = 64/(45*N*lambda^3*(1-lambda)^3)
+  p.value = stats::pnorm(q=T.obs, mean=(choose(n,2)*choose(m,2))/N*theta+n*(2*n^2-3*n+1)/6+n*(n-1)/2,
+                         sd = (choose(n,2)*choose(m,2))/N*sqrt(variance), lower.tail = F)
+  return(p.value)
+}
+
 
 
 # Returns vector of values of the Fisher statistic for each test observation
@@ -56,6 +74,12 @@ asymptotic.critical.Fisher <- function(m, n, alpha) {
     return(critical.value)
 }
 
+# Returns the approximated pvalue of the adjusted Fisher statistic based on asymptotic chi-squared approximation
+asymptotic.pvalue.Fisher <- function(m, n, T.obs) {
+  gamma = n/m
+  p.value = sqrt(1+gamma) * stats::pchisq(q=T.obs, df=2*n, lower.tail = F) - 2 * (sqrt(1+gamma)-1) * n
+  return(p.value)
+}
 
 
 # Returns the (1-alpha)-quantile of the stat.func statistic obtained via permutation
@@ -64,7 +88,7 @@ perm.crit.T <- function(m, n, stat.func, alpha=0.1, B=10^3, seed=123){
 
     T.v = foreach::foreach(b = 1:B, .combine=cbind) %dopar% {
         N=m+n
-        Z = runif(N)
+        Z = stats::runif(N)
         T = sum(stat.func(Z, m))
         return(T)
     }
@@ -86,7 +110,7 @@ compute.perm.pval <- function(T.obs, m, n, stat.func, B=10^3, seed=123) {
 
     T.v = foreach::foreach(b = 1:B, .combine=cbind) %dopar% {
         N=m+n
-        Z = runif(N)
+        Z = stats::runif(N)
         T = sum(stat.func(Z, m))
         return(T)
     }
@@ -97,15 +121,21 @@ compute.perm.pval <- function(T.obs, m, n, stat.func, B=10^3, seed=123) {
     return(pval)
 }
 
-compute.global.pvalue <- function(T.obs, m, n, stat.func, n_perm=n_perm, B=100, seed=seed) {
+compute.global.pvalue <- function(T.obs, m, n, stat.func, asymptotic.pvalue.func, n_perm, B=100, seed) {
 
-    # TODO: Chiara, please improve this code so that permutations are only used if the sample size is small
+    # permutation p-value for the global null if the sample size is small
+    if(min(m,n)<=n_perm){
+        pval.perm = compute.perm.pval(T.obs=T.obs, m=m, n=n, stat.func=stat.func, B=B, seed=seed)
+      }
     # Otherwise, use the asymptotic approximation to compute an approximate p-value for the global null
-
-    pval.perm = compute.perm.pval(T.obs, m, n, stat.func, B=B, seed=seed)
+    else {
+        pval.perm = asymptotic.pvalue.func(m=m, n=n, T.obs=T.obs)
+    }
     return(pval.perm)
 }
-    
+
+
+
 #' compute.critical.values
 #'
 #' @param m : calibration size
@@ -121,8 +151,6 @@ compute.global.pvalue <- function(T.obs, m, n, stat.func, n_perm=n_perm, B=100, 
 #'
 #' @return A vector of critical values for a test statistic chosen among \eqn{T_2, T_3} or Fisher
 #' at significance level \eqn{\alpha} with calibration size \eqn{m} fixed for each level of closed testing.
-#'
-#' @examples
 #'
 #'
 compute.critical.values <- function(m, n, alpha, stat.func, asymptotic.critical.func, n_perm=10, B=10^3, critical_values=NULL, seed=123){
@@ -175,6 +203,8 @@ compute.critical.values <- function(m, n, alpha, stat.func, asymptotic.critical.
 #' No selection in the index test set is performed and the lower bound is computed
 #' considering all the observations in the test set.
 #'
+#' @importFrom foreach %dopar%
+#'
 #' @export
 #'
 #' @examples
@@ -194,12 +224,15 @@ d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical
     if(statistic=="T2") {
         stat.func = stat.T2
         asymptotic.critical.func = asymptotic.critical.T2
+        asymptotic.pvalue.func = asymptotic.pvalue.T2
     } else if (statistic=="T3") {
         stat.func = stat.T3
         asymptotic.critical.func = asymptotic.critical.T3
+        asymptotic.pvalue.func = asymptotic.pvalue.T3
     } else if (statistic=="fisher") {
         stat.func = stat.Fisher
         asymptotic.critical.func = asymptotic.critical.Fisher
+        asymptotic.pvalue.func = asymptotic.pvalue.Fisher
     }
 
     n = length(S_Y)
@@ -222,11 +255,12 @@ d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical
 
     ## Compute p-value for the global null
     T.global = sum(R)
-    pval.global = compute.global.pvalue(T.global, m, n, stat.func, n_perm=n_perm, B=B, seed=seed)
+    pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=n, stat.func=stat.func,
+                                        asymptotic.pvalue.func=asymptotic.pvalue.func, n_perm=n_perm, B=B, seed=seed)
     ##if( (pval.global < alpha) && (d>0) ){
     ##    cat(sprintf("STRANGE. pval.global=%.3f, d=%d.\n", pval.global, d))
     ##}
     out = list("lower.bound" = d, "global.p.value" = pval.global)
-    
+
     return(out)
 }
