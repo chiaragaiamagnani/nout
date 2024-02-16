@@ -28,6 +28,21 @@ asymptotic.critical.T3 <- function(m, n, alpha) {
     return(critical.value)
 }
 
+stat.Fisher <- function(Z, m) {
+    N = length(Z)
+    n = N-m
+    S_X = Z[1:m]
+    S_Y = Z[(m+1):N]
+    pval = sapply(1:n, function(i) (1+sum(S_X >= S_Y[i]))/(m+1))
+    R = -2 * log(pval)
+    return(R)
+}
+
+asymptotic.critical.Fisher <- function(m, n, alpha) {
+    gamma = n/m
+    critical.value = sqrt(1+gamma) * stats::qchisq(p=1-alpha, df=2*n) - 2 * (sqrt(1+gamma)-1) * n
+    return(critical.value)
+}
 
 perm.crit.T <- function(m, n, stat.func, alpha=0.1, B=10^3, seed=123){
     set.seed(seed)
@@ -78,7 +93,7 @@ compute.critical.values <- function(m, n, alpha, stat.func, asymptotic.critical.
 
 d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical_values=NULL, seed=123){
 
-    stopifnot(statistic %in% c("T2", "T3"))
+    stopifnot(statistic %in% c("T2", "T3", "fisher"))
 
     if(statistic=="T2") {
         stat.func = stat.T2
@@ -86,6 +101,9 @@ d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical
     } else if (statistic=="T3") {
         stat.func = stat.T3
         asymptotic.critical.func = asymptotic.critical.T3
+    } else if (statistic=="fisher") {
+        stat.func = stat.Fisher
+        asymptotic.critical.func = asymptotic.critical.Fisher
     }
 
     n = length(S_Y)
