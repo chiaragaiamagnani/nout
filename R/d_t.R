@@ -1,33 +1,44 @@
+
+# Returns vector of values of the LMPI T2 statistic for each test observation
 stat.T2 <- function(Z, m) {
-    N = length(Z)
-    n = N-m
-    R = rank(Z)[(m+1):N]-1
-    return(R)
+  N = length(Z)
+  n = N-m
+  R = rank(Z)[(m+1):N]-1
+  return(R)
 }
 
+# Returns the approximated (1-alpha)-quantile of LMPI T2 based on asymptotic normal approximation
 asymptotic.critical.T2 <- function(m, n, alpha) {
-    critical.value = stats::qnorm(alpha, mean=((n*(m+n+1))/2), sd = sqrt(n*m*(n+m+1)/12), lower.tail = F)
-    return(critical.value)
+  # to add continuity correction modify the mean as: mean=((n*(m+n+1)-1)/2)
+  critical.value = stats::qnorm(alpha, mean=((n*(m+n+1))/2), sd = sqrt(n*m*(n+m+1)/12), lower.tail = F)
+  return(critical.value)
 }
 
+
+
+# Returns vector of values of the LMPI T3 statistic for each test observation
 stat.T3 <- function(Z, m) {
-    N = length(Z)
-    n = N-m
-    R = rank(Z)[(m+1):N]-1
-    R2 = R^2
-    return(R2+R)
+  N = length(Z)
+  n = N-m
+  R = rank(Z)[(m+1):N]-1
+  R2 = R^2
+  return(R2+R)
 }
 
+# Returns the approximated (1-alpha)-quantile of LMPI T3 based on asymptotic normal approximation
 asymptotic.critical.T3 <- function(m, n, alpha) {
-    N = m+n
-    lambda = m/N
-    theta = (4*(2-lambda))/(3*(1-lambda)*lambda)
-    variance = 64/(45*N*lambda^3*(1-lambda)^3)
-    critical.value = stats::qnorm(alpha, mean=(choose(n,2)*choose(m,2))/N*theta+n*(2*n^2-3*n+1)/6+n*(n-1)/2,
-                                  sd = (choose(n,2)*choose(m,2))/N*sqrt(variance), lower.tail = F)
-    return(critical.value)
+  N = m+n
+  lambda = m/N
+  theta = (4*(2-lambda))/(3*(1-lambda)*lambda)
+  variance = 64/(45*N*lambda^3*(1-lambda)^3)
+  critical.value = stats::qnorm(alpha, mean=(choose(n,2)*choose(m,2))/N*theta+n*(2*n^2-3*n+1)/6+n*(n-1)/2,
+                                sd = (choose(n,2)*choose(m,2))/N*sqrt(variance), lower.tail = F)
+  return(critical.value)
 }
 
+
+
+# Returns vector of values of the Fisher statistic for each test observation
 stat.Fisher <- function(Z, m) {
     N = length(Z)
     n = N-m
@@ -38,12 +49,16 @@ stat.Fisher <- function(Z, m) {
     return(R)
 }
 
+# Returns the approximated (1-alpha)-quantile of the adjusted Fisher statistic based on asymptotic chi-squared approximation
 asymptotic.critical.Fisher <- function(m, n, alpha) {
     gamma = n/m
     critical.value = sqrt(1+gamma) * stats::qchisq(p=1-alpha, df=2*n) - 2 * (sqrt(1+gamma)-1) * n
     return(critical.value)
 }
 
+
+
+# Returns the (1-alpha)-quantile of the stat.func statistic obtained via permutation
 perm.crit.T <- function(m, n, stat.func, alpha=0.1, B=10^3, seed=123){
     set.seed(seed)
 
@@ -66,11 +81,33 @@ perm.crit.T <- function(m, n, stat.func, alpha=0.1, B=10^3, seed=123){
 }
 
 
+
+#' compute.critical.values
+#'
+#' @param m : calibration size
+#' @param n : test size
+#' @param alpha : significance level
+#' @param stat.func : test statistic of which compute critical values
+#' @param asymptotic.critical.func : asymptotic approximation of \code{stat.func}
+#' @param n_perm : if \eqn{min(m,n)\leq n_perm} critical values will be computed via permutation. Default value is 10
+#' @param B : number of permutation to compute critical values. Default value is 10^3
+#' @param critical_values : if not \code{NULL}, a vector of precomputed critical values obtained using
+#' the permutation distribution of the test statistic
+#' @param seed : seed to ensure reproducible results
+#'
+#' @return A vector of critical values for a test statistic chosen among \eqn{T_2, T_3} or Fisher
+#' at significance level \eqn{\alpha} with calibration size \eqn{m} fixed for each level of closed testing.
+#'
+#' @examples
+#'
+#'
 compute.critical.values <- function(m, n, alpha, stat.func, asymptotic.critical.func, n_perm=10, B=10^3, critical_values=NULL, seed=123){
 
     crit = sapply(1:n, function(h) {
+      # For small values of m and n compute critical values via permutation
         if(min(m,h)<=n_perm) {
             found.value = FALSE
+            # In order to avoid repeating computation of precomputed critical values that are saved in "tables" folder
             if(!is.null(critical_values)) {
                 if(length(critical_values)>=h) {
                     critical.value = critical_values[h]
@@ -81,7 +118,9 @@ compute.critical.values <- function(m, n, alpha, stat.func, asymptotic.critical.
                 cat(sprintf("Running permutations...\n"))
                 critical.value = perm.crit.T(m, h, stat.func=stat.func, alpha=alpha, B=B, seed=seed)
             }
-        } else {
+        }
+      # For large values of m or n compute critical values using the asymptotic approximation of the test statistic
+      else {
             critical.value = asymptotic.critical.func(m, h, alpha)
         }
         return(critical.value)
@@ -91,6 +130,39 @@ compute.critical.values <- function(m, n, alpha, stat.func, asymptotic.critical.
 }
 
 
+
+
+
+#' d_t
+#'
+#' @param S_Y : test score vector
+#' @param S_X : calibration score vector
+#' @param statistic : parameter indicating the local test to be used in closed testing procedure.
+#' It can be either \eqn{T_2, T_3} or adjusted Fisher test
+#' @param alpha : significance level
+#' @param n_perm : if \eqn{min(m,n)\leq n_perm} critical values will be computed via permutation. Default value is 10
+#' @param B : number of permutation to compute critical values. Default value is 10^3
+#' @param critical_values : if not \code{NULL}, a vector of precomputed critical values obtained using
+#' the permutation distribution of the test statistic
+#' @param seed : seed to ensure reproducible results
+#'
+#' @return An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
+#' the number of true discoveries in closed testing procedure using the chosen local test.
+#' No selection in the index test set is performed and the lower bound is computed
+#' considering all the observations in the test set.
+#'
+#' @export
+#'
+#' @examples
+#' set.seed(321)
+#' Sxy = sample(x=1:1000, size=100)
+#' Sx = sample(Sxy, size=70)
+#' Sy = setdiff(Sxy, Sx)
+#' d_t(S_Y=Sy, S_X=Sx, statistic="T2", alpha=0.1)
+#' d_t(S_Y=Sy, S_X=Sx, statistic="T3", alpha=0.1)
+#' d_t(S_Y=Sy, S_X=Sx, statistic="fisher", alpha=0.1)
+#'
+#'
 d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical_values=NULL, seed=123){
 
     stopifnot(statistic %in% c("T2", "T3", "fisher"))
