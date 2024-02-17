@@ -77,7 +77,8 @@ asymptotic.critical.Fisher <- function(m, n, alpha) {
 # Returns the approximated pvalue of the adjusted Fisher statistic based on asymptotic chi-squared approximation
 asymptotic.pvalue.Fisher <- function(m, n, T.obs) {
   gamma = n/m
-  p.value = sqrt(1+gamma) * stats::pchisq(q=T.obs, df=2*n, lower.tail = F) - 2 * (sqrt(1+gamma)-1) * n
+  T.obs_shifted = (T.obs+2 * (sqrt(1+gamma)-1) * n)/ sqrt(1+gamma)
+  p.value = stats::pchisq(q=T.obs_shifted, df=2*n, lower.tail = F)
   return(p.value)
 }
 
