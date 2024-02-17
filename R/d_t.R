@@ -117,7 +117,7 @@ compute.perm.pval <- function(T.obs, m, n, stat.func, B=10^3, seed=123) {
     }
 
     # Compute the permutation p-value
-    pval = (1+sum(T.v <= T.obs)) / (1 + length(T.v))
+    pval = (1+sum(T.v >= T.obs)) / (1 + length(T.v))
 
     return(pval)
 }
@@ -258,9 +258,16 @@ d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical
     T.global = sum(R)
     pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=n, stat.func=stat.func,
                                         asymptotic.pvalue.func=asymptotic.pvalue.func, n_perm=n_perm, B=B, seed=seed)
-    ##if( (pval.global < alpha) && (d>0) ){
-    ##    cat(sprintf("STRANGE. pval.global=%.3f, d=%d.\n", pval.global, d))
-    ##}
+
+
+    ## cat(sprintf("d=%d, p.global=%.3f.\n", d, pval.global))
+    ## if( (pval.global > alpha) && (d>0)) {
+    ##     cat(sprintf("Inconsistency! d=%d, p.global=%.3f.\n", d, pval.global))
+    ## }
+    ## if( (pval.global < alpha) && (d==0)) {
+    ##     cat(sprintf("Inconsistency! d=%d, p.global=%.3f.\n", d, pval.global))
+    ## }
+
     out = list("lower.bound" = d, "global.p.value" = pval.global)
 
     return(out)
