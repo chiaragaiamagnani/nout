@@ -25,7 +25,7 @@ compute.critical.values(
 
 \item{stat.func}{: test statistic of which compute critical values}
 
-\item{asymptotic.critical.func}{: asymptotic approximation of \code{stat.func}}
+\item{asymptotic.critical.func}{: asymptotic distribution of the chosen test statistic}
 
 \item{n_perm}{: if \eqn{min(m,n)\leq n_perm} critical values will be computed via permutation. Default value is 10}
 
@@ -41,5 +41,7 @@ A vector of critical values for a test statistic chosen among \eqn{T_2, T_3} or 
 at significance level \eqn{\alpha} with calibration size \eqn{m} fixed for each level of closed testing.
 }
 \description{
-compute.critical.values
+It computes the vector of critical values for a chosen test statistic
+at significance level \eqn{\alpha}.
 }
+\keyword{internal}
