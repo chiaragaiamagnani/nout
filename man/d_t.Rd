@@ -25,7 +25,7 @@ It can be either \eqn{T_2, T_3} or adjusted Fisher test}
 
 \item{alpha}{: significance level}
 
-\item{n_perm}{: if \eqn{min(m,n)\leq n_perm} critical values will be computed via permutation. Default value is 10}
+\item{n_perm}{: if \eqn{min(m,n)\leq n_{perm}} critical values will be computed via permutation. Default value is 10}
 
 \item{B}{: number of permutation to compute critical values. Default value is 10^3}
 
@@ -35,13 +35,18 @@ the permutation distribution of the test statistic}
 \item{seed}{: seed to ensure reproducible results}
 }
 \value{
-An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
-the number of true discoveries in closed testing procedure using the chosen local test.
-No selection in the index test set is performed and the lower bound is computed
-considering all the observations in the test set.
+A list:
+\itemize{
+\item \code{lower_bound}: an integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
+the number of true discoveries in closed testing procedure using the chosen local test
+\item \code{global.pvalue}: the global \emph{p}-value, i.e., the \emph{p}-value that closed testing procedure uses to reject the global null
+}
 }
 \description{
-d_t
+It returns the lower bound for the number of true discoveries in the whole test set
+obtained with closed testing procedure using LMPI \eqn{T_2} (Wilcoxon-Mann-Whitney)
+or LMPI \eqn{T_3} or Fisher local test. No selection in the index test set is performed and the lower bound is computed
+considering all the observations in the test set.
 }
 \examples{
 set.seed(321)
