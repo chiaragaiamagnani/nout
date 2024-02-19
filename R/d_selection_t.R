@@ -78,15 +78,13 @@ d_selection_t <- function(S_Y, S_X, S=NULL, statistic="T2", alpha=0.1, n_perm=10
   if(is.null(S)){
     S=1:n
   }
-  R.S = R[S]
-  T.global.S = sum(R.S)
-  pval.global.S = compute.global.pvalue(T.obs=T.global.S, m=m, n=length(S), stat.func=stat.func,
+  T.global = sum(R)
+  pval.global.S = compute.global.pvalue(T.obs=T.global, m=m, n=n, stat.func=stat.func,
                                         asymptotic.pvalue.func=asymptotic.pvalue.func, n_perm=n_perm, B=B, seed=seed)
 
-  out = list("lower.bound" = res$TD,
-             "global.p.value.S" = pval.global.S,
-             "S" = S)
+    out = list("lower.bound" = res$TD,
+               "global.p.value.S" = pval.global.S,
+               "S" = S)
 
   return(out)
 }
-
