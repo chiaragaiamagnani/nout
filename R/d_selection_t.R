@@ -2,6 +2,10 @@
 
 #' d_selection_t
 #'
+#' @description It returns the lower bound for the number of true discoveries in an arbitrary selection set \eqn{S}, which is a
+#' subset of the test set, obtained with closed testing procedure using LMPI \eqn{T_2} (Wilcoxon-Mann-Whitney)
+#' or LMPI \eqn{T_3} or Fisher local test.
+#'
 #' @param S_Y : test score vector
 #' @param S_X : calibration score vector
 #' @param S : set of selected indices in the test set on which compute the lower bound for the number of outliers
@@ -14,10 +18,13 @@
 #' the permutation distribution of the test statistic
 #' @param seed : seed to ensure reproducible results
 #'
-#' @return An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
-#' the number of true discoveries in closed testing procedure using the chosen local test.
-#' No selection in the index test set is performed and the lower bound is computed
-#' considering all the observations in the test set.
+#' @return A list:
+#' \itemize{
+#' \item \code{lower_bound}: an integer which is the \eqn{(1 − \alpha)}-confidence lower bound for
+#' the number of true discoveries in the selected set \eqn{S} in closed testing procedure using the chosen local test
+#' \item \code{S}: the selection set, i.e., the selected subset of the test indices
+#' \item \code{global.pvalue}: the global *p*-value, i.e., the *p*-value that closed testing procedure uses to reject the global null
+#' }
 #'
 #' @export
 #'
@@ -71,16 +78,12 @@ d_selection_t <- function(S_Y, S_X, S=NULL, statistic="T2", alpha=0.1, n_perm=10
   res = sumSome::sumStatsPar(g = R, S = S, alpha = alpha, cvs = crit)
 
   ## Compute p-value for the global null
-  if(is.null(S)){
-    S=1:n
-  }
-  R.S = R[S]
-  T.global.S = sum(R.S)
-  pval.global.S = compute.global.pvalue(T.obs=T.global.S, m=m, n=length(S), stat.func=stat.func,
-                                        asymptotic.pvalue.func=asymptotic.pvalue.func, n_perm=n_perm, B=B, seed=seed)
+  T.global = sum(R)
+  pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=n, stat.func=stat.func,
+                                      asymptotic.pvalue.func=asymptotic.pvalue.func, n_perm=n_perm, B=B, seed=seed)
 
   out = list("lower.bound" = res$TD,
-             "global.p.value.S" = pval.global.S,
+             "global.pvalue" = pval.global,
              "S" = S)
 
   return(out)
