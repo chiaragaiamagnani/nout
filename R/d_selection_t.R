@@ -60,6 +60,10 @@ d_selection_t <- function(S_Y, S_X, S=NULL, statistic="T2", alpha=0.1, n_perm=10
   n = length(S_Y)
   m = length(S_X)
 
+  if(!is.null(S)){
+      S = as.vector(S)
+  }
+
   # Compute individual statistics for each test point
   S_Z = c(S_X, S_Y)
   R = stat.func(S_Z, m)
