@@ -39,6 +39,9 @@ d_selection_simes = function(S_Y, S_X, S=NULL, alpha = 0.1){
   # Compute p-value for the global null
   pval.global = hommel::localtest(hom)
 
+  # Compute p-value for the selected null
+  pval.selection = hommel::localtest(hom, ix=S)
+
   if(is.null(S)){
 
     # Lower bound
@@ -51,7 +54,8 @@ d_selection_simes = function(S_Y, S_X, S=NULL, alpha = 0.1){
 
   }
 
-  out = list("lower.bound" = d, "global.p.value" = pval.global, "S"=S)
+ 
+  out = list("lower.bound" = d, "global.p.value" = pval.global, "S"=S, "selection.p.value" = pval.selection)
 
   return(out)
 }

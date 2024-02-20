@@ -86,9 +86,14 @@ d_selection_t <- function(S_Y, S_X, S=NULL, statistic="T2", alpha=0.1, n_perm=10
   pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=n, stat.func=stat.func,
                                       asymptotic.pvalue.func=asymptotic.pvalue.func, n_perm=n_perm, B=B, seed=seed)
 
+  ## Compute p-value for the selected null
+  ## NOTE: this calculation is missing
+  pval.selection = 1
+
   out = list("lower.bound" = res$TD,
              "global.pvalue" = pval.global,
-             "S" = S)
+             "S" = S,
+             "selection.p.value" = 1)
 
 
   return(out)
