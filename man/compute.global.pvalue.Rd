@@ -4,16 +4,7 @@
 \alias{compute.global.pvalue}
 \title{compute.global.pvalue}
 \usage{
-compute.global.pvalue(
-  T.obs,
-  m,
-  n,
-  stat.func,
-  asymptotic.pvalue.func,
-  n_perm = 10,
-  B = 100,
-  seed = 321
-)
+compute.global.pvalue(T.obs, m, n, k = NULL, n_perm = 10, B = 100, seed = 321)
 }
 \arguments{
 \item{T.obs}{: observed value of the chosen test statistic}
@@ -22,10 +13,7 @@ compute.global.pvalue(
 
 \item{n}{: test sample size}
 
-\item{stat.func}{: test statistic of which compute critical values.
-It can be either "stat.T2" or "stat.T2" or "stat.Fisher"}
-
-\item{asymptotic.pvalue.func}{: asymptotic distribution to compute the \emph{p}-value for the global null}
+\item{k}{: order of the LMPI test statistic. If \code{NULL} it refers to Fisher test statistic}
 
 \item{n_perm}{: if \eqn{min(m,n)\leq n_perm} the \emph{p}-value for the global null will be computed via permutation. Default value is 10}
 
@@ -41,4 +29,3 @@ is smaller than \code{n_perm}. Otherwise, it is computed using the asymptotic di
 \description{
 It computes the \emph{p}-value for the global null according to the chosen test statistic
 }
-\keyword{internal}

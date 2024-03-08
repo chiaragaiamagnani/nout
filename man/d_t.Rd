@@ -21,7 +21,7 @@ d_t(
 \item{S_X}{: calibration score vector}
 
 \item{statistic}{: parameter indicating the local test to be used in closed testing procedure.
-It can be either \eqn{T_2, T_3} or adjusted Fisher test}
+It can be either \eqn{T_k} or adjusted Fisher test}
 
 \item{alpha}{: significance level}
 
@@ -44,8 +44,8 @@ the number of true discoveries in closed testing procedure using the chosen loca
 }
 \description{
 It returns the lower bound for the number of true discoveries in the whole test set
-obtained with closed testing procedure using LMPI \eqn{T_2} (Wilcoxon-Mann-Whitney)
-or LMPI \eqn{T_3} or Fisher local test. No selection in the index test set is performed and the lower bound is computed
+obtained with closed testing procedure using LMPI \eqn{T_k} or Fisher local test.
+No selection in the index test set is performed and the lower bound is computed
 considering all the observations in the test set.
 }
 \examples{
@@ -54,8 +54,16 @@ Sxy = sample(x=1:1000, size=100)
 Sx = sample(Sxy, size=70)
 Sy = setdiff(Sxy, Sx)
 d_t(S_Y=Sy, S_X=Sx, statistic="T2", alpha=0.1)
+d_selection_t(S_Y=Sy, S_X=Sx, statistic="T2", alpha=0.1)
+
 d_t(S_Y=Sy, S_X=Sx, statistic="T3", alpha=0.1)
+d_selection_t(S_Y=Sy, S_X=Sx, statistic="T3", alpha=0.1)
+
 d_t(S_Y=Sy, S_X=Sx, statistic="fisher", alpha=0.1)
+d_selection_t(S_Y=Sy, S_X=Sx, statistic="fisher", alpha=0.1)
+
+d_t(S_Y=Sy, S_X=Sx, statistic="T5", alpha=0.1)
+d_selection_t(S_Y=Sy, S_X=Sx, statistic="T5", alpha=0.1)
 
 
 }

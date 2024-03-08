@@ -4,7 +4,7 @@
 \alias{compute.perm.pval}
 \title{compute.perm.pval}
 \usage{
-compute.perm.pval(T.obs, m, n, stat.func, B = 10^3, seed = 123)
+compute.perm.pval(T.obs, m, n, k = NULL, B = 10^3, seed = 123)
 }
 \arguments{
 \item{T.obs}{: observed value of the chosen test statistic}
@@ -13,17 +13,15 @@ compute.perm.pval(T.obs, m, n, stat.func, B = 10^3, seed = 123)
 
 \item{n}{: test sample size}
 
-\item{stat.func}{: test statistic of which compute critical values.
-It can be either "stat.T2" or "stat.T2" or "stat.Fisher"}
+\item{k}{: order of the LMPI test statistic. If \code{NULL} it refers to Fisher test statistic}
 
 \item{B}{: number of permutations}
 
 \item{seed}{: seed to ensure reproducible results}
 }
 \value{
-It returns the \emph{p}-value for the global null obtained via permutation using \code{stat.func} test statistic.
+It returns the \emph{p}-value for the global null obtained via permutation using the chosen test statistic.
 }
 \description{
 It computes the \emph{p}-value for the global null obtained via permutation using a chosen test statistic.
 }
-\keyword{internal}

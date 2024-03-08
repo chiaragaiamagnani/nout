@@ -45,46 +45,52 @@
 #' d_selection_t(S_Y=Sy, S_X=Sx, S=c(1,3,7,19), statistic="T3", alpha=0.1)
 #' d_selection_t(S_Y=Sy, S_X=Sx, S=c(1,3,7,19), statistic="fisher", alpha=0.1)
 #' d_selection_t(S_Y=Sy, S_X=Sx, S=c(1,3,7,23,11,28,19), n_perm=6, statistic="fisher", alpha=0.1)
+#' d_selection_t(S_Y=Sy, S_X=Sx, S=c(1,3,7,23,11,28,19), n_perm=6, statistic="T5", alpha=0.1)
 
 d_selection_t <- function(S_Y, S_X, S=NULL, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical_values=NULL, seed=123){
 
-  stopifnot(statistic %in% c("T2", "T3", "fisher"))
+  statistic = tolower(statistic)
 
-  if(statistic=="T2") {
-    stat.func = stat.T2
-    asymptotic.critical.func = asymptotic.critical.T2
-    asymptotic.pvalue.func = asymptotic.pvalue.T2
-    } else if (statistic=="T3") {
-    stat.func = stat.T3
-    asymptotic.critical.func = asymptotic.critical.T3
-    asymptotic.pvalue.func = asymptotic.pvalue.T3
-  } else if (statistic=="fisher") {
-    stat.func = stat.Fisher
-    asymptotic.critical.func = asymptotic.critical.Fisher
-    asymptotic.pvalue.func = asymptotic.pvalue.Fisher
+  if(statistic !="fisher"){
+    stopifnot(nchar(statistic)>=2)
+    cond1 = substring(statistic, 1, 1)=="t"
+    cond2 = regmatches(statistic, gregexpr("[[:digit:]]+", statistic))==substring(statistic, 2, nchar(statistic))
+    stopifnot(cond1 & cond2)
+  }
+
+  if (statistic=="fisher"){
+    k=NULL
+  } else {
+    k = (as.numeric(regmatches(statistic, gregexpr("[[:digit:]]+", statistic))))-1
+    stopifnot(k>=1)
   }
 
   n = length(S_Y)
   m = length(S_X)
 
+  # Compute all critical values for (m,k) from k in {1,...,n}
+  crit = compute.critical.values(m=m, n=n, alpha=alpha, k=k, n_perm=n_perm, B=B,
+                                 critical_values=critical_values, seed=seed)
+
   if(!is.null(S)){
-      S = as.vector(S)
+    S = as.vector(S)
   }
 
   # Compute individual statistics for each test point
   S_Z = c(S_X, S_Y)
-  R = stat.func(S_Z, m)
 
-  # Compute all critical values for (m,k) from k in {1,...,n}
-  crit = compute.critical.values(m, n, alpha, stat.func, asymptotic.critical.func, n_perm=n_perm, B=B, critical_values=critical_values, seed=seed)
+  if(is.null(k)){
+    R = stat.Fisher(Z=S_Z, m=m)
+  } else{
+    R = stat.Tk(Z=S_Z, k=k, m=m)
+  }
 
   # Compute lower bound for S
   res = sumSome::sumStatsPar(g = R, S = S, alpha = alpha, cvs = crit)
 
   ## Compute p-value for the global null
   T.global = sum(R)
-  pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=n, stat.func=stat.func,
-                                      asymptotic.pvalue.func=asymptotic.pvalue.func, n_perm=n_perm, B=B, seed=seed)
+  pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=n, k=k, n_perm=n_perm, B=B, seed=seed)
 
   out = list("lower.bound" = res$TD,
              "global.pvalue" = pval.global,
@@ -93,3 +99,8 @@ d_selection_t <- function(S_Y, S_X, S=NULL, statistic="T2", alpha=0.1, n_perm=10
 
   return(out)
 }
+
+
+
+
+

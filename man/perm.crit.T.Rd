@@ -4,15 +4,14 @@
 \alias{perm.crit.T}
 \title{perm.crit.T}
 \usage{
-perm.crit.T(m, n, stat.func, alpha = 0.1, B = 10^3, seed = 123)
+perm.crit.T(m, n, k = NULL, alpha = 0.1, B = 10^3, seed = 123)
 }
 \arguments{
 \item{m}{: calibration sample size}
 
 \item{n}{: test sample size}
 
-\item{stat.func}{: test statistic of which compute critical values.
-Can be either "stat.T2" or "stat.T2" or "stat.Fisher"}
+\item{k}{: order of the LMPI test statistic. If \code{NULL} it refers to Fisher test statistic}
 
 \item{alpha}{: significance level. Default value is set equal to 0.1}
 
@@ -21,7 +20,7 @@ Can be either "stat.T2" or "stat.T2" or "stat.Fisher"}
 \item{seed}{: seed to ensure reproducible results}
 }
 \value{
-It returns the \eqn{(1-\alpha)}-quantile of the \code{stat.func} test statistic obtained via permutation.
+It returns the \eqn{(1-\alpha)}-quantile of the chosen test statistic obtained via permutation.
 }
 \description{
 It computes permutation \eqn{(1-\alpha)}-quantile of a chosen test statistic.

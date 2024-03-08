@@ -8,8 +8,7 @@ compute.critical.values(
   m,
   n,
   alpha,
-  stat.func,
-  asymptotic.critical.func,
+  k = NULL,
   n_perm = 10,
   B = 10^3,
   critical_values = NULL,
@@ -23,9 +22,7 @@ compute.critical.values(
 
 \item{alpha}{: significance level}
 
-\item{stat.func}{: test statistic of which compute critical values}
-
-\item{asymptotic.critical.func}{: asymptotic distribution of the chosen test statistic}
+\item{k}{: order of the LMPI test statistic. If \code{NULL} it refers to Fisher test statistic}
 
 \item{n_perm}{: if \eqn{min(m,n)\leq n_perm} critical values will be computed via permutation. Default value is 10}
 
@@ -37,11 +34,10 @@ the permutation distribution of the test statistic}
 \item{seed}{: seed to ensure reproducible results}
 }
 \value{
-A vector of critical values for a test statistic chosen among \eqn{T_2, T_3} or Fisher
+A vector of critical values for a test statistic chosen among LMPI \eqn{T_k} or Fisher statistics
 at significance level \eqn{\alpha} with calibration size \eqn{m} fixed for each level of closed testing.
 }
 \description{
 It computes the vector of critical values for a chosen test statistic
 at significance level \eqn{\alpha}.
 }
-\keyword{internal}
