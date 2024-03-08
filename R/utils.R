@@ -211,7 +211,7 @@ Ehrh2s.theory = function(k,r,s,lambda){
 #'
 #' @param m : calibration sample size
 #' @param n : test sample size
-#'  @param k : order of the LMPI test statistic
+#' @param k : order of the LMPI test statistic
 #' @param lambda : proportion of calibration observations in the pooled sample of calibration and test set
 #'
 #' @return It returns the expectation of LMPI \eqn{T_k} in the limit,
