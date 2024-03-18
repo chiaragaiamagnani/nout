@@ -144,6 +144,25 @@ d_selection_storey = function(S_Y, S_X, S=NULL, alpha=0.1, lambda = 0.5){
   } else { d_S = d }
 
 
-  return(list("d" = d, "d_S" = d_S))
+  # Compute global p-value and p-value for the selected null
+
+  hom = hommel::hommel(pval_unsorted)
+  # Compute p-value for the global null
+  pval.global = hommel::localtest(hom)
+
+  if(is.null(S)){
+    # Compute p-value for the selected null
+    pval.selection = pval.global
+
+  } else {
+    # Compute p-value for the selected null
+    pval.selection = hommel::localtest(hom, ix=S)
+  }
+
+
+  out = list("lower.bound" = d_S, "global.p.value" = pval.global, "S"=S, "selection.p.value" = pval.selection)
+
+  #return(list("d" = d, "d_S" = d_S))
+  return(out)
 
 }
