@@ -39,22 +39,22 @@ d_selection_simes = function(S_Y, S_X, S=NULL, alpha = 0.1){
   # Compute p-value for the global null
   pval.global = hommel::localtest(hom)
 
-  # Compute p-value for the selected null
-  pval.selection = hommel::localtest(hom, ix=S)
-
   if(is.null(S)){
 
     # Lower bound
     d = hommel::discoveries(hom, alpha = alpha)
+    # Compute p-value for the selected null
+    pval.selection = pval.global
 
   } else {
 
     # Lower bound
     d = hommel::discoveries(hom, ix=S, alpha = alpha)
-
+    # Compute p-value for the selected null
+    pval.selection = hommel::localtest(hom, ix=S)
   }
 
- 
+
   out = list("lower.bound" = d, "global.p.value" = pval.global, "S"=S, "selection.p.value" = pval.selection)
 
   return(out)
@@ -62,7 +62,7 @@ d_selection_simes = function(S_Y, S_X, S=NULL, alpha = 0.1){
 
 
 
-#' d_selection_storeysimes
+#' d_selection_storey
 #'
 #' @description It returns the lower bound for the number of true discoveries in closed testing procedure
 #' using Simes local test with Storey estimator for the proportion of true null hypotheses.
@@ -91,46 +91,59 @@ d_selection_simes = function(S_Y, S_X, S=NULL, alpha = 0.1){
 #' Sxy = sample(x=1:1000, size=100)
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
-#' d_selection_storeysimes(S_Y=Sy, S_X=Sx)
-#' d_selection_storeysimes(S_Y=Sy, S_X=Sx, S=3)
-#' d_selection_storeysimes(S_Y=Sy, S_X=Sx, S=c(3, 7:13))
-#' d_selection_storeysimes(S_Y=Sy, S_X=Sx)
+#' d_selection_storey(S_Y=Sy, S_X=Sx)
+#' d_selection_storey(S_Y=Sy, S_X=Sx, S=3)
+#' d_selection_storey(S_Y=Sy, S_X=Sx, S=c(3, 7:13))
+#' d_selection_storey(S_Y=Sy, S_X=Sx)
 #' d_storeysimes(S_Y=Sy, S_X=Sx)
 #'
 #'
 #'
-# d_selection_storeysimes = function(S_Y, S_X, S=NULL, alpha = 0.1, lambda=0.5){
-#   n = length(S_Y)
-#   m = length(S_X)
-#   pval = sort(sapply(1:n, function(i)
-#     (1+sum(S_X >= S_Y[i]))/(m+1)), decreasing=FALSE)
-#
-#   simes.pval = sapply(1:n, function(i)
-#     min(pval[i:n]/seq(from=1, to=n-i+1, by=1)))
-#
-#   if(!is.null(S)){
-#     n = length(S)
-#   }
-#   # Building the levels of Simes test with Storey estimator
-#   # pi.not = sapply(1:n, function(i)
-#   #   (1+sum(pval[i:n]>lambda))/((n-i+1)*(1-lambda)))
-#
-#   # Building the levels of Simes test with Storey estimator.
-#   # Storey estimator will be used in the closed testing procedure
-#   # in every levels except for lowest ones, when the set of
-#   # considered pvalues has cardinality less than or equal to 2.
-#
-#   pi.not.highlevels = sapply(1:(n-2), function(i)
-#     (1+sum(pval[i:n]>lambda))/((n-i+1)*(1-lambda)))
-#   pi.not = c(pi.not.highlevels,1,1)
-#   coeff = seq(from = n, to = 1, by = -1)
-#   thr = alpha/(coeff*pi.not)
-#
-#   d = sum(cumsum(simes.pval <= thr) == 1:n)
-#
-#   ## Calculate the p-value for the global null
-#   pval.global = min(1, simes.pval[1] * pi.not * n)
-#
-#   return(list("d"=d, "global.p.value" = pval.global, "S"=S, "pi.not"=pi.not[1]))
-# }
-#
+d_selection_storey = function(S_Y, S_X, S=NULL, alpha=0.1, lambda = 0.5){
+
+  n = length(S_Y)
+  m = length(S_X)
+  pval_unsorted = sapply(1:n, function(i) (1+sum(S_X >= S_Y[i]))/(m+1))
+  r = order(pval_unsorted)
+  pval = pval_unsorted[r]
+
+  # find h
+  pval_simes = sapply(1:n, function(i)
+    c(
+      min(pval[i:n]/seq.int(from=1, to=n-i+1, by=1)),
+      (1+sum(pval[i:n]>lambda))/((n-i+1)*(1-lambda))
+    )
+  )
+  pval_simes[2,(n-1):n] <- 1
+  d = sum(cumsum(pval_simes[1,] <= alpha/((n:1)*pval_simes[2,])) == 1:n)
+  h = n - d
+
+  # find d_S
+  if (!is.null(S)){
+
+    pval_S <- sort(pval_unsorted[S])
+    s = length(pval_S)
+    pval_notS <- sort(pval_unsorted[-S], decreasing = T)
+    pvals = c(pval_notS, pval_S)
+    o <- order(pvals)
+
+    p_storey <- function(x) { ifelse( length(x) < 3, 1, (sum(x>lambda)+1)/(length(x)*(1-lambda)) ) * min(x*length(x)/(1:length(x)))  }
+
+    d_S = 0
+    for (i in 1:s){
+      for (j in max(0,(h-s+i-1)):0 ){
+        select = rep(F,length=n)
+        select[c(0:j,((n-s)+i):n)] <- T
+        notrejected <- p_storey( pval[select[o]] ) > alpha
+        if (notrejected) { break }
+      }
+      if (notrejected) { break }
+      d_S = d_S + 1
+    }
+
+  } else { d_S = d }
+
+
+  return(list("d" = d, "d_S" = d_S))
+
+}
