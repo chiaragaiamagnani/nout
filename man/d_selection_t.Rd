@@ -13,6 +13,7 @@ d_selection_t(
   n_perm = 10,
   B = 10^3,
   critical_values = NULL,
+  correlation_remainder = 0,
   seed = 123
 )
 }
@@ -34,6 +35,9 @@ It can be either \eqn{T_2, T_3} or adjusted Fisher test}
 
 \item{critical_values}{: if not \code{NULL}, a vector of precomputed critical values obtained using
 the permutation distribution of the test statistic}
+
+\item{correlation_remainder}{: correlation between the remainder and the $U$-statistic when statistic $T_3$ is used.
+Default value is set equal to 0}
 
 \item{seed}{: seed to ensure reproducible results}
 }

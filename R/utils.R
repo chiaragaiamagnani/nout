@@ -277,7 +277,7 @@ compute_variance.Tk = function(k, m, n){
 
   if(k==1){
 
-    # variance = (m*n*(N + 1) / (m^2*n^2*12))*(choose(m,k)*choose(n,k)/N)^2
+    # variance = (m*n*(N + 1) / (m^2*n^2*12))*(choose(m,k)*choose(n,k))^2
     variance = n*m*(n+m+1)/12
 
   } else if (k==2) {

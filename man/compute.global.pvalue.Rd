@@ -4,7 +4,16 @@
 \alias{compute.global.pvalue}
 \title{compute.global.pvalue}
 \usage{
-compute.global.pvalue(T.obs, m, n, k = NULL, n_perm = 10, B = 100, seed = 321)
+compute.global.pvalue(
+  T.obs,
+  m,
+  n,
+  k = NULL,
+  correlation_remainder,
+  n_perm = 10,
+  B = 100,
+  seed = 321
+)
 }
 \arguments{
 \item{T.obs}{: observed value of the chosen test statistic}
@@ -14,6 +23,8 @@ compute.global.pvalue(T.obs, m, n, k = NULL, n_perm = 10, B = 100, seed = 321)
 \item{n}{: test sample size}
 
 \item{k}{: order of the LMPI test statistic. If \code{NULL} it refers to Fisher test statistic}
+
+\item{correlation_remainder}{: correlation between the remainder and the $U$-statistic when statistic $T_3$ is used}
 
 \item{n_perm}{: if \eqn{min(m,n)\leq n_perm} the \emph{p}-value for the global null will be computed via permutation. Default value is 10}
 

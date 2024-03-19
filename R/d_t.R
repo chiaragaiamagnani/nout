@@ -46,20 +46,23 @@ stat.Tk <- function(Z, m, k) {
 #' @param m : calibration sample size
 #' @param n : test sample size
 #' @param k : order of the LMPI test statistic
+#' @param correlation_remainder : correlation between the remainder and the $U$-statistic when statistic $T_3$ is used
 #' @param alpha : significance level. Default value is set equal to 0.1
 #'
 #'
 #' @return It returns the \eqn{(1-\alpha)}-quantile of LMPI \eqn{T_k} test statistic
 #' based on asymptotic normal approximation.
 #'
-asymptotic.critical.Tk <- function(m, n, k, alpha=0.1) {
+asymptotic.critical.Tk <- function(m, n, k, correlation_remainder, alpha=0.1) {
+
   stopifnot(k>=1)
+  stopifnot((correlation_remainder <=1) & (correlation_remainder >= -1))
 
   # Compute mean and variance of kernel of Tk
   theta.kernel = compute_theta.Tk(m=m,n=n,k=k)
   variance.kernel = compute_variance.Tk(m=m,n=n,k=k)
 
-  if(k==2){
+  if(k==2 & correlation_remainder==0){
     N = m+n
     # mean remainder
     theta.remainder = ((N-1)*(N+n)/3)#*(choose(m,k)*choose(n,k)/N)
@@ -74,7 +77,23 @@ asymptotic.critical.Tk <- function(m, n, k, alpha=0.1) {
     theta = theta.kernel+theta.remainder
     variance = variance.kernel+variance.remainder
 
-  } else {
+  } else if (k==2 & correlation_remainder!=0){
+    N = m+n
+    # mean remainder
+    theta.remainder = ((N-1)*(N+n)/3)#*(choose(m,k)*choose(n,k)/N)
+    # variance remainder
+    z01_Re = ((m + n)^2*(16*m^4 + 16*n^4 + 30*m^3*(-1 + 2*n) +
+                           30*m*n^2*(-1 + 2*n) + m^2*(15 - 60*n + 92*n^2)))/(45*m^4*n^4)
+    z10_Re = ((m + n)^2*(16*m^4 + 16*n^4 + 30*m^3*(-1 + 2*n) +
+                           30*m*n^2*(-1 + 2*n) + m^2*(75 + 4*n*(-75 + 83*n))))/(45*m^4*n^4)
+    variance.remainder = ((choose(n,k) * choose(m,k) / N)^2) * (4/N*(z10_Re*N/m+z01_Re*N/n))
+
+    # theta and variance cosidering the remainder
+    theta = theta.kernel + theta.remainder
+    variance = variance.kernel + variance.remainder +
+      2*correlation_remainder*sqrt(variance.kernel*variance.remainder)
+
+  } else if (k>2 || k==1) {
     theta = theta.kernel
     variance = variance.kernel
   }
@@ -92,19 +111,21 @@ asymptotic.critical.Tk <- function(m, n, k, alpha=0.1) {
 #' @param n : test sample size
 #' @param k : order of the LMPI test statistic
 #' @param T.obs : observed value of the test statistic
+#' @param correlation_remainder : correlation between the remainder and the $U$-statistic when statistic $T_3$ is used
 #'
 #'
 #' @return It returns the approximated *p*-value of the LMPI \eqn{T_k}
 #' test statistic based on the asymptotic normal approximation
 #'
-asymptotic.pvalue.Tk <- function(m, n, k, T.obs) {
+asymptotic.pvalue.Tk <- function(m, n, k, T.obs, correlation_remainder) {
   stopifnot(k>=1)
+  stopifnot((correlation_remainder <=1) & (correlation_remainder >= -1))
 
   # Compute mean and variance of kernel of Tk
   theta.kernel = compute_theta.Tk(m=m,n=n,k=k)
   variance.kernel = compute_variance.Tk(m=m,n=n,k=k)
 
-  if(k==2){
+  if(k==2 & correlation_remainder==0){
     N = m+n
     # mean remainder
     theta.remainder = ((N-1)*(N+n)/3)#*(choose(m,k)*choose(n,k)/N)
@@ -119,7 +140,24 @@ asymptotic.pvalue.Tk <- function(m, n, k, T.obs) {
     theta = theta.kernel+theta.remainder
     variance = variance.kernel+variance.remainder
 
-  } else {
+  } else if (k==2 & correlation_remainder!=0){
+
+    N = m+n
+    # mean remainder
+    theta.remainder = ((N-1)*(N+n)/3)#*(choose(m,k)*choose(n,k)/N)
+    # variance remainder
+    z01_Re = ((m + n)^2*(16*m^4 + 16*n^4 + 30*m^3*(-1 + 2*n) +
+                           30*m*n^2*(-1 + 2*n) + m^2*(15 - 60*n + 92*n^2)))/(45*m^4*n^4)
+    z10_Re = ((m + n)^2*(16*m^4 + 16*n^4 + 30*m^3*(-1 + 2*n) +
+                           30*m*n^2*(-1 + 2*n) + m^2*(75 + 4*n*(-75 + 83*n))))/(45*m^4*n^4)
+    variance.remainder = ((choose(n,2) * choose(m,2) / N)^2) * (4/N*(z10_Re*N/m+z01_Re*N/n))
+
+    # theta and variance cosidering the remainder
+    theta = theta.kernel + theta.remainder
+    variance = variance.kernel + variance.remainder +
+      2*correlation_remainder*sqrt(variance.kernel*variance.remainder)
+
+  } else if (k>2 || k==1) {
     theta = theta.kernel
     variance = variance.kernel
   }
@@ -300,6 +338,7 @@ compute.perm.pval <- function(T.obs, m, n, k=NULL, B=10^3, seed=123) {
 #' @param n : test sample size
 #' @param k : order of the LMPI test statistic. If \code{NULL} it refers to Fisher test statistic
 #' @param n_perm : if \eqn{min(m,n)\leq n_perm} the *p*-value for the global null will be computed via permutation. Default value is 10
+#' @param correlation_remainder : correlation between the remainder and the $U$-statistic when statistic $T_3$ is used
 #' @param B : number of permutations
 #' @param seed : seed to ensure reproducible results
 #'
@@ -309,7 +348,9 @@ compute.perm.pval <- function(T.obs, m, n, k=NULL, B=10^3, seed=123) {
 #' is smaller than \code{n_perm}. Otherwise, it is computed using the asymptotic distribution.
 #'
 #'
-compute.global.pvalue <- function(T.obs, m, n, k=NULL, n_perm=10, B=100, seed=321) {
+compute.global.pvalue <- function(T.obs, m, n, k=NULL, correlation_remainder, n_perm=10, B=100, seed=321) {
+
+  stopifnot((correlation_remainder <=1) & (correlation_remainder >= -1))
 
   # permutation p-value for the global null if the sample size is small
   if(min(m,n)<=n_perm){
@@ -323,7 +364,7 @@ compute.global.pvalue <- function(T.obs, m, n, k=NULL, n_perm=10, B=100, seed=32
     if(is.null(k))
       pval.perm = asymptotic.pvalue.Fisher(m=m, n=n, T.obs=T.obs)
     else
-      pval.perm = asymptotic.pvalue.Tk(m=m, n=n, k=k, T.obs=T.obs)
+      pval.perm = asymptotic.pvalue.Tk(m=m, n=n, k=k, T.obs=T.obs, correlation_remainder)
   }
   return(pval.perm)
 }
@@ -339,6 +380,7 @@ compute.global.pvalue <- function(T.obs, m, n, k=NULL, n_perm=10, B=100, seed=32
 #' @param n : test size
 #' @param alpha : significance level
 #' @param k : order of the LMPI test statistic. If \code{NULL} it refers to Fisher test statistic
+#' @param correlation_remainder : correlation between the remainder and the $U$-statistic when statistic $T_3$ is used
 #' @param n_perm : if \eqn{min(m,n)\leq n_perm} critical values will be computed via permutation. Default value is 10
 #' @param B : number of permutation to compute critical values. Default value is 10^3
 #' @param critical_values : if not \code{NULL}, a vector of precomputed critical values obtained using
@@ -350,7 +392,9 @@ compute.global.pvalue <- function(T.obs, m, n, k=NULL, n_perm=10, B=100, seed=32
 #' at significance level \eqn{\alpha} with calibration size \eqn{m} fixed for each level of closed testing.
 #'
 #'
-compute.critical.values <- function(m, n, alpha, k=NULL, n_perm=10, B=10^3, critical_values=NULL, seed=123){
+compute.critical.values <- function(m, n, alpha, k=NULL, correlation_remainder, n_perm=10, B=10^3, critical_values=NULL, seed=123){
+
+  stopifnot((correlation_remainder <=1) & (correlation_remainder >= -1))
 
   crit = sapply(1:n, function(h) {
     # For small values of m and n compute critical values via permutation
@@ -374,7 +418,7 @@ compute.critical.values <- function(m, n, alpha, k=NULL, n_perm=10, B=10^3, crit
       if(is.null(k)){
         critical.value = asymptotic.critical.Fisher(m=m, n=h, alpha=alpha)
       } else {
-        critical.value = asymptotic.critical.Tk(m=m, n=h, k=k, alpha=alpha)
+        critical.value = asymptotic.critical.Tk(m=m, n=h, k=k, alpha=alpha, correlation_remainder=correlation_remainder)
       }
     }
     return(critical.value)
@@ -406,6 +450,7 @@ compute.critical.values <- function(m, n, alpha, k=NULL, n_perm=10, B=10^3, crit
 #' @param B : number of permutation to compute critical values. Default value is 10^3
 #' @param critical_values : if not \code{NULL}, a vector of precomputed critical values obtained using
 #' the permutation distribution of the test statistic
+#' @param correlation_remainder : correlation between the remainder and the $U$-statistic when statistic $T_3$ is used
 #' @param seed : seed to ensure reproducible results
 #'
 #' @return
@@ -425,8 +470,9 @@ compute.critical.values <- function(m, n, alpha, k=NULL, n_perm=10, B=10^3, crit
 #' Sxy = sample(x=1:1000, size=100)
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
-#' d_t(S_Y=Sy, S_X=Sx, statistic="T2", alpha=0.1)
+#' d_t(S_Y=Sy, S_X=Sx, statistic="T2", correlation_remainder = 0, alpha=0.1)
 #' d_selection_t(S_Y=Sy, S_X=Sx, statistic="T2", alpha=0.1)
+#' d_t(S_Y=Sy, S_X=Sx, statistic="T2", correlation_remainder = 1, alpha=0.1)
 #'
 #' d_t(S_Y=Sy, S_X=Sx, statistic="T3", alpha=0.1)
 #' d_selection_t(S_Y=Sy, S_X=Sx, statistic="T3", alpha=0.1)
@@ -438,7 +484,7 @@ compute.critical.values <- function(m, n, alpha, k=NULL, n_perm=10, B=10^3, crit
 #' d_selection_t(S_Y=Sy, S_X=Sx, statistic="T5", alpha=0.1)
 #'
 #'
-d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical_values=NULL, seed=123){
+d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical_values=NULL, correlation_remainder = 0, seed=123){
 
   statistic = tolower(statistic)
 
@@ -456,12 +502,15 @@ d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical
     stopifnot(k>=1)
   }
 
+  stopifnot((correlation_remainder <=1) & (correlation_remainder >= -1))
+
   n = length(S_Y)
   m = length(S_X)
 
   # Compute all critical values for (m,k) from k in {1,...,n}
   crit = compute.critical.values(m=m, n=n, alpha=alpha, k=k, n_perm=n_perm, B=B,
-                                 critical_values=critical_values, seed=seed)
+                                 critical_values=critical_values,
+                                 correlation_remainder=correlation_remainder, seed=seed)
 
   # Compute the individual statistics for each test point using the input data
   S_Z = c(S_X, S_Y)
@@ -481,7 +530,9 @@ d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical
 
   ## Compute p-value for the global null
   T.global = sum(R)
-  pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=n, k=k, n_perm=n_perm, B=B, seed=seed)
+  pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=n, k=k,
+                                      correlation_remainder=correlation_remainder,
+                                      n_perm=n_perm, B=B, seed=seed)
 
 
   ## cat(sprintf("d=%d, p.global=%.3f.\n", d, pval.global))

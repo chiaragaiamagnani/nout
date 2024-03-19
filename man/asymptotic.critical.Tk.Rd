@@ -4,7 +4,7 @@
 \alias{asymptotic.critical.Tk}
 \title{asymptotic.critical.Tk}
 \usage{
-asymptotic.critical.Tk(m, n, k, alpha = 0.1)
+asymptotic.critical.Tk(m, n, k, correlation_remainder, alpha = 0.1)
 }
 \arguments{
 \item{m}{: calibration sample size}
@@ -12,6 +12,8 @@ asymptotic.critical.Tk(m, n, k, alpha = 0.1)
 \item{n}{: test sample size}
 
 \item{k}{: order of the LMPI test statistic}
+
+\item{correlation_remainder}{: correlation between the remainder and the $U$-statistic when statistic $T_3$ is used}
 
 \item{alpha}{: significance level. Default value is set equal to 0.1}
 }

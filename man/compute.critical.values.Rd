@@ -9,6 +9,7 @@ compute.critical.values(
   n,
   alpha,
   k = NULL,
+  correlation_remainder,
   n_perm = 10,
   B = 10^3,
   critical_values = NULL,
@@ -23,6 +24,8 @@ compute.critical.values(
 \item{alpha}{: significance level}
 
 \item{k}{: order of the LMPI test statistic. If \code{NULL} it refers to Fisher test statistic}
+
+\item{correlation_remainder}{: correlation between the remainder and the $U$-statistic when statistic $T_3$ is used}
 
 \item{n_perm}{: if \eqn{min(m,n)\leq n_perm} critical values will be computed via permutation. Default value is 10}
 
