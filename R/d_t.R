@@ -30,7 +30,8 @@ stat.Tk <- function(Z, m, k) {
     Tk_i = sum(sapply(1:k, function(h){R^h}))
   }
   else{
-    Tk_i = apply(sapply(1:k, function(h){R^h}), MARGIN=1, FUN = sum)
+    # Tk_i = apply(sapply(1:k, function(h){R^h}), MARGIN=1, FUN = sum)
+    Tk_i = apply(sapply(1:k, function(l){R+l-1}), MARGIN=1, FUN = prod)
   }
 
   return(Tk_i)
