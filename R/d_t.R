@@ -74,7 +74,7 @@ asymptotic.critical.Tk <- function(m, n, k, correlation_remainder, alpha=0.1) {
                            30*m*n^2*(-1 + 2*n) + m^2*(75 + 4*n*(-75 + 83*n))))/(45*m^4*n^4)
     variance.remainder = ((choose(n,k) * choose(m,k) / N)^2) * (4/N*(z10_Re*N/m+z01_Re*N/n))
 
-    # theta and variance cosidering the remainder
+    # theta and variance considering the remainder
     theta = theta.kernel+theta.remainder
     variance = variance.kernel+variance.remainder
 
@@ -94,7 +94,11 @@ asymptotic.critical.Tk <- function(m, n, k, correlation_remainder, alpha=0.1) {
     variance = variance.kernel + variance.remainder +
       2*correlation_remainder*sqrt(variance.kernel*variance.remainder)
 
-  } else if (k>2 || k==1) {
+  } else if(k==3){
+    theta = (choose(n,k) * choose(m,k) / N^(k-1)) * exactish.T3.tilde(m=m,n=n)$mu3.tilde.exact
+    variance =  ((choose(n,k) * choose(m,k) / N^(k-1))^2) * exactish.T3.tilde(m=m,n=n)$var3.tilde.exactish
+
+  } else if (k>3 || k==1) {
     theta = theta.kernel
     variance = variance.kernel
   }
@@ -158,7 +162,11 @@ asymptotic.pvalue.Tk <- function(m, n, k, T.obs, correlation_remainder) {
     variance = variance.kernel + variance.remainder +
       2*correlation_remainder*sqrt(variance.kernel*variance.remainder)
 
-  } else if (k>2 || k==1) {
+  }  else if(k==3){
+    theta = (choose(n,k) * choose(m,k) / N^(k-1)) *exactish.T3.tilde(m=m,n=n)$mu3.tilde.exact
+    variance = ((choose(n,k) * choose(m,k) / N^(k-1))^2) *exactish.T3.tilde(m=m,n=n)$var3.tilde.exactish
+
+  } else if (k>3 || k==1) {
     theta = theta.kernel
     variance = variance.kernel
   }
