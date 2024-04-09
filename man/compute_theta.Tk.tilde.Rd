@@ -4,7 +4,7 @@
 \alias{compute_theta.Tk.tilde}
 \title{compute_theta.Tk.tilde}
 \usage{
-compute_theta.Tk.tilde(m, n, k, lambda)
+compute_theta.Tk.tilde(m, n, k)
 }
 \arguments{
 \item{m}{: calibration sample size}
@@ -12,8 +12,6 @@ compute_theta.Tk.tilde(m, n, k, lambda)
 \item{n}{: test sample size}
 
 \item{k}{: order of the LMPI test statistic}
-
-\item{lambda}{: proportion of calibration observations in the pooled sample of calibration and test set}
 }
 \value{
 It returns the expectation of LMPI \eqn{T_k} in the limit,
