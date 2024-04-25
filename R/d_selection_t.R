@@ -51,6 +51,8 @@
 
 d_selection_t <- function(S_Y, S_X, S=NULL, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical_values=NULL, correlation_remainder = 0, seed=123){
 
+  stopifnot((correlation_remainder <=1) & (correlation_remainder >= -1))
+
   statistic = tolower(statistic)
 
   if(statistic !="fisher"){
