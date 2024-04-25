@@ -13,7 +13,7 @@ asymptotic.critical.Tk(m, n, k, correlation_remainder, alpha = 0.1)
 
 \item{k}{: order of the LMPI test statistic}
 
-\item{correlation_remainder}{: correlation between the remainder and the $U$-statistic when statistic $T_3$ is used}
+\item{correlation_remainder}{: correlation between the $U$-statistic and the remainder}
 
 \item{alpha}{: significance level. Default value is set equal to 0.1}
 }
@@ -23,5 +23,5 @@ based on asymptotic normal approximation.
 }
 \description{
 It computes the \eqn{(1-\alpha)}-quantile of LMPI \eqn{T_k} test statistic
-based on asymptotic normal approximation.
+based on asymptotic normal approximation. For \eqn{k=1,2,3} the exact mean and a more accurate estimate are used.
 }
