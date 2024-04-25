@@ -1,6 +1,219 @@
 
-# Utilities that are used to compute variance and mean of Tk in the asymptotic normal approximation
+# --------------------------------------------------------- MEAN T_k TILDE ---------------------------------------------------------
 
+
+# This function computes the approximated mean of Tk tilde applying Theorem 1
+compute_approx_mean.Tk.tilde = function(m,n,k){
+  N = n+m
+  lambda = m/N
+
+  if(k==1){ # WMW
+    theta = 0.5
+
+  } else if (k==2) {
+
+    theta = (4*(2-lambda))/(3*(1-lambda)*lambda)
+
+  } else if(k>2) {
+
+    coef = factorial(k)^2/(k+1)
+    somma = sum(sapply(0:(k-1), function(r) choose(k,r)/(lambda^r*(1-lambda)^(k-r-1))))
+    theta = (coef*somma)
+  }
+
+  return(theta)
+}
+
+
+
+# It computes the exact mean of Tk tilde using the inverse transformation
+compute_mean_exact_Tk.tilde = function(m,n,k){
+
+  N=n+m
+
+  Ck = calc.const.Tk(n=n,k=k)
+  mean = compute_mean_exact_Tk(m=m,n=n,k=k)
+
+  if(k<4){
+    out = ((mean-Ck)*N^(k-1))/(choose(n,k)*choose(m,k))
+  } else {
+    out = NA
+  }
+
+  return(out)
+}
+
+
+
+
+
+
+
+
+
+# --------------------------------------------------------- MEAN T_k ---------------------------------------------------------
+
+
+
+From_Tk.tilde_To_Tk_mean = function(mean.tilde,m,n,k){
+
+  stopifnot(k>=1)
+
+  N=n+m
+
+  mean = mean.tilde*(choose(m,k)*choose(n,k)/N^(k-1))
+
+  return(mean)
+}
+
+
+
+# This function computes the approximated mean of Tk applying Theorem 1
+compute_approx_mean.Tk = function(m,n,k){
+
+  N = n+m
+
+  # E[Tk] = E[Tk_tilde]*(choose(m,k)*choose(n,k)/N) + C, dove C = sum(((1:n)-1)^k)
+  Ck = calc.const.Tk(n=n,k=k)
+  approx_mean.Tk.tilde=compute_approx_mean.Tk.tilde(m=m,n=n,k=k)
+  mu = From_Tk.tilde_To_Tk_mean(mean.tilde=approx_mean.Tk.tilde,m=m,n=n,k=k) + Ck # sum(((1:n)-1)^k)
+
+  return(mu)
+}
+
+
+
+# Compute mu_k (= expected value of R_1^k) according to Lemma 2.
+# This algorithm has been formally proved for k=1,2,3 but not for further values of k.
+compute.mu_k = function(m,n,k){
+
+  l_v = 0:k
+  c.binom_v = choose(k,l_v)
+
+  E = vector()
+
+  if(k==1){
+
+    k.bar_n = min(n,k)
+    k.bar_m = min(m,k)
+
+    E0 = sum(sapply(1:k.bar_m, function(dj){ prod((m-dj+1):m) / (dj+1)}))
+    Ek = sum(sapply(1:k.bar_n, function(di){ prod(((n-di):(n-1))) / (di+1)}))
+    E = c(E0,Ek)
+
+  } else if(k==2){
+    k.bar_n = min(n,k)
+    k.bar_m = min(m,k)
+
+    dj_v = 1:k.bar_m
+    di_v = 1:k.bar_n
+
+    c.dj_v = c(1,choose(k.bar_m, dj_v[2:k.bar_m]))
+    c.di_v = c(1,choose(k.bar_n, di_v[2:k.bar_n]))
+
+    E0 = sum(sapply(1:k.bar_m, function(dj){c.dj_v[dj] * prod(((m-dj+1):m)) / (dj+1)}))
+    Ek = sum(sapply(1:k.bar_n, function(di){c.di_v[di] * prod(((n-di):(n-1))) / (di+1)}))
+
+    for(l in 1:(k-1)){
+      k.bar_n = min(n,l)
+      k.bar_m = min(m,k-l)
+
+      dj_v = 1:(k.bar_m) # k.bar_n
+      di_v = 1:k.bar_n
+
+      if((k.bar_m-l)==1){
+        c.dj_v = choose(k.bar_m, dj_v)
+      } else {
+        c.dj_v = c(1,choose(k.bar_m, dj_v[2:(k.bar_m)]))
+      }
+
+      if(k.bar_n==1){
+        c.di_v = choose(k.bar_n, di_v)
+      } else {
+        c.di_v = c(1,choose(k.bar_n, di_v[2:k.bar_n]))
+      }
+
+      E[l] = sum(sapply(dj_v, function(dj){
+        sum(sapply(di_v, function(di){
+          c.dj_v[dj]*c.di_v[di]*prod(((m-dj+1):m))*prod(((n-di):(n-1))) / (di+dj+1)
+        }))
+      }))
+    }
+
+    E = c(E0,E,Ek)
+
+  } else {
+
+    k.bar_n = min(n,k)
+    k.bar_m = min(m,k)
+
+    dj_v = 1:k.bar_m
+    di_v = 1:k.bar_n
+
+    c.dj_v = c(1,choose(k.bar_m, dj_v[2:k.bar_m]))
+    c.di_v = c(1,choose(k.bar_n, di_v[2:k.bar_n]))
+
+    E0 = sum(sapply(1:k.bar_m, function(dj){c.dj_v[dj] * prod(((m-dj+1):m)) / (dj+1)}))
+    Ek = sum(sapply(1:k.bar_n, function(di){c.di_v[di] * prod(((n-di):(n-1))) / (di+1)}))
+
+
+    for(l in 1:(k-1)){
+
+      k.bar_n = min(n,l)
+      k.bar_m = min(m,k-l)
+
+      dj_v = 1:k.bar_m
+      di_v = 1:k.bar_n
+
+      if(k.bar_m==1){
+        c.dj_v = choose(k.bar_m, dj_v)
+      } else {
+        c.dj_v = c(1,choose(k.bar_m, dj_v[2:k.bar_m]))
+      }
+
+      if(k.bar_n==1){
+        c.di_v = choose(k.bar_n, di_v)
+      } else {
+        c.di_v = c(1,choose(k.bar_n, di_v[2:k.bar_n]))
+      }
+
+      E[l] = sum(sapply(dj_v, function(dj){
+        sum(sapply(di_v, function(di){
+          c.dj_v[dj]*c.di_v[di]*prod(((m-dj+1):m))*prod(((n-di):(n-1))) / (di+dj+1)
+        }))
+      }))
+
+    }
+
+    E = c(E0,E,Ek)
+  }
+
+  mu_k = sum(c.binom_v*E)
+
+  return(mu_k)
+}
+
+
+# Compute the exact mean of Tk according to Lemma 1
+compute_mean_exact_Tk = function(m,n,k){
+
+  if(k==1){
+    out = n*(compute.mu_k(m=m,n=n,k=1))
+  } else if(k==2){
+    out = n*(compute.mu_k(m=m,n=n,k=1) + compute.mu_k(m=m,n=n,k=2))
+  } else if(k==3){
+    out = n*(2*compute.mu_k(m=m,n=n,k=1) + 3*compute.mu_k(m=m,n=n,k=2) + compute.mu_k(m=m,n=n,k=3))
+  } else {
+    out = NA
+  }
+
+  return(out)
+}
+
+
+
+
+# --------------------------------------------------------- VARIANCE T_k TILDE ---------------------------------------------------------
 
 E3 = function(k){
   a1 = numeric()
@@ -74,7 +287,6 @@ E0 = function(k){
 }
 
 
-
 Ehrhr.theory = function(k,r,lambda){
 
   if(r==0){
@@ -129,19 +341,6 @@ Ehrhs.theory = function(k,r,s,lambda){
 }
 
 
-
-
-Eh0h20.theory = function(k,r=0,s=0,lambda){
-  c.00 = factorial(k)^4/(k^2*(1-lambda)^(2*k-2))
-  res = ((k-1)^2+2*(k-1))*E2(k=k)+E1(k=k)
-  out = c.00*res
-
-  return(out)
-}
-
-
-
-
 Eh0h2r.theory = function(k,r=0,s=NULL,lambda){
   c.0 = factorial(k)^2/(k*(1-lambda)^(k-1))
   c.r = choose(k,r)*factorial(k-r)*factorial(k-r-1)*factorial(r)^2/(lambda^r*(1-lambda)^(k-r-1))
@@ -158,7 +357,13 @@ Eh0h2r.theory = function(k,r=0,s=NULL,lambda){
   return(out)
 }
 
+Eh0h20.theory = function(k,r=0,s=0,lambda){
+  c.00 = factorial(k)^4/(k^2*(1-lambda)^(2*k-2))
+  res = ((k-1)^2+2*(k-1))*E2(k=k)+E1(k=k)
+  out = c.00*res
 
+  return(out)
+}
 
 Ehrh2r.theory = function(k,r,s=NULL,lambda){
 
@@ -207,135 +412,17 @@ Ehrh2s.theory = function(k,r,s,lambda){
 }
 
 
-#' compute_theta.Tk.tilde
-#'
-#' @param m : calibration sample size
-#' @param n : test sample size
-#' @param k : order of the LMPI test statistic
-#'
-#' @return It returns the expectation of LMPI \eqn{T_k} in the limit,
-#' computed according to the Central Limit Theorem for \eqn{U}-statistics.
-#'
-compute_theta.Tk.tilde = function(m,n,k){
-  N = n+m
-  lambda = m/N
 
-  if(k==1){ # WMW
-    theta = 0.5
-
-  } else if (k==2) {
-
-    theta = (4*(2-lambda))/(3*(1-lambda)*lambda)
-
-  } else if(k>2) {
-
-    coef = factorial(k)^2/(k+1)
-    somma = sum(sapply(0:(k-1), function(r) choose(k,r)/(lambda^r*(1-lambda)^(k-r-1))))
-    theta = (coef*somma)
-  }
-
-  return(theta)
-}
-
-
-
-
-#' compute_theta.Tk
-#'
-#' @param m : calibration sample size
-#' @param n : test sample size
-#' @param k : order of the LMPI test statistic
-#'
-#' @return It returns the expectation of LMPI \eqn{\left[\frac{T_k} -\sum_{i=1}^n(i-1)^k-1\right]{\binom{m,k-1}\binom{n,k-1}}} in the limit,
-#' computed according to the Central Limit Theorem for \eqn{U}-statistics.
-#'
-compute_theta.Tk = function(m,n,k){
-  N = n+m
-  lambda = m/N
-
-  if(k==1){
-    theta = (n*(m+n+1))/2
-    #theta = 0.5*(choose(m,k)*choose(n,k)/N) + (n*(n-1))/2
-
-  } else if (k==2) {
-
-    theta = ((4*(2-lambda))/(3*(1-lambda)*lambda))*(choose(m,k)*choose(n,k)/N) + n*(2*n^2-3*n+1)/6 + n*(n-1)/2
-
-  } else {
-
-    coef = factorial(k)^2/(k+1)
-    somma = sum(sapply(0:(k-1), function(r) choose(k,r)/(lambda^r*(1-lambda)^(k-r-1))))
-
-    # E[Tk] = E[Tk_tilde]*(choose(m,k)*choose(n,k)/N) + C, dove C = sum(((1:n)-1)^k)
-    theta = (coef*somma)*(choose(m,k)*choose(n,k)/N^(k-1)) + sum(((1:n)-1)^k)
-  }
-
-  return(theta)
-}
-
-
-
-#' compute_variance.Tk
-#'
-#' @param m : calibration sample size
-#' @param n : test sample size
-#' @param k : order of the LMPI test statistic
-#'
-#' @return It returns the variance of LMPI \eqn{T_k} in the limit,
-#' computed according to the Central Limit Theorem for \eqn{U}-statistics.
-#'
-compute_variance.Tk = function(k, m, n){
-
-  N = n+m
-  lambda = m/N
-
-  if(k==1){
-
-    # variance = (m*n*(N + 1) / (m^2*n^2*12))*(choose(m,k)*choose(n,k))^2
-    variance = n*m*(n+m+1)/12
-
-  } else if (k==2) {
-
-    variance = (64/(45*N*(1-lambda)^3*lambda^3))*(choose(m,k)*choose(n,k)/N)^2
-
-  } else {
-
-    Ehh1 = sum(sapply(0:(k-1), function(r) Ehrhr.theory(k=k, r=r, lambda=lambda))) +
-      2 * sum(sapply(1:(k-2), function(r){
-        sum(sapply((r+1):(k-1), function(s) Ehrhs.theory(k=k, r=r, s=s, lambda=lambda)))
-      })) +
-      2 * sum(sapply(1:(k-1), function(r) Eh0hr.theory(k=k, r=r, lambda=lambda)
-      ))
-
-    Ehh2 = Eh0h20.theory(k=k, r=0, lambda=lambda) +
-      sum(sapply(1:(k-1), function(r) Ehrh2r.theory(k=k, r=r, lambda=lambda))) +
-      2 * sum(sapply(1:(k-2), function(r){
-        sum(sapply((r+1):(k-1), function(s) Ehrh2s.theory(k=k, r=r, s=s, lambda=lambda)))
-      })) +
-      2 * sum(sapply(1:(k-1), function(r) Eh0h2r.theory(k=k, r=r, lambda=lambda)
-      ))
-
-    theta2 = (compute_theta.Tk.tilde(m=m,n=n,k=k))^2
-    z10 = Ehh1-theta2
-    z01 = Ehh2-theta2
-    variance = (k^2/N*(z10/lambda+z01/(1-lambda)))*(choose(m,k)*choose(n,k)/N^(k-1))^2
-
-  }
-
-  return(variance)
-
-}
-
-
-calc.theory.variance.Tk.tilde = function(k, m, n){
+# Compute variance of Tk tilde according to Theorem 1
+compute_var.Tk.tilde = function(k, m, n){
 
   N = n+m
   lambda = m/N
 
   if(k==1){ # WMW
 
-    # variance = (m*n*(N + 1) / (m^2*n^2*12))*(choose(m,k)*choose(n,k))^2
-    variance = (N+1)/(12*m*n)
+    # variance = (m*n*N / (m^2*n^2*12))*(choose(m,k)*choose(n,k))^2
+    variance = N/(12*m*n)
 
   } else if (k==2) { # T3
 
@@ -358,7 +445,7 @@ calc.theory.variance.Tk.tilde = function(k, m, n){
       2 * sum(sapply(1:(k-1), function(r) Eh0h2r.theory(k=k, r=r, lambda=lambda)
       ))
 
-    theta2 = (compute_theta.Tk.tilde(m=m,n=n,k=k))^2
+    theta2 = (compute_approx_mean.Tk.tilde(m=m,n=n,k=k))^2
     z10 = Ehh1-theta2
     z01 = Ehh2-theta2
     variance = (k^2/N*(z10/lambda+z01/(1-lambda)))
@@ -370,188 +457,280 @@ calc.theory.variance.Tk.tilde = function(k, m, n){
 }
 
 
-# This function computes the variance of the remainder of T2 tilde
-calc.theory.variance.remainderT2.tilde = function(m,n){
-  N = n+m
-  z01_Re = (N^2*(16*m^4 + 16*n^4 + 30*m^3*(-1 + 2*n) +
-                   30*m*n^2*(-1 + 2*n) + m^2*(15 - 60*n + 92*n^2)))/(45*m^4*n^4)
-  z10_Re = (N^2*(16*m^4 + 16*n^4 + 30*m^3*(-1 + 2*n) +
-                   30*m*n^2*(-1 + 2*n) + m^2*(75 + 4*n*(-75 + 83*n))))/(45*m^4*n^4)
-  variance.remainder =  4*(z10_Re*N/m+z01_Re*N/n)
 
-  return(variance.remainder)
-}
-
-# This function computes the variance of the remainder of T2
-# calc.theory.variance.remainderT2 = function(m,n){
-#
-#   N = n+m
-#   variance.remainder =  calc.theory.variance.remainder.tilde(m=m,n=n)/N
-#
-#   return(variance.remainder)
-# }
-
-calc.theory.mean.remainderT3.tilde = function(m,n){
-
+# Compute the variance of the remainder of sum_{i=1}^n R_i^2
+compute_var.remainder.sumRik.tilde = function(m,n,k){
   N = n+m
   lambda = m/N
 
-  mean.remainderT3 = (81*(4 + 3*m))/(lambda^2 * m^2) +
-    ( 27*(3 - 2*m + m*n - 2*n))/((1 - lambda) * lambda * m^2 * n) +
-    ( 36*(-3 + n)) / ((1 - lambda)^2*m*n) +
-    (81*(-4 + m + 2*n)) / ( 4*(1 - lambda)*lambda*m*n) +
-    (9*(-2 + 3*n)) / ((1 - lambda)^2*n^2) +
-    (6*(26 + 36*m - 54*n - 6*n^2)) / ((1 - lambda)^2*m^2*n^2)
+  if(k==2){
+    den = 45*n^4*m^4
+    z10 = (N^2*(75*m^2 - 30*m^3 + 16*m^4 - 150*m^2*n + 30*m^3*n - 30*m*n^2 + 107*m^2*n^2 + 30*m*n^3 + 16*n^4))/den
+    z01 = (N^2*(15*m^2 - 30*m^3 + 16*m^4 - 30*m^2*n + 30*m^3*n - 30*m*n^2 + 47*m^2*n^2 + 30*m*n^3 + 16*n^4))/den
 
-  return(mean.remainderT3)
-}
+    variance =  4/N*(z10/lambda + z01/(1-lambda))
 
+  } else if(k==3) {
+    den = 105*m^8*n^8
+    z10 = (4*N^4*(34300*m^4 - 41160*m^5 + 94472*m^6 - 35280*m^7 + 7708*m^8 -
+                    29400*m^4*n + 44100*m^5*n - 95760*m^6*n + 49140*m^7*n - 4728*m^8*n -
+                    23520*m^3*n^2 + 30408*m^4*n^2 - 112056*m^5*n^2 + 117828*m^6*n^2 -
+                    19458*m^7*n^2 + 3924*m^8*n^2 + 18900*m^3*n^3 - 37730*m^4*n^3 +
+                    130452*m^5*n^3 - 84426*m^6*n^3 + 19926*m^7*n^3 + 20720*m^2*n^4 -
+                    80724*m^3*n^4 + 140678*m^4*n^4 - 123906*m^5*n^4 + 47790*m^6*n^4 -
+                    15792*m^2*n^5 + 62412*m^3*n^5 - 84990*m^4*n^5 + 46404*m^5*n^5 -
+                    10080*m*n^6 + 32400*m^2*n^6 - 45504*m^3*n^6 + 29817*m^4*n^6 +
+                    3780*m*n^7 - 12474*m^2*n^7 + 10206*m^3*n^7 + 1744*n^8 - 5232*m*n^8 +
+                    3924*m^2*n^8))/den
 
-calc.theory.variance.remainderT3.tilde = function(m,n){
+    z01 = (N^4*(27440*m^4 - 164640*m^5 + 288512*m^6 - 141120*m^7 + 10572*m^8 -
+                  23520*m^4*n + 176400*m^5*n - 351792*m^6*n + 196560*m^7*n -
+                  15588*m^8*n - 94080*m^3*n^2 + 101472*m^4*n^2 - 342384*m^5*n^2 +
+                  405072*m^6*n^2 - 78696*m^7*n^2 + 10935*m^8*n^2 + 75600*m^3*n^3 -
+                  150920*m^4*n^3 + 412608*m^5*n^3 - 294792*m^6*n^3 + 81000*m^7*n^3 +
+                  87584*m^2*n^4 - 208992*m^3*n^4 + 479856*m^4*n^4 - 443160*m^5*n^4 +
+                  176796*m^6*n^4 - 65184*m^2*n^5 + 160272*m^3*n^5 - 288252*m^4*n^5 +
+                  157194*m^5*n^5 - 40320*m*n^6 + 130896*m^2*n^6 - 167184*m^3*n^6 +
+                  114684*m^4*n^6 + 15120*m*n^7 - 50400*m^2*n^7 + 41580*m^3*n^7 +
+                  4860*n^8 - 14580*m*n^8 + 10935*m^2*n^8))/den
 
-  N = n+m
-  lambda = m/N
-
-  den.z10_Re = 420*(-1 + lambda)^4 * lambda^4 * m^4 * n^4
-  num.z10_Re =
-    43740*(4 + 3*m)^2*n^4 +
-    4860*lambda*(4 + 3 *m) *n^3 *(21 + 9* m^2 + 7* m*n - 158 *n -
-                                    10 *m* (5 + 9 *n)) +
-    lambda^4 *(1215 *m^4 *(4 - 3 *n)^2 +
-                 108* m^3 *(1568 + 264* n - 1775* n^2 + 1230* n^3) +
-                 72* m* (72800 - 14* (12544 + 135* m*n)* n +
-                           7* (-11371 + 27 *m*n)* n^2 + (63375 - 1449* m*n)* n^3 + 24924 *n^4) +
-                 6* m^2* (625184 + 84* (-4064 + 45* m*n)* n - 15* (38875 + 189* m*n)* n^2 +
-                            18810* n^3 + 67464* n^4) +
-                 4 *(473200 - 24570* (83 + m*n)* n +
-                       21* (50983 + 2916* m*n + 81* m*n^2)* n^2 -
-                       1134* (-1993 + 31 *m*n)* n^3 + 487440 *n^4)) +
-    9* lambda^2* n^2 *(-424172 + 1215* m^4 + 756* m*n^2 + 749952 *n +
-                         659760 *n^2 - 540* m^3 *(61 + 18* n) - 1512 *m*n *(-3 + 32 *n) +
-                         54* m^2 *(-7967 + 35 *m*n + 1890 *n + 3890* n^2) -
-                         24* m* (39655 - 33534* n - 31608* n^2 + 63 *m*n *(7 + 20* n))) -
-    18* lambda^3* n *(-405* m^4* (-4 + 3* n) +
-                        18* m^3 *(312 - 480* n + 265* n^2) +
-                        4* m^2 *(-7252 + 315* m*n - 118359* n + 10074 *n^2 + 18450* n^3) -
-                        2* m* (26992 + 416164 *n - 319539* n^2 - 157746 *n^3 +
-                                 63 *m*n *(60 + 36* n + 121* n^2)) +
-                        4* (-4095 - 94808* n + 189 *m*n^2 *n + 199773 *n^2 + 75210* n^3 -
-                              21* m*n* (65 - 189* n + 291* n^2)))
-  z10_Re = num.z10_Re/den.z10_Re
-
-  den.z01_Re = 420*(-1 + lambda)^4 * lambda^4 * m^4 * n^4
-  num.z01_Re = 43740 *(4 + 3 *m)^2* n^4 +
-    4860 *lambda* (4 + 3 *m)* n^3 *(42 - 64* m + 9* m^2 + 14* m*n - 172* n -
-                                      90* m* n) +
-    lambda^4* (1215* m^4 *(4 - 3 *n)^2 +
-                 18 *m^3* (5824 + 6120 *n - 10335* n^2 + 7380 *n^3) +
-                 18 *m* (58240 - 56 *(3904 + 135* m*n)* n -
-                           14 *(26411 + 81* m*n) *n^2 + (330801 - 10521* m*n) *n^3 +
-                           117210 *n^4) +
-                 m^2 *(801472 + 840 *(-2213 + 36 *m*n)* n - 3 *(1486549 + 6615* m*n)* n^2 +
-                         272502 *n^3 + 404784 *n^4) +
-                 4* (94640 - 24570* (19 + m*n)* n +
-                       21 *(-28441 + 2916* m*n + 81* m*n^2)* n^2 -
-                       1134 *(-1967 + 61* m*n)* n^3 + 583704* n^4)) +
-    81 *lambda^2 *n^2 *(-57484 + 135 *m^4 + 84 *m*n^2 + 89712 *n + 85776* n^2 -
-                          90* m^3 *(43 + 12* n) - 168* m*n* (-3 + 62 *n) +
-                          3 *m^2 *(-19133 + 105* m*n + 6090* n + 7780* n^2) +
-                          2* m *(-64554 + 52881* n + 46610* n^2 - 21 *m*n* (38 + 165 *n))) -
-    18 *lambda^3* n *(-405* m^4 *(-4 + 3 *n) + 6* m^3* (796 - 1545*n + 795* n^2) +
-                        m^2* (-27748 - 562539 *n + 69906* n^2 + 73800 *n^3 +
-                                105* m*n* (16 + 3 *n)) -
-                        2* m* (26992 + 521290 *n - 395895* n^2 - 180930* n^3 +
-                                 63* m*n* (60 + 66* n + 241* n^2)) +
-                        12* (-1365 - 39368* n + 63 *m*n^2* n + 77049* n^2 + 30642 *n^3 -
-                               7* m*n* (65 - 189* n + 561* n^2)))
-
-  z01_Re = num.z01_Re/den.z01_Re
-
-  variance.remainder.T3 =  9*(z10_Re*N/m+z01_Re*N/n)
-
-  return(variance.remainder.T3)
-}
-
-
-calc.theory.variance.L.T2.tilde = function(m,n){
-  N = n+m
-  lambda = m/N
-
-  den = 720*m^2*n^2*lambda^2*(1-lambda)^2
-  z10 = (16*n^2 + 2*lambda*n*(14*n+32*m-15)+lambda^2*(75+64*m^2-270*n+256*n^2+56*m*n-60*m))/den
-  z01 = (16*n^2 + 2*lambda*n*(14*n+32*m-15)+lambda^2*(15+64*m^2-30*n+16*n^2+56*m*n-60*m))/den
-
-  variance =  4*(z10/lambda + z01/(1-lambda))
+    variance = 9/N*(z10/lambda + z01/(1-lambda))
+  } else {
+    variance = NA
+  }
 
   return(variance)
 }
 
 
 
-exactish.T3.tilde = function(n,m){
 
-  N=n+m
-  lambda=m/N
+# Compute more accurate estimate of the variance of Tk tilde (it takes into account the remainders)
+compute_var.Tk.tilde.exactish = function(m,n,k,corr){
 
-  # mu2.exact
-  mu2.Teo1.tilde = compute_theta.Tk.tilde(m=m,n=n,k=2)
-  mu2.exact.tilde = mu2.Teo1.tilde + N/(choose(n,2)*choose(m,2))*(N-1)*(N+n)/3
+  stopifnot((corr <=1) & (corr >= -1))
 
-  # mu2.T.tilde
-  mu2.L.tilde = 2/(3*n*(1-lambda)) + (2*n-1)/(2*n*m*(1-lambda)) + 2/(3*m*lambda)
-  mu2.T.tilde = mu2.Teo1.tilde + mu2.L.tilde
+  if(k==1){
 
-  # mu3.T.tilde
-  mu3.Teo1.tilde = compute_theta.Tk.tilde(m=m,n=n,k=3)
-  mu3.L.tilde = calc.theory.mean.remainderT3.tilde(m=m,n=n)
-  mu3.T.tilde = mu3.Teo1.tilde + mu3.L.tilde
+    var.Tk.tilde.exactish = compute_var.Tk.tilde(k=k,m=m,n=n)
 
-  # mu3.tilde.exact
-  mu3.tilde.exact = 2*mu2.exact.tilde + mu2.T.tilde + mu3.T.tilde
+  } else if(k==2){
 
+    variance.theory = compute_var.Tk.tilde(k=k,m=m,n=n)
+    variance.remainder = compute_var.remainder.sumRik.tilde(m=m,n=n,k=2)
+    var.Tk.tilde.exactish = variance.theory + variance.remainder + 2*corr*sqrt(variance.theory*variance.remainder)
 
-  # var2.exact
-  var2.Teo1.tilde = calc.theory.variance.Tk.tilde(m=m,n=n,k=2)
-  var2.remainder.tilde = calc.theory.variance.remainderT2.tilde(m=m,n=n)
-  var2.exactish.tilde = var2.Teo1.tilde + var2.remainder.tilde
+  } else if(k==3){
 
-  # var2.T.tilde
-  var2.L.tilde = calc.theory.variance.L.T2.tilde(m=m,n=n)
-  var2.T.tilde = var2.Teo1.tilde + var2.L.tilde
+    # variance of sum_{i\in[n]} R_i = variance of T1 (WMW)
+    varT1 = compute_var.Tk.tilde(m=m,n=n,k=1)
 
-  # var3.T.tilde
-  var3.Teo1.tilde = calc.theory.variance.Tk.tilde(m=m,n=n,k=3)
-  var3.L.tilde = calc.theory.variance.remainderT3.tilde(m=m,n=n)
-  var3.T.tilde = var3.Teo1.tilde + var3.L.tilde
+    # variance of sum_{i\in[n]} R_i^2
+    varT2.tilde.Teo1 = compute_var.Tk.tilde(m=m,n=n,k=2)
+    varT2.remainder.tilde = compute_var.remainder.sumRik.tilde(m=m,n=n,k=2) # compute_var.remainder.Tk.tilde(m=m,n=n,k=2)
+    var_sumRi2.tilde = varT2.tilde.Teo1 + varT2.remainder.tilde + 2*sqrt(varT2.tilde.Teo1*varT2.remainder.tilde)
 
-  # var3.tilde.exact
-  var3.tilde.exactish = 4*var2.exactish.tilde + var2.T.tilde + var3.T.tilde
+    # variance of sum_{i\in[n]} R_i^3
+    varT3.tilde.Teo1 = compute_var.Tk.tilde(m=m,n=n,k=3)
+    varT3.remainder.tilde = compute_var.remainder.sumRik.tilde(m=m,n=n,k=3) # compute_var.remainder.Tk.tilde(m=m,n=n,k=3)
+    var_sumRi3.tilde = varT3.tilde.Teo1 + varT3.remainder.tilde + 2*corr*sqrt(varT3.tilde.Teo1*varT3.remainder.tilde)
 
-  return(c("mu3.tilde.exact" = mu3.tilde.exact,
-           "var3.tilde.exactish" = var3.tilde.exactish))
+    # varT3.tilde.exactish
+    var.Tk.tilde.exactish = 4*varT1 + 9*var_sumRi2.tilde + var_sumRi3.tilde
+
+  } else {
+    var.Tk.tilde.exactish = NA
+  }
+
+  return(var.Tk.tilde.exactish)
+
 }
 
 
-exactish.T2.tilde = function(n,m){
+
+
+
+
+
+
+# --------------------------------------------------------- VARIANCE T_k ---------------------------------------------------------
+
+
+#' compute_variance.Tk
+#'
+#' @param m : calibration sample size
+#' @param n : test sample size
+#' @param k : order of the LMPI test statistic
+#'
+#' @return It returns the variance of LMPI \eqn{T_k} in the limit,
+#' computed according to the Central Limit Theorem for \eqn{U}-statistics.
+#'
+compute_variance.Tk = function(k, m, n){
+
+  N = n+m
+  lambda = m/N
+
+  if(k==1){
+
+    # variance = (m*n*N / (m^2*n^2*12))*(choose(m,k)*choose(n,k))^2
+    variance = n*m*N/12
+
+  } else {
+
+    variance = compute_var.Tk.tilde(m=m,n=n,k=k)*(choose(m,k)*choose(n,k)/N^(k-1))^2
+
+  }
+
+  return(variance)
+
+}
+
+
+
+From_Tk.tilde_To_Tk_variance = function(variance.tilde,m,n,k){
+
+  stopifnot(k>=1)
 
   N=n+m
-  lambda=m/N
 
-  mu2.tilde.exact = compute_theta.Tk.tilde(m,n,k=2)+ N/(choose(n,2)*choose(m,2))*(N-1)*(N+n)/3
+  variance = variance.tilde*(choose(m,k)*choose(n,k)/N^(k-1))^2
 
-
-  z01_Re = ((m + n)^2*(16*m^4 + 16*n^4 + 30*m^3*(-1 + 2*n) +
-                         30*m*n^2*(-1 + 2*n) + m^2*(15 - 60*n + 92*n^2)))/(45*m^4*n^4)
-  z10_Re = ((m + n)^2*(16*m^4 + 16*n^4 + 30*m^3*(-1 + 2*n) +
-                         30*m*n^2*(-1 + 2*n) + m^2*(75 + 4*n*(-75 + 83*n))))/(45*m^4*n^4)
-  variance.remainder =  4*(z10_Re*N/m+z01_Re*N/n)
-  var2.tilde.exactish = calc.theory.variance.Tk.tilde(m,n,k=2) + variance.remainder
-
-
-
-  return(c("mu2.tilde.exact" = mu2.tilde.exact,
-           "var2.tilde.exactish" = var2.tilde.exactish))
+  return(variance)
 }
+
+
+
+
+
+# ----------------------------------------------------------- GENERATE DATA T_k -----------------------------------------------------------
+
+
+gen.data <- function(m,n) {
+  Z <- stats::rnorm(m+n)
+  return(Z)
+}
+
+stat.Tk <- function(Z, m, k) {
+
+  N = length(Z)
+  n = N-m
+  R = rank(Z)[(m+1):N]-1
+
+  if(n==1){
+    Tk_i = sum(sapply(1:k, function(h){R^h}))
+  }
+  else{
+    # Tk_i = apply(sapply(1:k, function(h){R^h}), MARGIN=1, FUN = sum)
+    Tk_i = apply(sapply(1:k, function(l){R+l-1}), MARGIN=1, FUN = prod)
+  }
+
+  return(Tk_i)
+}
+
+
+# New notation (T1 = WMW)
+calc.Tk <- function(Z, m, k) {
+  N <- length(Z)
+  Tk = sum(stat.Tk(Z=Z,m=m,k=k))
+  return(Tk)
+}
+
+
+# New notation (T1 = WMW)
+calc.const.Tk = function(n,k){
+
+  if(k==1){ # WMW
+    Ck <- n*(n-1)/2
+  } else if(k==2){
+    Ck <- n*(2*n^2-3*n+1)/6 + n*(n-1)/2
+  } else if(k>2){
+    Ck <- sum(sapply(1:k, function(h) sum(((1:n)-1)^h)))
+  }
+  return(Ck)
+}
+
+
+calc.Tk.tilde <- function(Z,m,k) {
+  N <- length(Z)
+  n <- N-m
+  Tk <- calc.Tk(Z=Z,m=m,k=k)
+
+  if(k==1){ # WMW
+    Tkt <- Tk - n*(n-1)/2
+  } else if(k==2){
+    Tkt <- Tk - n*(2*n^2-3*n+1)/6 - n*(n-1)/2
+  } else if(k>2){
+    Ck = calc.const.Tk(n=n,k=k)
+    Tkt <- Tk - Ck
+  }
+
+  Tkt <- N^(k-1) * Tkt / (choose(n,k) * choose(m,k))
+  return(Tkt)
+}
+
+
+
+
+
+# ----------------------------------------------------- GENERATE DATA sum_{i\in[n]} R_i^k -----------------------------------------------------
+
+
+# New notation (T1 = WMW)
+calc.sumRik <- function(Z, m, k) {
+  N <- length(Z)
+  sumRk = sum(stat.Rik(Z=Z,m=m,k=k))
+  return(sumRk)
+}
+
+
+stat.Rik <- function(Z, m, k) {
+
+  N = length(Z)
+
+  n = N-m
+  R = rank(Z)[(m+1):N]-1
+
+  Rk_i=R^k
+
+  return(Rk_i)
+}
+
+
+# New notation (T1 = WMW)
+calc.const.sumRk = function(n,k){
+
+  if(k==1){ # WMW
+    Ck <- n*(n-1)/2
+  } else if(k==2){
+    Ck <- n*(2*n^2-3*n+1)/6
+  } else if(k==3){
+    Ck <- n^2*(n-1)^2/4 - 3*n*(n-1)/2
+  } else if(k>3){
+    Ck <- sum(((1:n)-1)^k)
+  }
+  return(Ck)
+}
+
+
+calc.sumRk.tilde <- function(Z,m,k) {
+  N <- length(Z)
+  n <- N-m
+  sumRk <- calc.sumRik(Z=Z,m=m,k=k)
+
+  if(k==1){ # WMW
+    sumRkt <- sumRk - n*(n-1)/2
+  } else if(k==2){
+    sumRkt <- sumRk - n*(2*n^2-3*n+1)/6
+  } else if(k>2){
+    Ck = calc.const.sumRk(n=n,k=k)
+    sumRkt <- sumRk - Ck
+  }
+
+  sumRkt <- N^(k-1) * sumRkt / (choose(n,k) * choose(m,k))
+  return(sumRkt)
+}
+
+
 
 
 

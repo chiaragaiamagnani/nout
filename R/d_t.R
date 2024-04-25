@@ -39,15 +39,74 @@ stat.Tk <- function(Z, m, k) {
 
 
 
+
+
+
+
+#' asymptotic.moments.Tk
+#'
+#' @description It computes the mean and the variance of the asymptotic distribution of \eqn{T_k}.
+#' For \eqn{k=1,2,3} the exact mean is given, i.e., the finite-sample mean,
+#' and the provided estimate of the variance is more accurate than the first order asymptotic approximation.
+#'
+#' @param m : calibration sample size
+#' @param n : test sample size
+#' @param k : order of the LMPI test statistic
+#' @param correlation_remainder : correlation between the \eqn{U}-statistic \eqn{T_k} and the remainder
+#'
+#' @return It returns the mean and the variance of the asymptotic distribution of \eqn{T_k}.
+#' For \eqn{k=1,2,3} the exact mean is given, i.e., the finite-sample mean,
+#' and the provided estimate of the variance is more accurate than the first order asymptotic approximation.
+asymptotic.moments.Tk <- function(m, n, k, correlation_remainder) {
+
+  stopifnot(k>=1)
+  stopifnot((correlation_remainder <=1) & (correlation_remainder >= -1))
+
+  if(k<4){
+
+    # Compute exact mean of Tk according to Lemma 2 when k=1,2,3.
+    # For k>3 it returns NA.
+    mean.exact.Tk = compute_mean_exact_Tk(m=m,n=n,k=k)
+
+    # Compute variance of Tk according to Theorem 1 when k=1,
+    # according to Theorem 2 when k=2 and according to Theorem 3 when k=3.
+    # For k>3 it returns NA.
+    variance.exactish.Tk.tilde = compute_var.Tk.tilde.exactish(m=m,n=n,k=k,corr=correlation_remainder)
+    variance.exactish.Tk = From_Tk.tilde_To_Tk_variance(variance.tilde=variance.exactish.Tk.tilde,m=m,n=n,k=k)
+
+    mean.Tk = mean.exact.Tk
+    variance.Tk = variance.exactish.Tk
+
+  } else {
+
+    # Compute mean of Tk according to Theorem 1
+    mean.approx.Tk = compute_approx_mean.Tk(m=m,n=n,k=k)
+
+    # Compute variance of Tk according to Theorem 1
+    variance.approx.Tk = compute_variance.Tk(m=m,n=n,k=k)
+
+    mean.Tk = mean.approx.Tk
+    variance.Tk = variance.approx.Tk
+  }
+
+  moments.Tk = list("mean.Tk"=mean.Tk, "variance.Tk"=variance.Tk)
+
+  return(moments.Tk)
+}
+
+
+
+
+
 #' asymptotic.critical.Tk
 #'
 #' @description It computes the \eqn{(1-\alpha)}-quantile of LMPI \eqn{T_k} test statistic
-#' based on asymptotic normal approximation.
+#' based on asymptotic normal approximation. For \eqn{k=1,2,3} the exact mean and a more accurate estimate are used.
 
 #' @param m : calibration sample size
 #' @param n : test sample size
 #' @param k : order of the LMPI test statistic
-#' @param correlation_remainder : correlation between the remainder and the $U$-statistic when statistic $T_3$ is used
+#' @param correlation_remainder : correlation between the $U$-statistic and the remainder
 #' @param alpha : significance level. Default value is set equal to 0.1
 #'
 #'
@@ -59,53 +118,16 @@ asymptotic.critical.Tk <- function(m, n, k, correlation_remainder, alpha=0.1) {
   stopifnot(k>=1)
   stopifnot((correlation_remainder <=1) & (correlation_remainder >= -1))
 
-  # Compute mean and variance of kernel of Tk
-  theta.kernel = compute_theta.Tk(m=m,n=n,k=k)
-  variance.kernel = compute_variance.Tk(m=m,n=n,k=k)
+  mean.Tk = asymptotic.moments.Tk(m=m,n=n,k=k,correlation_remainder=correlation_remainder)$mean.Tk
+  variance.Tk = asymptotic.moments.Tk(m=m,n=n,k=k,correlation_remainder=correlation_remainder)$variance.Tk
 
-  if(k==2 & correlation_remainder==0){
-    N = m+n
-    # mean remainder
-    theta.remainder = ((N-1)*(N+n)/3)#*(choose(m,k)*choose(n,k)/N)
-    # variance remainder
-    z01_Re = ((m + n)^2*(16*m^4 + 16*n^4 + 30*m^3*(-1 + 2*n) +
-                           30*m*n^2*(-1 + 2*n) + m^2*(15 - 60*n + 92*n^2)))/(45*m^4*n^4)
-    z10_Re = ((m + n)^2*(16*m^4 + 16*n^4 + 30*m^3*(-1 + 2*n) +
-                           30*m*n^2*(-1 + 2*n) + m^2*(75 + 4*n*(-75 + 83*n))))/(45*m^4*n^4)
-    variance.remainder = ((choose(n,k) * choose(m,k) / N)^2) * (4/N*(z10_Re*N/m+z01_Re*N/n))
+  critical.value = stats::qnorm(alpha, mean=mean.Tk, sd = sqrt(variance.Tk), lower.tail = F)
 
-    # theta and variance considering the remainder
-    theta = theta.kernel+theta.remainder
-    variance = variance.kernel+variance.remainder
-
-  } else if (k==2 & correlation_remainder!=0){
-    N = m+n
-    # mean remainder
-    theta.remainder = ((N-1)*(N+n)/3)#*(choose(m,k)*choose(n,k)/N)
-    # variance remainder
-    z01_Re = ((m + n)^2*(16*m^4 + 16*n^4 + 30*m^3*(-1 + 2*n) +
-                           30*m*n^2*(-1 + 2*n) + m^2*(15 - 60*n + 92*n^2)))/(45*m^4*n^4)
-    z10_Re = ((m + n)^2*(16*m^4 + 16*n^4 + 30*m^3*(-1 + 2*n) +
-                           30*m*n^2*(-1 + 2*n) + m^2*(75 + 4*n*(-75 + 83*n))))/(45*m^4*n^4)
-    variance.remainder = ((choose(n,k) * choose(m,k) / N)^2) * (4/N*(z10_Re*N/m+z01_Re*N/n))
-
-    # theta and variance cosidering the remainder
-    theta = theta.kernel + theta.remainder
-    variance = variance.kernel + variance.remainder +
-      2*correlation_remainder*sqrt(variance.kernel*variance.remainder)
-
-  } else if(k==3){
-    theta = (choose(n,k) * choose(m,k) / N^(k-1)) * exactish.T3.tilde(m=m,n=n)$mu3.tilde.exact
-    variance =  ((choose(n,k) * choose(m,k) / N^(k-1))^2) * exactish.T3.tilde(m=m,n=n)$var3.tilde.exactish
-
-  } else if (k>3 || k==1) {
-    theta = theta.kernel
-    variance = variance.kernel
-  }
-
-  critical.value = stats::qnorm(alpha, mean=theta, sd = sqrt(variance), lower.tail = F)
   return(critical.value)
 }
+
+
+
 
 #' asymptotic.pvalue.Tk
 #'
@@ -123,55 +145,14 @@ asymptotic.critical.Tk <- function(m, n, k, correlation_remainder, alpha=0.1) {
 #' test statistic based on the asymptotic normal approximation
 #'
 asymptotic.pvalue.Tk <- function(m, n, k, T.obs, correlation_remainder) {
+
   stopifnot(k>=1)
   stopifnot((correlation_remainder <=1) & (correlation_remainder >= -1))
 
-  # Compute mean and variance of kernel of Tk
-  theta.kernel = compute_theta.Tk(m=m,n=n,k=k)
-  variance.kernel = compute_variance.Tk(m=m,n=n,k=k)
+  mean.Tk = asymptotic.moments.Tk(m=m,n=n,k=k,correlation_remainder=correlation_remainder)$mean.Tk
+  variance.Tk = asymptotic.moments.Tk(m=m,n=n,k=k,correlation_remainder=correlation_remainder)$variance.Tk
 
-  if(k==2 & correlation_remainder==0){
-    N = m+n
-    # mean remainder
-    theta.remainder = ((N-1)*(N+n)/3)#*(choose(m,k)*choose(n,k)/N)
-    # variance remainder
-    z01_Re = ((m + n)^2*(16*m^4 + 16*n^4 + 30*m^3*(-1 + 2*n) +
-                           30*m*n^2*(-1 + 2*n) + m^2*(15 - 60*n + 92*n^2)))/(45*m^4*n^4)
-    z10_Re = ((m + n)^2*(16*m^4 + 16*n^4 + 30*m^3*(-1 + 2*n) +
-                           30*m*n^2*(-1 + 2*n) + m^2*(75 + 4*n*(-75 + 83*n))))/(45*m^4*n^4)
-    variance.remainder = ((choose(n,2) * choose(m,2) / N)^2) * (4/N*(z10_Re*N/m+z01_Re*N/n))
-
-    # theta and variance cosidering the remainder
-    theta = theta.kernel+theta.remainder
-    variance = variance.kernel+variance.remainder
-
-  } else if (k==2 & correlation_remainder!=0){
-
-    N = m+n
-    # mean remainder
-    theta.remainder = ((N-1)*(N+n)/3)#*(choose(m,k)*choose(n,k)/N)
-    # variance remainder
-    z01_Re = ((m + n)^2*(16*m^4 + 16*n^4 + 30*m^3*(-1 + 2*n) +
-                           30*m*n^2*(-1 + 2*n) + m^2*(15 - 60*n + 92*n^2)))/(45*m^4*n^4)
-    z10_Re = ((m + n)^2*(16*m^4 + 16*n^4 + 30*m^3*(-1 + 2*n) +
-                           30*m*n^2*(-1 + 2*n) + m^2*(75 + 4*n*(-75 + 83*n))))/(45*m^4*n^4)
-    variance.remainder = ((choose(n,2) * choose(m,2) / N)^2) * (4/N*(z10_Re*N/m+z01_Re*N/n))
-
-    # theta and variance cosidering the remainder
-    theta = theta.kernel + theta.remainder
-    variance = variance.kernel + variance.remainder +
-      2*correlation_remainder*sqrt(variance.kernel*variance.remainder)
-
-  }  else if(k==3){
-    theta = (choose(n,k) * choose(m,k) / N^(k-1)) *exactish.T3.tilde(m=m,n=n)$mu3.tilde.exact
-    variance = ((choose(n,k) * choose(m,k) / N^(k-1))^2) *exactish.T3.tilde(m=m,n=n)$var3.tilde.exactish
-
-  } else if (k>3 || k==1) {
-    theta = theta.kernel
-    variance = variance.kernel
-  }
-
-  p.value = stats::pnorm(q=T.obs, mean=theta, sd = sqrt(variance), lower.tail = F)
+  p.value = stats::pnorm(q=T.obs, mean=variance.Tk, sd = sqrt(variance.Tk), lower.tail = F)
 
   return(p.value)
 }
@@ -495,6 +476,8 @@ compute.critical.values <- function(m, n, alpha, k=NULL, correlation_remainder, 
 #'
 d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical_values=NULL, correlation_remainder = 0, seed=123){
 
+  stopifnot((correlation_remainder <=1) & (correlation_remainder >= -1))
+
   statistic = tolower(statistic)
 
   if(statistic !="fisher"){
@@ -510,8 +493,6 @@ d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical
     k = (as.numeric(regmatches(statistic, gregexpr("[[:digit:]]+", statistic))))-1
     stopifnot(k>=1)
   }
-
-  stopifnot((correlation_remainder <=1) & (correlation_remainder >= -1))
 
   n = length(S_Y)
   m = length(S_X)
