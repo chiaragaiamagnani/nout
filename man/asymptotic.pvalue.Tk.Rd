@@ -4,7 +4,7 @@
 \alias{asymptotic.pvalue.Tk}
 \title{asymptotic.pvalue.Tk}
 \usage{
-asymptotic.pvalue.Tk(m, n, k, T.obs, correlation_remainder)
+asymptotic.pvalue.Tk(m, n, k, T.obs)
 }
 \arguments{
 \item{m}{: calibration sample size}
@@ -14,8 +14,6 @@ asymptotic.pvalue.Tk(m, n, k, T.obs, correlation_remainder)
 \item{k}{: order of the LMPI test statistic}
 
 \item{T.obs}{: observed value of the test statistic}
-
-\item{correlation_remainder}{: correlation between the remainder and the $U$-statistic when statistic $T_3$ is used}
 }
 \value{
 It returns the approximated \emph{p}-value of the LMPI \eqn{T_k}

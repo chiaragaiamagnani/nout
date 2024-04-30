@@ -4,7 +4,7 @@
 \alias{asymptotic.moments.Tk}
 \title{asymptotic.moments.Tk}
 \usage{
-asymptotic.moments.Tk(m, n, k, correlation_remainder)
+asymptotic.moments.Tk(m, n, k)
 }
 \arguments{
 \item{m}{: calibration sample size}
@@ -12,8 +12,6 @@ asymptotic.moments.Tk(m, n, k, correlation_remainder)
 \item{n}{: test sample size}
 
 \item{k}{: order of the LMPI test statistic}
-
-\item{correlation_remainder}{: correlation between the \eqn{U}-statistic \eqn{T_k} and the remainder}
 }
 \value{
 It returns the mean and the variance of the asymptotic distribution of \eqn{T_k}.

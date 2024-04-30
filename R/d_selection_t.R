@@ -16,8 +16,6 @@
 #' @param B : number of permutation to compute critical values. Default value is 10^3
 #' @param critical_values : if not \code{NULL}, a vector of precomputed critical values obtained using
 #' the permutation distribution of the test statistic
-#' @param correlation_remainder : correlation between the remainder and the $U$-statistic when statistic $T_3$ is used.
-#' Default value is set equal to 0
 #' @param seed : seed to ensure reproducible results
 #'
 #' @return A list:
@@ -49,9 +47,7 @@
 #' d_selection_t(S_Y=Sy, S_X=Sx, S=c(1,3,7,23,11,28,19), n_perm=6, statistic="fisher", alpha=0.1)
 #' d_selection_t(S_Y=Sy, S_X=Sx, S=c(1,3,7,23,11,28,19), n_perm=6, statistic="T5", alpha=0.1)
 
-d_selection_t <- function(S_Y, S_X, S=NULL, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical_values=NULL, correlation_remainder = 0, seed=123){
-
-  stopifnot((correlation_remainder <=1) & (correlation_remainder >= -1))
+d_selection_t <- function(S_Y, S_X, S=NULL, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical_values=NULL, seed=123){
 
   statistic = tolower(statistic)
 
@@ -75,7 +71,6 @@ d_selection_t <- function(S_Y, S_X, S=NULL, statistic="T2", alpha=0.1, n_perm=10
   # Compute all critical values for (m,k) from k in {1,...,n}
   crit = compute.critical.values(m=m, n=n, alpha=alpha, k=k, n_perm=n_perm, B=B,
                                  critical_values=critical_values,
-                                 correlation_remainder = correlation_remainder,
                                  seed=seed)
 
   if(!is.null(S)){
@@ -97,7 +92,6 @@ d_selection_t <- function(S_Y, S_X, S=NULL, statistic="T2", alpha=0.1, n_perm=10
   ## Compute p-value for the global null
   T.global = sum(R)
   pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=n, k=k,
-                                      correlation_remainder = correlation_remainder,
                                       n_perm=n_perm, B=B, seed=seed)
 
   ## Compute p-value for the selected null

@@ -12,7 +12,6 @@ d_t(
   n_perm = 10,
   B = 10^3,
   critical_values = NULL,
-  correlation_remainder = 0,
   seed = 123
 )
 }
@@ -32,8 +31,6 @@ It can be either \eqn{T_k} or adjusted Fisher test}
 
 \item{critical_values}{: if not \code{NULL}, a vector of precomputed critical values obtained using
 the permutation distribution of the test statistic}
-
-\item{correlation_remainder}{: correlation between the remainder and the $U$-statistic when statistic $T_3$ is used}
 
 \item{seed}{: seed to ensure reproducible results}
 }
@@ -56,9 +53,9 @@ set.seed(321)
 Sxy = sample(x=1:1000, size=100)
 Sx = sample(Sxy, size=70)
 Sy = setdiff(Sxy, Sx)
-d_t(S_Y=Sy, S_X=Sx, statistic="T2", correlation_remainder = 0, alpha=0.1)
+d_t(S_Y=Sy, S_X=Sx, statistic="T2", alpha=0.1)
 d_selection_t(S_Y=Sy, S_X=Sx, statistic="T2", alpha=0.1)
-d_t(S_Y=Sy, S_X=Sx, statistic="T2", correlation_remainder = 1, alpha=0.1)
+d_t(S_Y=Sy, S_X=Sx, statistic="T2", alpha=0.1)
 
 d_t(S_Y=Sy, S_X=Sx, statistic="T3", alpha=0.1)
 d_selection_t(S_Y=Sy, S_X=Sx, statistic="T3", alpha=0.1)

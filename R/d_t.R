@@ -52,15 +52,13 @@ stat.Tk <- function(Z, m, k) {
 #' @param m : calibration sample size
 #' @param n : test sample size
 #' @param k : order of the LMPI test statistic
-#' @param correlation_remainder : correlation between the \eqn{U}-statistic \eqn{T_k} and the remainder
 #'
 #' @return It returns the mean and the variance of the asymptotic distribution of \eqn{T_k}.
 #' For \eqn{k=1,2,3} the exact mean is given, i.e., the finite-sample mean,
 #' and the provided estimate of the variance is more accurate than the first order asymptotic approximation.
-asymptotic.moments.Tk <- function(m, n, k, correlation_remainder) {
+asymptotic.moments.Tk <- function(m, n, k) {
 
   stopifnot(k>=1)
-  stopifnot((correlation_remainder <=1) & (correlation_remainder >= -1))
 
   if(k<4){
 
@@ -71,11 +69,10 @@ asymptotic.moments.Tk <- function(m, n, k, correlation_remainder) {
     # Compute variance of Tk according to Theorem 1 when k=1,
     # according to Theorem 2 when k=2 and according to Theorem 3 when k=3.
     # For k>3 it returns NA.
-    variance.exactish.Tk.tilde = compute_var.Tk.tilde.exactish(m=m,n=n,k=k,corr=correlation_remainder)
-    variance.exactish.Tk = From_Tk.tilde_To_Tk_variance(variance.tilde=variance.exactish.Tk.tilde,m=m,n=n,k=k)
+    variance.Tk.tilde = compute_variance.Tk(m=m,n=n,k=k)
+    variance.Tk = From_Tk.tilde_To_Tk_variance(variance.tilde=variance.Tk.tilde,m=m,n=n,k=k)
 
     mean.Tk = mean.exact.Tk
-    variance.Tk = variance.exactish.Tk
 
   } else {
 
@@ -83,10 +80,9 @@ asymptotic.moments.Tk <- function(m, n, k, correlation_remainder) {
     mean.approx.Tk = compute_approx_mean.Tk(m=m,n=n,k=k)
 
     # Compute variance of Tk according to Theorem 1
-    variance.approx.Tk = compute_variance.Tk(m=m,n=n,k=k)
+    variance.Tk = compute_variance.Tk(m=m,n=n,k=k)
 
     mean.Tk = mean.approx.Tk
-    variance.Tk = variance.approx.Tk
   }
 
   moments.Tk = list("mean.Tk"=mean.Tk, "variance.Tk"=variance.Tk)
@@ -106,20 +102,19 @@ asymptotic.moments.Tk <- function(m, n, k, correlation_remainder) {
 #' @param m : calibration sample size
 #' @param n : test sample size
 #' @param k : order of the LMPI test statistic
-#' @param correlation_remainder : correlation between the $U$-statistic and the remainder
 #' @param alpha : significance level. Default value is set equal to 0.1
 #'
 #'
 #' @return It returns the \eqn{(1-\alpha)}-quantile of LMPI \eqn{T_k} test statistic
 #' based on asymptotic normal approximation.
 #'
-asymptotic.critical.Tk <- function(m, n, k, correlation_remainder, alpha=0.1) {
+asymptotic.critical.Tk <- function(m, n, k, alpha=0.1) {
 
   stopifnot(k>=1)
-  stopifnot((correlation_remainder <=1) & (correlation_remainder >= -1))
 
-  mean.Tk = asymptotic.moments.Tk(m=m,n=n,k=k,correlation_remainder=correlation_remainder)$mean.Tk
-  variance.Tk = asymptotic.moments.Tk(m=m,n=n,k=k,correlation_remainder=correlation_remainder)$variance.Tk
+  moments.Tk = asymptotic.moments.Tk(m=m,n=n,k=k)
+  mean.Tk = moments.Tk$mean.Tk
+  variance.Tk = moments.Tk$variance.Tk
 
   critical.value = stats::qnorm(alpha, mean=mean.Tk, sd = sqrt(variance.Tk), lower.tail = F)
 
@@ -138,19 +133,18 @@ asymptotic.critical.Tk <- function(m, n, k, correlation_remainder, alpha=0.1) {
 #' @param n : test sample size
 #' @param k : order of the LMPI test statistic
 #' @param T.obs : observed value of the test statistic
-#' @param correlation_remainder : correlation between the remainder and the $U$-statistic when statistic $T_3$ is used
 #'
 #'
 #' @return It returns the approximated *p*-value of the LMPI \eqn{T_k}
 #' test statistic based on the asymptotic normal approximation
 #'
-asymptotic.pvalue.Tk <- function(m, n, k, T.obs, correlation_remainder) {
+asymptotic.pvalue.Tk <- function(m, n, k, T.obs) {
 
   stopifnot(k>=1)
-  stopifnot((correlation_remainder <=1) & (correlation_remainder >= -1))
 
-  mean.Tk = asymptotic.moments.Tk(m=m,n=n,k=k,correlation_remainder=correlation_remainder)$mean.Tk
-  variance.Tk = asymptotic.moments.Tk(m=m,n=n,k=k,correlation_remainder=correlation_remainder)$variance.Tk
+  moments.Tk = asymptotic.moments.Tk(m=m,n=n,k=k)
+  mean.Tk = moments.Tk$mean.Tk
+  variance.Tk = moments.Tk$variance.Tk
 
   p.value = stats::pnorm(q=T.obs, mean=variance.Tk, sd = sqrt(variance.Tk), lower.tail = F)
 
@@ -328,7 +322,6 @@ compute.perm.pval <- function(T.obs, m, n, k=NULL, B=10^3, seed=123) {
 #' @param n : test sample size
 #' @param k : order of the LMPI test statistic. If \code{NULL} it refers to Fisher test statistic
 #' @param n_perm : if \eqn{min(m,n)\leq n_perm} the *p*-value for the global null will be computed via permutation. Default value is 10
-#' @param correlation_remainder : correlation between the remainder and the $U$-statistic when statistic $T_3$ is used
 #' @param B : number of permutations
 #' @param seed : seed to ensure reproducible results
 #'
@@ -338,9 +331,7 @@ compute.perm.pval <- function(T.obs, m, n, k=NULL, B=10^3, seed=123) {
 #' is smaller than \code{n_perm}. Otherwise, it is computed using the asymptotic distribution.
 #'
 #'
-compute.global.pvalue <- function(T.obs, m, n, k=NULL, correlation_remainder, n_perm=10, B=100, seed=321) {
-
-  stopifnot((correlation_remainder <=1) & (correlation_remainder >= -1))
+compute.global.pvalue <- function(T.obs, m, n, k=NULL, n_perm=10, B=100, seed=321) {
 
   # permutation p-value for the global null if the sample size is small
   if(min(m,n)<=n_perm){
@@ -354,7 +345,7 @@ compute.global.pvalue <- function(T.obs, m, n, k=NULL, correlation_remainder, n_
     if(is.null(k))
       pval.perm = asymptotic.pvalue.Fisher(m=m, n=n, T.obs=T.obs)
     else
-      pval.perm = asymptotic.pvalue.Tk(m=m, n=n, k=k, T.obs=T.obs, correlation_remainder)
+      pval.perm = asymptotic.pvalue.Tk(m=m, n=n, k=k, T.obs=T.obs)
   }
   return(pval.perm)
 }
@@ -370,7 +361,6 @@ compute.global.pvalue <- function(T.obs, m, n, k=NULL, correlation_remainder, n_
 #' @param n : test size
 #' @param alpha : significance level
 #' @param k : order of the LMPI test statistic. If \code{NULL} it refers to Fisher test statistic
-#' @param correlation_remainder : correlation between the remainder and the $U$-statistic when statistic $T_3$ is used
 #' @param n_perm : if \eqn{min(m,n)\leq n_perm} critical values will be computed via permutation. Default value is 10
 #' @param B : number of permutation to compute critical values. Default value is 10^3
 #' @param critical_values : if not \code{NULL}, a vector of precomputed critical values obtained using
@@ -382,9 +372,7 @@ compute.global.pvalue <- function(T.obs, m, n, k=NULL, correlation_remainder, n_
 #' at significance level \eqn{\alpha} with calibration size \eqn{m} fixed for each level of closed testing.
 #'
 #'
-compute.critical.values <- function(m, n, alpha, k=NULL, correlation_remainder, n_perm=10, B=10^3, critical_values=NULL, seed=123){
-
-  stopifnot((correlation_remainder <=1) & (correlation_remainder >= -1))
+compute.critical.values <- function(m, n, alpha, k=NULL, n_perm=10, B=10^3, critical_values=NULL, seed=123){
 
   crit = sapply(1:n, function(h) {
     # For small values of m and n compute critical values via permutation
@@ -408,7 +396,7 @@ compute.critical.values <- function(m, n, alpha, k=NULL, correlation_remainder, 
       if(is.null(k)){
         critical.value = asymptotic.critical.Fisher(m=m, n=h, alpha=alpha)
       } else {
-        critical.value = asymptotic.critical.Tk(m=m, n=h, k=k, alpha=alpha, correlation_remainder=correlation_remainder)
+        critical.value = asymptotic.critical.Tk(m=m, n=h, k=k, alpha=alpha)
       }
     }
     return(critical.value)
@@ -440,7 +428,6 @@ compute.critical.values <- function(m, n, alpha, k=NULL, correlation_remainder, 
 #' @param B : number of permutation to compute critical values. Default value is 10^3
 #' @param critical_values : if not \code{NULL}, a vector of precomputed critical values obtained using
 #' the permutation distribution of the test statistic
-#' @param correlation_remainder : correlation between the remainder and the $U$-statistic when statistic $T_3$ is used
 #' @param seed : seed to ensure reproducible results
 #'
 #' @return
@@ -460,9 +447,9 @@ compute.critical.values <- function(m, n, alpha, k=NULL, correlation_remainder, 
 #' Sxy = sample(x=1:1000, size=100)
 #' Sx = sample(Sxy, size=70)
 #' Sy = setdiff(Sxy, Sx)
-#' d_t(S_Y=Sy, S_X=Sx, statistic="T2", correlation_remainder = 0, alpha=0.1)
+#' d_t(S_Y=Sy, S_X=Sx, statistic="T2", alpha=0.1)
 #' d_selection_t(S_Y=Sy, S_X=Sx, statistic="T2", alpha=0.1)
-#' d_t(S_Y=Sy, S_X=Sx, statistic="T2", correlation_remainder = 1, alpha=0.1)
+#' d_t(S_Y=Sy, S_X=Sx, statistic="T2", alpha=0.1)
 #'
 #' d_t(S_Y=Sy, S_X=Sx, statistic="T3", alpha=0.1)
 #' d_selection_t(S_Y=Sy, S_X=Sx, statistic="T3", alpha=0.1)
@@ -474,9 +461,7 @@ compute.critical.values <- function(m, n, alpha, k=NULL, correlation_remainder, 
 #' d_selection_t(S_Y=Sy, S_X=Sx, statistic="T5", alpha=0.1)
 #'
 #'
-d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical_values=NULL, correlation_remainder = 0, seed=123){
-
-  stopifnot((correlation_remainder <=1) & (correlation_remainder >= -1))
+d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical_values=NULL, seed=123){
 
   statistic = tolower(statistic)
 
@@ -500,7 +485,7 @@ d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical
   # Compute all critical values for (m,k) from k in {1,...,n}
   crit = compute.critical.values(m=m, n=n, alpha=alpha, k=k, n_perm=n_perm, B=B,
                                  critical_values=critical_values,
-                                 correlation_remainder=correlation_remainder, seed=seed)
+                                 seed=seed)
 
   # Compute the individual statistics for each test point using the input data
   S_Z = c(S_X, S_Y)
@@ -521,7 +506,6 @@ d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical
   ## Compute p-value for the global null
   T.global = sum(R)
   pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=n, k=k,
-                                      correlation_remainder=correlation_remainder,
                                       n_perm=n_perm, B=B, seed=seed)
 
 
