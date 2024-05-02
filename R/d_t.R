@@ -70,6 +70,7 @@ asymptotic.moments.Tk <- function(m, n, k) {
     # according to Theorem 2 when k=2 and according to Theorem 3 when k=3.
     # For k>3 it returns NA.
     variance.Tk = compute_variance.Tk(m=m,n=n,k=k)
+    #variance.Tk = From_Tk.tilde_To_Tk_variance(variance.tilde=variance.Tk.tilde,m=m,n=n,k=k)
 
     mean.Tk = mean.exact.Tk
 
