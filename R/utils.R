@@ -1,9 +1,17 @@
 
+d_choose <- function(a,b) {
+    return(as.double(choose(a,b)))
+}
+
 # --------------------------------------------------------- MEAN T_k TILDE ---------------------------------------------------------
 
 
 # This function computes the approximated mean of Tk tilde applying Theorem 1
 compute_approx_mean.Tk.tilde = function(m,n,k){
+  m = as.double(m)
+  n = as.double(n)
+  k = as.double(k)
+    
   N = n+m
   lambda = m/N
 
@@ -17,7 +25,7 @@ compute_approx_mean.Tk.tilde = function(m,n,k){
   } else if(k>2) {
 
     coef = factorial(k)^2/(k+1)
-    somma = sum(sapply(0:(k-1), function(r) choose(k,r)/(lambda^r*(1-lambda)^(k-r-1))))
+    somma = sum(sapply(0:(k-1), function(r) d_choose(k,r)/(lambda^r*(1-lambda)^(k-r-1))))
     theta = (coef*somma)
   }
 
@@ -28,6 +36,9 @@ compute_approx_mean.Tk.tilde = function(m,n,k){
 
 # It computes the exact mean of Tk tilde using the inverse transformation
 compute_mean_exact_Tk.tilde = function(m,n,k){
+  m = as.double(m)
+  n = as.double(n)
+  k = as.double(k)
 
   N=n+m
 
@@ -35,7 +46,7 @@ compute_mean_exact_Tk.tilde = function(m,n,k){
   mean = compute_mean_exact_Tk(m=m,n=n,k=k)
 
   if(k<4){
-    out = ((mean-Ck)*N^(k-1))/(choose(n,k)*choose(m,k))
+    out = ((mean-Ck)*N^(k-1))/(d_choose(n,k)*d_choose(m,k))
   } else {
     out = NA
   }
@@ -61,7 +72,7 @@ From_Tk.tilde_To_Tk_mean = function(mean.tilde,m,n,k){
 
   N=n+m
 
-  mean = mean.tilde*(choose(m,k)*choose(n,k)/N^(k-1))
+  mean = mean.tilde*(d_choose(m,k)*d_choose(n,k)/N^(k-1))
 
   return(mean)
 }
@@ -73,7 +84,7 @@ compute_approx_mean.Tk = function(m,n,k){
 
   N = n+m
 
-  # E[Tk] = E[Tk_tilde]*(choose(m,k)*choose(n,k)/N) + C, dove C = sum(((1:n)-1)^k)
+  # E[Tk] = E[Tk_tilde]*(d_choose(m,k)*d_choose(n,k)/N) + C, dove C = sum(((1:n)-1)^k)
   Ck = calc.const.Tk(n=n,k=k)
   approx_mean.Tk.tilde=compute_approx_mean.Tk.tilde(m=m,n=n,k=k)
   mu = From_Tk.tilde_To_Tk_mean(mean.tilde=approx_mean.Tk.tilde,m=m,n=n,k=k) + Ck # sum(((1:n)-1)^k)
@@ -88,7 +99,7 @@ compute_approx_mean.Tk = function(m,n,k){
 compute.mu_k = function(m,n,k){
 
   l_v = 0:k
-  c.binom_v = choose(k,l_v)
+  c.binom_v = d_choose(k,l_v)
 
   E = vector()
 
@@ -108,8 +119,8 @@ compute.mu_k = function(m,n,k){
     dj_v = 1:k.bar_m
     di_v = 1:k.bar_n
 
-    c.dj_v = c(1,choose(k.bar_m, dj_v[2:k.bar_m]))
-    c.di_v = c(1,choose(k.bar_n, di_v[2:k.bar_n]))
+    c.dj_v = c(1,d_choose(k.bar_m, dj_v[2:k.bar_m]))
+    c.di_v = c(1,d_choose(k.bar_n, di_v[2:k.bar_n]))
 
     E0 = sum(sapply(1:k.bar_m, function(dj){c.dj_v[dj] * prod(((m-dj+1):m)) / (dj+1)}))
     Ek = sum(sapply(1:k.bar_n, function(di){c.di_v[di] * prod(((n-di):(n-1))) / (di+1)}))
@@ -122,15 +133,15 @@ compute.mu_k = function(m,n,k){
       di_v = 1:k.bar_n
 
       if((k.bar_m-l)==1){
-        c.dj_v = choose(k.bar_m, dj_v)
+        c.dj_v = d_choose(k.bar_m, dj_v)
       } else {
-        c.dj_v = c(1,choose(k.bar_m, dj_v[2:(k.bar_m)]))
+        c.dj_v = c(1,d_choose(k.bar_m, dj_v[2:(k.bar_m)]))
       }
 
       if(k.bar_n==1){
-        c.di_v = choose(k.bar_n, di_v)
+        c.di_v = d_choose(k.bar_n, di_v)
       } else {
-        c.di_v = c(1,choose(k.bar_n, di_v[2:k.bar_n]))
+        c.di_v = c(1,d_choose(k.bar_n, di_v[2:k.bar_n]))
       }
 
       E[l] = sum(sapply(dj_v, function(dj){
@@ -150,8 +161,8 @@ compute.mu_k = function(m,n,k){
     dj_v = 1:k.bar_m
     di_v = 1:k.bar_n
 
-    c.dj_v = c(1,choose(k.bar_m, dj_v[2:k.bar_m]))
-    c.di_v = c(1,choose(k.bar_n, di_v[2:k.bar_n]))
+    c.dj_v = c(1,d_choose(k.bar_m, dj_v[2:k.bar_m]))
+    c.di_v = c(1,d_choose(k.bar_n, di_v[2:k.bar_n]))
 
     E0 = sum(sapply(1:k.bar_m, function(dj){c.dj_v[dj] * prod(((m-dj+1):m)) / (dj+1)}))
     Ek = sum(sapply(1:k.bar_n, function(di){c.di_v[di] * prod(((n-di):(n-1))) / (di+1)}))
@@ -166,15 +177,15 @@ compute.mu_k = function(m,n,k){
       di_v = 1:k.bar_n
 
       if(k.bar_m==1){
-        c.dj_v = choose(k.bar_m, dj_v)
+        c.dj_v = d_choose(k.bar_m, dj_v)
       } else {
-        c.dj_v = c(1,choose(k.bar_m, dj_v[2:k.bar_m]))
+        c.dj_v = c(1,d_choose(k.bar_m, dj_v[2:k.bar_m]))
       }
 
       if(k.bar_n==1){
-        c.di_v = choose(k.bar_n, di_v)
+        c.di_v = d_choose(k.bar_n, di_v)
       } else {
-        c.di_v = c(1,choose(k.bar_n, di_v[2:k.bar_n]))
+        c.di_v = c(1,d_choose(k.bar_n, di_v[2:k.bar_n]))
       }
 
       E[l] = sum(sapply(dj_v, function(dj){
@@ -224,7 +235,7 @@ E3 = function(k){
     aa1 = numeric()
 
     for(t in 0:(2*k-2*h)){
-      aa1[t+1] = choose(2*k-2*h, t)*(-1)^t/(2*h+t+1)
+      aa1[t+1] = d_choose(2*k-2*h, t)*(-1)^t/(2*h+t+1)
     }
     a1[h+1] = (factorial(k-1))^2/(factorial(k-h)*factorial(h))^2 * sum(aa1)
   }
@@ -241,7 +252,7 @@ E3 = function(k){
 
       aaa2 = numeric()
       for(t in 0:(2*k-h-s)){
-        aaa2[t+1] = choose(2*k-h-s, t)*(-1)^t/(h+s+t+1)
+        aaa2[t+1] = d_choose(2*k-h-s, t)*(-1)^t/(h+s+t+1)
       }
       aa2[s-h]=2*c2*sum(aaa2)
     }
@@ -277,7 +288,7 @@ E0 = function(k){
     aa1 = numeric()
 
     for(t in 0:(k-h)){
-      aa1[t+1] = choose(k-h, t)*(-1)^t/(k+h+t+1)
+      aa1[t+1] = d_choose(k-h, t)*(-1)^t/(k+h+t+1)
     }
     a1[h+1] = sum(aa1)/(factorial(k-h)*factorial(h))
   }
@@ -294,10 +305,10 @@ Ehrhr.theory = function(k,r,lambda){
     out = c.out*k^2*E3(k=k)
   }
   else{
-    c.out = (choose(k,r)*factorial(k-r)*factorial(k-r-1)*factorial(r)^2 / (lambda^r*(1-lambda)^(k-r-1)))^2
-    res = (choose(k-1,k-r-1)*k*choose(k-1,r))^2*E3(k=k)+
-      2*choose(k-1,k-r-1)*k*choose(k-1,r)*choose(k-1,k-r)*k*choose(k-1,r)*E2(k=k)+
-      (choose(k-1,k-r)*k*choose(k-1,r))^2*E2(k=k)
+    c.out = (d_choose(k,r)*factorial(k-r)*factorial(k-r-1)*factorial(r)^2 / (lambda^r*(1-lambda)^(k-r-1)))^2
+    res = (d_choose(k-1,k-r-1)*k*d_choose(k-1,r))^2*E3(k=k)+
+      2*d_choose(k-1,k-r-1)*k*d_choose(k-1,r)*d_choose(k-1,k-r)*k*d_choose(k-1,r)*E2(k=k)+
+      (d_choose(k-1,k-r)*k*d_choose(k-1,r))^2*E2(k=k)
     out = c.out*res
   }
 
@@ -313,10 +324,10 @@ Eh0hr.theory = function(k,r,lambda){
     out = c.out*k^2*E3(k=k)
   }
   else{
-    c.out = (choose(k,r)*factorial(k-r)*factorial(k-r-1)*factorial(r)^2 / (lambda^r*(1-lambda)^(k-r-1))) *
+    c.out = (d_choose(k,r)*factorial(k-r)*factorial(k-r-1)*factorial(r)^2 / (lambda^r*(1-lambda)^(k-r-1))) *
       factorial(k)^2/(k*(1-lambda)^(k-1))
-    res = (choose(k-1,k-r-1)*k^2*choose(k-1,r))*E3(k=k)+
-      (choose(k-1,k-r)*k^2*choose(k-1,r))*E2(k=k)
+    res = (d_choose(k-1,k-r-1)*k^2*d_choose(k-1,r))*E3(k=k)+
+      (d_choose(k-1,k-r)*k^2*d_choose(k-1,r))*E2(k=k)
     out = c.out*res
   }
 
@@ -327,13 +338,13 @@ Eh0hr.theory = function(k,r,lambda){
 
 Ehrhs.theory = function(k,r,s,lambda){
 
-  c.r = (choose(k,r)*factorial(k-r)*factorial(k-r-1)*factorial(r)^2 / (lambda^r*(1-lambda)^(k-r-1)))
-  c.s = (choose(k,s)*factorial(k-s)*factorial(k-s-1)*factorial(s)^2 / (lambda^s*(1-lambda)^(k-s-1)))
+  c.r = (d_choose(k,r)*factorial(k-r)*factorial(k-r-1)*factorial(r)^2 / (lambda^r*(1-lambda)^(k-r-1)))
+  c.s = (d_choose(k,s)*factorial(k-s)*factorial(k-s-1)*factorial(s)^2 / (lambda^s*(1-lambda)^(k-s-1)))
 
-  res = (choose(k-1,k-r-1)*k^2*choose(k-1,r)*choose(k-1,k-s-1)*choose(k-1,s))*E3(k=k)+
-    (choose(k-1,k-r-1)*k^2*choose(k-1,r)*choose(k-1,k-s)*choose(k-1,s))*E2(k=k)+
-    (choose(k-1,k-r)*k^2*choose(k-1,r)*choose(k-1,k-s)*choose(k-1,s))*E2(k=k)+
-    (choose(k-1,k-r)*k^2*choose(k-1,r)*choose(k-1,k-s-1)*choose(k-1,s))*E2(k=k)
+  res = (d_choose(k-1,k-r-1)*k^2*d_choose(k-1,r)*d_choose(k-1,k-s-1)*d_choose(k-1,s))*E3(k=k)+
+    (d_choose(k-1,k-r-1)*k^2*d_choose(k-1,r)*d_choose(k-1,k-s)*d_choose(k-1,s))*E2(k=k)+
+    (d_choose(k-1,k-r)*k^2*d_choose(k-1,r)*d_choose(k-1,k-s)*d_choose(k-1,s))*E2(k=k)+
+    (d_choose(k-1,k-r)*k^2*d_choose(k-1,r)*d_choose(k-1,k-s-1)*d_choose(k-1,s))*E2(k=k)
 
   out = c.r*c.s*res
 
@@ -343,14 +354,14 @@ Ehrhs.theory = function(k,r,s,lambda){
 
 Eh0h2r.theory = function(k,r=0,s=NULL,lambda){
   c.0 = factorial(k)^2/(k*(1-lambda)^(k-1))
-  c.r = choose(k,r)*factorial(k-r)*factorial(k-r-1)*factorial(r)^2/(lambda^r*(1-lambda)^(k-r-1))
+  c.r = d_choose(k,r)*factorial(k-r)*factorial(k-r-1)*factorial(r)^2/(lambda^r*(1-lambda)^(k-r-1))
   e2 = E2(k=k)
-  res = (k-1)*choose(k,k-r)*(k*choose(k-1,r)-choose(k-1,r)-(k-1)*choose(k-2,r-1))*e2 +
-    (k-1)*choose(k,k-r)*choose(k-1,r)*e2 +
-    (k-1)^2*choose(k,k-r)*choose(k-2,r-1)*e2 +
-    choose(k,k-r)*(k*choose(k-1,r)-choose(k-1,r)-(k-1)*choose(k-2,r-1))*e2 +
-    choose(k,k-r)*choose(k-1,r)*E1(k=k) +
-    choose(k,k-r)*(k-1)*choose(k-2,r-1)*E0(k=k)
+  res = (k-1)*d_choose(k,k-r)*(k*d_choose(k-1,r)-d_choose(k-1,r)-(k-1)*d_choose(k-2,r-1))*e2 +
+    (k-1)*d_choose(k,k-r)*d_choose(k-1,r)*e2 +
+    (k-1)^2*d_choose(k,k-r)*d_choose(k-2,r-1)*e2 +
+    d_choose(k,k-r)*(k*d_choose(k-1,r)-d_choose(k-1,r)-(k-1)*d_choose(k-2,r-1))*e2 +
+    d_choose(k,k-r)*d_choose(k-1,r)*E1(k=k) +
+    d_choose(k,k-r)*(k-1)*d_choose(k-2,r-1)*E0(k=k)
 
   out = c.0*c.r*res
 
@@ -367,15 +378,15 @@ Eh0h20.theory = function(k,r=0,s=0,lambda){
 
 Ehrh2r.theory = function(k,r,s=NULL,lambda){
 
-  c.r = (choose(k,r)*factorial(k-r)*factorial(k-r-1)*factorial(r)^2 / (lambda^r*(1-lambda)^(k-r-1)))
+  c.r = (d_choose(k,r)*factorial(k-r)*factorial(k-r-1)*factorial(r)^2 / (lambda^r*(1-lambda)^(k-r-1)))
 
   e2 = E2(k=k)
-  res = (choose(k,k-r)*choose(k-1,r))^2 * E1(k=k)+
-    2*(choose(k,k-r)^2*(k-1)*choose(k-2,r-1)*choose(k-1,r)) * E0(k=k)+
-    (choose(k,k-r)*(k-1)*choose(k-2,r-1))^2 * E3(k=k)+
-    (choose(k,k-r)^2*(k-1)*((k-1)*(choose(k-1,r)-choose(k-2,r-1))))*e2+
-    (choose(k,k-r)^2*(k-1)*choose(k-2,r-1)*((k-1)*(choose(k-1,r)-choose(k-2,r-1))))*e2+
-    (choose(k,k-r)^2*(k)*choose(k-1,r)*((k-1)*(choose(k-1,r)-choose(k-2,r-1))))*e2
+  res = (d_choose(k,k-r)*d_choose(k-1,r))^2 * E1(k=k)+
+    2*(d_choose(k,k-r)^2*(k-1)*d_choose(k-2,r-1)*d_choose(k-1,r)) * E0(k=k)+
+    (d_choose(k,k-r)*(k-1)*d_choose(k-2,r-1))^2 * E3(k=k)+
+    (d_choose(k,k-r)^2*(k-1)*((k-1)*(d_choose(k-1,r)-d_choose(k-2,r-1))))*e2+
+    (d_choose(k,k-r)^2*(k-1)*d_choose(k-2,r-1)*((k-1)*(d_choose(k-1,r)-d_choose(k-2,r-1))))*e2+
+    (d_choose(k,k-r)^2*(k)*d_choose(k-1,r)*((k-1)*(d_choose(k-1,r)-d_choose(k-2,r-1))))*e2
 
   out = c.r^2*res
 
@@ -386,25 +397,25 @@ Ehrh2r.theory = function(k,r,s=NULL,lambda){
 
 Ehrh2s.theory = function(k,r,s,lambda){
 
-  c.r = (choose(k,r)*factorial(k-r)*factorial(k-r-1)*factorial(r)^2 / (lambda^r*(1-lambda)^(k-r-1)))
-  c.s = (choose(k,s)*factorial(k-s)*factorial(k-s-1)*factorial(s)^2 / (lambda^s*(1-lambda)^(k-s-1)))
+  c.r = (d_choose(k,r)*factorial(k-r)*factorial(k-r-1)*factorial(r)^2 / (lambda^r*(1-lambda)^(k-r-1)))
+  c.s = (d_choose(k,s)*factorial(k-s)*factorial(k-s-1)*factorial(s)^2 / (lambda^s*(1-lambda)^(k-s-1)))
 
   e2 = E2(k=k)
   e0 = E0(k=k)
 
-  res = (choose(k,k-r)*choose(k-1,r)*choose(k,k-s)*choose(k-1,s)) * E1(k=k) +
+  res = (d_choose(k,k-r)*d_choose(k-1,r)*d_choose(k,k-s)*d_choose(k-1,s)) * E1(k=k) +
 
-    (choose(k,k-r)*choose(k-1,r)*choose(k,k-s)*(k-1)*choose(k-2,s-1)) * e0 +
+    (d_choose(k,k-r)*d_choose(k-1,r)*d_choose(k,k-s)*(k-1)*d_choose(k-2,s-1)) * e0 +
 
-    (choose(k,k-r)*choose(k-1,r)*choose(k,k-s)*(k-1)*(choose(k-1,s)-choose(k-2,s-1))) * e2 +
+    (d_choose(k,k-r)*d_choose(k-1,r)*d_choose(k,k-s)*(k-1)*(d_choose(k-1,s)-d_choose(k-2,s-1))) * e2 +
 
-    (choose(k,k-r)*(k-1)*choose(k-2,r-1)*choose(k,k-s)*choose(k-1,s)) * e0 +
+    (d_choose(k,k-r)*(k-1)*d_choose(k-2,r-1)*d_choose(k,k-s)*d_choose(k-1,s)) * e0 +
 
-    (choose(k,k-r)*(k-1)^2*choose(k-2,r-1)*choose(k,k-s)*choose(k-2,s-1)) * E3(k=k) +
+    (d_choose(k,k-r)*(k-1)^2*d_choose(k-2,r-1)*d_choose(k,k-s)*d_choose(k-2,s-1)) * E3(k=k) +
 
-    (choose(k,k-r)*(k-1)^2*choose(k-2,r-1)*choose(k,k-s)*(choose(k-1,s)-choose(k-2,s-1))) * e2 +
+    (d_choose(k,k-r)*(k-1)^2*d_choose(k-2,r-1)*d_choose(k,k-s)*(d_choose(k-1,s)-d_choose(k-2,s-1))) * e2 +
 
-    (choose(k,k-r)*(k-1)*(choose(k-1,r)-choose(k-2,r-1))*choose(k,k-s)*k*(choose(k-1,s))) * e2
+    (d_choose(k,k-r)*(k-1)*(d_choose(k-1,r)-d_choose(k-2,r-1))*d_choose(k,k-s)*k*(d_choose(k-1,s))) * e2
 
   out = c.r*c.s*res
 
@@ -414,19 +425,22 @@ Ehrh2s.theory = function(k,r,s,lambda){
 
 
 # Compute variance of Tk tilde according to Theorem 1
-compute_var.Tk.tilde = function(k, m, n){
+compute_var.Tk.tilde = function(m, n, k){
+  m = as.double(m)
+  n = as.double(n)
+  k = as.double(k)
 
   N = n+m
   lambda = m/N
 
   if(k==1){ # WMW
 
-    # variance = (m*n*N / (m^2*n^2*12))*(choose(m,k)*choose(n,k))^2
+    # variance = (m*n*N / (m^2*n^2*12))*(d_choose(m,k)*d_choose(n,k))^2
     variance = N/(12*m*n)
 
   } else if (k==2) { # T3
 
-    variance = (64/(45*N*(1-lambda)^3*lambda^3))
+    variance = 64/(45*N*(1-lambda)^3*lambda^3)
 
   } else if(k>2) {
 
@@ -452,7 +466,7 @@ compute_var.Tk.tilde = function(k, m, n){
 
   }
 
-  return(variance)
+  return(as.double(variance))
 
 }
 
@@ -471,21 +485,25 @@ compute_var.Tk.tilde = function(k, m, n){
 #' @return It returns the variance of LMPI \eqn{T_k} in the limit,
 #' computed according to the Central Limit Theorem for \eqn{U}-statistics.
 #'
-compute_variance.Tk = function(k, m, n){
+compute_variance.Tk = function(m, n, k){
+  m = as.double(m)
+  n = as.double(n)
+  k = as.double(k)
 
   N = n+m
   lambda = m/N
 
   if(k==1){
 
-    # variance = (m*n*N / (m^2*n^2*12))*(choose(m,k)*choose(n,k))^2
+    # variance = (m*n*N / (m^2*n^2*12))*(d_choose(m,k)*d_choose(n,k))^2
     variance = n*m*N/12
 
   } else {
 
-    variance = compute_var.Tk.tilde(m=m,n=n,k=k)*(choose(m,k)*choose(n,k)/N^(k-1))^2
+    variance = compute_var.Tk.tilde(k=k, m=m,n=n) *( d_choose(m,k) * d_choose(n,k) / N^(k-1) )^2
 
   }
+  #cat(sprintf("compute_variance.Tk(m=%d, n=%d, k=%d)=%g\n", m, n, k, variance))
 
   return(variance)
 
@@ -493,16 +511,16 @@ compute_variance.Tk = function(k, m, n){
 
 
 
-From_Tk.tilde_To_Tk_variance = function(variance.tilde,m,n,k){
+## From_Tk.tilde_To_Tk_variance = function(variance.tilde,m,n,k){
 
-  stopifnot(k>=1)
+##   stopifnot(k>=1)
 
-  N=n+m
+##   N=n+m
 
-  variance = variance.tilde*(choose(m,k)*choose(n,k)/N^(k-1))^2
+##   variance = variance.tilde*(d_choose(m,k)*d_choose(n,k)/N^(k-1))^2
 
-  return(variance)
-}
+##   return(variance)
+## }
 
 
 
@@ -570,7 +588,7 @@ calc.Tk.tilde <- function(Z,m,k) {
     Tkt <- Tk - Ck
   }
 
-  Tkt <- N^(k-1) * Tkt / (choose(n,k) * choose(m,k))
+  Tkt <- N^(k-1) * Tkt / (d_choose(n,k) * d_choose(m,k))
   return(Tkt)
 }
 
@@ -632,7 +650,7 @@ calc.sumRk.tilde <- function(Z,m,k) {
     sumRkt <- sumRk - Ck
   }
 
-  sumRkt <- N^(k-1) * sumRkt / (choose(n,k) * choose(m,k))
+  sumRkt <- N^(k-1) * sumRkt / (d_choose(n,k) * d_choose(m,k))
   return(sumRkt)
 }
 
