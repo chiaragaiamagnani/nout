@@ -107,14 +107,25 @@ d_selection_storey = function(S_Y, S_X, S=NULL, alpha=0.1, lambda = 0.5){
   r = order(pval_unsorted)
   pval = pval_unsorted[r]
 
-  # find h
+  # Find h
+
+  # For each level in the closed testing procedure, the worst case scenario Simes p-value is computed,
+  # i.e., at level i in the closed testing procedure the Simes p-value is computed using
+  # the n-i+1 greater conformal p-values.
+
   pval_simes = sapply(1:n, function(i)
     c(
       min(pval[i:n]/seq.int(from=1, to=n-i+1, by=1)),
       (1+sum(pval[i:n]>lambda))/((n-i+1)*(1-lambda))
     )
   )
+
+  # In the last two steps of closed testing procedure
+  # (the ones involving only elementary hypotheses or the hypotheses that are intersection of two elementary hypotheses)
+  # Storey's estimator for the number of true null hypotheses is set equal to 1,
+  # since it might take on values greater than 1.
   pval_simes[2,(n-1):n] <- 1
+
   d = sum(cumsum(pval_simes[1,] <= alpha/((n:1)*pval_simes[2,])) == 1:n)
   h = n - d
 
@@ -162,7 +173,6 @@ d_selection_storey = function(S_Y, S_X, S=NULL, alpha=0.1, lambda = 0.5){
 
   out = list("lower.bound" = d_S, "global.p.value" = pval.global, "S"=S, "selection.p.value" = pval.selection)
 
-  #return(list("d" = d, "d_S" = d_S))
   return(out)
 
 }
