@@ -68,5 +68,5 @@ d_selection_t(S_Y=Sy, S_X=Sx, S=c(1:3,17, 7:11, 23, 21), statistic="T2", n_perm=
 d_selection_t(S_Y=Sy, S_X=Sx, S=c(1,3,7,19), statistic="T3", alpha=0.1)
 d_selection_t(S_Y=Sy, S_X=Sx, S=c(1,3,7,19), statistic="fisher", alpha=0.1)
 d_selection_t(S_Y=Sy, S_X=Sx, S=c(1,3,7,23,11,28,19), n_perm=6, statistic="fisher", alpha=0.1)
-d_selection_t(S_Y=Sy, S_X=Sx, S=c(1,3,7,23,11,28,19), n_perm=6, statistic="T5", alpha=0.1)
+d_selection_t(S_Y=Sy, S_X=Sx, S=c(1,3,7,23,11,28,19), n_perm=6, statistic="T4", alpha=0.1)
 }

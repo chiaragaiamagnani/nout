@@ -63,8 +63,8 @@ d_selection_t(S_Y=Sy, S_X=Sx, statistic="T3", alpha=0.1)
 d_t(S_Y=Sy, S_X=Sx, statistic="fisher", alpha=0.1)
 d_selection_t(S_Y=Sy, S_X=Sx, statistic="fisher", alpha=0.1)
 
-d_t(S_Y=Sy, S_X=Sx, statistic="T5", alpha=0.1)
-d_selection_t(S_Y=Sy, S_X=Sx, statistic="T5", alpha=0.1)
+d_t(S_Y=Sy, S_X=Sx, statistic="T4", alpha=0.1)
+d_selection_t(S_Y=Sy, S_X=Sx, statistic="T4", alpha=0.1)
 
 
 }

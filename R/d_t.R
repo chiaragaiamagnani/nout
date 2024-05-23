@@ -113,14 +113,13 @@ asymptotic.critical.Tk <- function(m, n, k, alpha=0.1) {
   stopifnot(k>=1)
 
   moments.Tk = asymptotic.moments.Tk(m=m,n=n,k=k)
-  mean.Tk = moments.Tk$mean.Tk
-  variance.Tk = moments.Tk$variance.Tk
+  mean.Tk = as.double(moments.Tk$mean.Tk)
+  variance.Tk = as.double(moments.Tk$variance.Tk)
 
-  critical.value = stats::qnorm(alpha, mean=mean.Tk, sd = sqrt(variance.Tk), lower.tail = F)
+  critical.value = as.double(stats::qnorm(alpha, mean=mean.Tk, sd = sqrt(variance.Tk), lower.tail = F))
 
   return(critical.value)
 }
-
 
 
 
@@ -386,25 +385,24 @@ compute.critical.values <- function(m, n, alpha, k=NULL, n_perm=10, B=10^3, crit
         }
       }
       if(!found.value) {
-        cat(sprintf("Running permutations...\n"))
+        #cat(sprintf("Running permutations...\n"))
 
-        critical.value = perm.crit.T(m=m, n=h, k=k, alpha=alpha, B=B, seed=seed)
+        critical.value = as.double(perm.crit.T(m=m, n=h, k=k, alpha=alpha, B=B, seed=seed))
       }
     }
     # For large values of m or n compute critical values using the asymptotic approximation of the test statistic
     else {
       if(is.null(k)){
-        critical.value = asymptotic.critical.Fisher(m=m, n=h, alpha=alpha)
+        critical.value = as.double(asymptotic.critical.Fisher(m=m, n=h, alpha=alpha))
       } else {
-        critical.value = asymptotic.critical.Tk(m=m, n=h, k=k, alpha=alpha)
+        critical.value = as.double(asymptotic.critical.Tk(m=m, n=h, k=k, alpha=alpha))
       }
     }
-    return(critical.value)
+    return(as.double(critical.value))
   })
 
   return(crit)
 }
-
 
 
 
@@ -457,8 +455,8 @@ compute.critical.values <- function(m, n, alpha, k=NULL, n_perm=10, B=10^3, crit
 #' d_t(S_Y=Sy, S_X=Sx, statistic="fisher", alpha=0.1)
 #' d_selection_t(S_Y=Sy, S_X=Sx, statistic="fisher", alpha=0.1)
 #'
-#' d_t(S_Y=Sy, S_X=Sx, statistic="T5", alpha=0.1)
-#' d_selection_t(S_Y=Sy, S_X=Sx, statistic="T5", alpha=0.1)
+#' d_t(S_Y=Sy, S_X=Sx, statistic="T4", alpha=0.1)
+#' d_selection_t(S_Y=Sy, S_X=Sx, statistic="T4", alpha=0.1)
 #'
 #'
 d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical_values=NULL, seed=123){
@@ -483,9 +481,9 @@ d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical
   m = length(S_X)
 
   # Compute all critical values for (m,k) from k in {1,...,n}
-  crit = compute.critical.values(m=m, n=n, alpha=alpha, k=k, n_perm=n_perm, B=B,
+  crit = as.double(compute.critical.values(m=m, n=n, alpha=alpha, k=k, n_perm=n_perm, B=B,
                                  critical_values=critical_values,
-                                 seed=seed)
+                                 seed=seed))
 
   # Compute the individual statistics for each test point using the input data
   S_Z = c(S_X, S_Y)
@@ -501,7 +499,7 @@ d_t <- function(S_Y, S_X, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical
   T_wc = sapply(1:n, function(h) sum(T_i_sorted[1:h]))
 
   ## Compare the worst-case statistics to the critical values for k in {n,...,1}, starting from the max cardinality
-  d = sum(cumsum(rev(T_wc) >= rev(crit)) == 1:n)
+  d = as.double(sum(cumsum(rev(T_wc) >= rev(crit)) == 1:n))
 
   ## Compute p-value for the global null
   T.global = sum(R)
