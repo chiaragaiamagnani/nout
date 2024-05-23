@@ -45,7 +45,7 @@
 #' d_selection_t(S_Y=Sy, S_X=Sx, S=c(1,3,7,19), statistic="T3", alpha=0.1)
 #' d_selection_t(S_Y=Sy, S_X=Sx, S=c(1,3,7,19), statistic="fisher", alpha=0.1)
 #' d_selection_t(S_Y=Sy, S_X=Sx, S=c(1,3,7,23,11,28,19), n_perm=6, statistic="fisher", alpha=0.1)
-#' d_selection_t(S_Y=Sy, S_X=Sx, S=c(1,3,7,23,11,28,19), n_perm=6, statistic="T5", alpha=0.1)
+#' d_selection_t(S_Y=Sy, S_X=Sx, S=c(1,3,7,23,11,28,19), n_perm=6, statistic="T4", alpha=0.1)
 
 d_selection_t <- function(S_Y, S_X, S=NULL, statistic="T2", alpha=0.1, n_perm=10, B=10^3, critical_values=NULL, seed=123){
 

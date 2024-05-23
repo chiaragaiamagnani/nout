@@ -4,14 +4,14 @@
 \alias{compute_variance.Tk}
 \title{compute_variance.Tk}
 \usage{
-compute_variance.Tk(k, m, n)
+compute_variance.Tk(m, n, k)
 }
 \arguments{
-\item{k}{: order of the LMPI test statistic}
-
 \item{m}{: calibration sample size}
 
 \item{n}{: test sample size}
+
+\item{k}{: order of the LMPI test statistic}
 }
 \value{
 It returns the variance of LMPI \eqn{T_k} in the limit,
