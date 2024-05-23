@@ -11,7 +11,7 @@ compute_approx_mean.Tk.tilde = function(m,n,k){
   m = as.double(m)
   n = as.double(n)
   k = as.double(k)
-    
+
   N = n+m
   lambda = m/N
 
@@ -530,21 +530,22 @@ compute_variance.Tk = function(m, n, k){
 
 
 gen.data <- function(m,n) {
+  m = as.double(m)
+  n = as.double(n)
   Z <- stats::rnorm(m+n)
   return(Z)
 }
 
 stat.Tk <- function(Z, m, k) {
-
-  N = length(Z)
-  n = N-m
+  m = as.double(m)
+  k = as.double(k)
+  N = as.double(length(Z))
+  n = as.double(N-m)
   R = rank(Z)[(m+1):N]-1
 
   if(n==1){
-    Tk_i = sum(sapply(1:k, function(h){R^h}))
-  }
-  else{
-    # Tk_i = apply(sapply(1:k, function(h){R^h}), MARGIN=1, FUN = sum)
+    Tk_i = prod(sapply(1:k, function(l){R+l-1}))
+  } else {
     Tk_i = apply(sapply(1:k, function(l){R+l-1}), MARGIN=1, FUN = prod)
   }
 
@@ -554,7 +555,9 @@ stat.Tk <- function(Z, m, k) {
 
 # New notation (T1 = WMW)
 calc.Tk <- function(Z, m, k) {
-  N <- length(Z)
+  m = as.double(m)
+  k = as.double(k)
+  N <- as.double(length(Z))
   Tk = sum(stat.Tk(Z=Z,m=m,k=k))
   return(Tk)
 }
@@ -562,7 +565,8 @@ calc.Tk <- function(Z, m, k) {
 
 # New notation (T1 = WMW)
 calc.const.Tk = function(n,k){
-
+  n = as.double(n)
+  k = as.double(k)
   if(k==1){ # WMW
     Ck <- n*(n-1)/2
   } else if(k==2){
@@ -570,13 +574,15 @@ calc.const.Tk = function(n,k){
   } else if(k>2){
     Ck <- sum(sapply(1:k, function(h) sum(((1:n)-1)^h)))
   }
-  return(Ck)
+  return(as.double(Ck))
 }
 
 
 calc.Tk.tilde <- function(Z,m,k) {
-  N <- length(Z)
-  n <- N-m
+  m = as.double(m)
+  k = as.double(k)
+  N <- as.double(length(Z))
+  n <- as.double(N-m)
   Tk <- calc.Tk(Z=Z,m=m,k=k)
 
   if(k==1){ # WMW
@@ -591,6 +597,7 @@ calc.Tk.tilde <- function(Z,m,k) {
   Tkt <- N^(k-1) * Tkt / (d_choose(n,k) * d_choose(m,k))
   return(Tkt)
 }
+
 
 
 
