@@ -10,7 +10,7 @@ Description: [to be updated] Compute a lower (1-alpha)-confidence bound for the 
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.3.1
 Imports: 
     foreach,
     hommel,
@@ -19,4 +19,3 @@ Imports:
     sumSome
 URL: https://github.com/chiaragaiamagnani/nout
 BugReports: https://github.com/chiaragaiamagnani/nout/issues
-

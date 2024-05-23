@@ -26,6 +26,8 @@
 #' \item \code{global.pvalue}: the global *p*-value, i.e., the *p*-value that closed testing procedure uses to reject the global null
 #' }
 #'
+#' @importFrom sumSome sumStatsPar
+#'
 #' @export
 #'
 #' @examples
