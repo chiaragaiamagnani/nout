@@ -28,7 +28,6 @@
 #' d_selection_simes(S_Y=Sy, S_X=Sx, S=3)
 #' d_selection_simes(S_Y=Sy, S_X=Sx, S=c(3, 7:13))
 #' d_selection_simes(S_Y=Sy, S_X=Sx)
-#' d_simes(S_Y=Sy, S_X=Sx)
 #'
 d_selection_simes = function(S_Y, S_X, S=NULL, alpha = 0.1){
   n = length(S_Y)
@@ -95,7 +94,6 @@ d_selection_simes = function(S_Y, S_X, S=NULL, alpha = 0.1){
 #' d_selection_storey(S_Y=Sy, S_X=Sx, S=3)
 #' d_selection_storey(S_Y=Sy, S_X=Sx, S=c(3, 7:13))
 #' d_selection_storey(S_Y=Sy, S_X=Sx)
-#' d_storeysimes(S_Y=Sy, S_X=Sx)
 #'
 #'
 #'
