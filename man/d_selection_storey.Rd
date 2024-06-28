@@ -41,7 +41,6 @@ d_selection_storey(S_Y=Sy, S_X=Sx)
 d_selection_storey(S_Y=Sy, S_X=Sx, S=3)
 d_selection_storey(S_Y=Sy, S_X=Sx, S=c(3, 7:13))
 d_selection_storey(S_Y=Sy, S_X=Sx)
-d_storeysimes(S_Y=Sy, S_X=Sx)
 
 
 
