@@ -16,6 +16,11 @@ Imports:
     hommel,
     multcomp,
     stats,
-    sumSome
+    sumSome,
+    Iso,
+    statip
 URL: https://github.com/chiaragaiamagnani/nout
 BugReports: https://github.com/chiaragaiamagnani/nout/issues
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
