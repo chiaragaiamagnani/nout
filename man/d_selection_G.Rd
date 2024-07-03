@@ -8,6 +8,7 @@ d_selection_G(
   S_Y,
   S_X,
   S = NULL,
+  k = NULL,
   g.hat = NULL,
   monotonicity = NULL,
   prop.F = 0.5,

@@ -28,13 +28,16 @@ stat.Tk <- function(Z, m, k) {
   k = as.double(k)
   N = as.double(length(Z))
   n = as.double(N-m)
-  R = rank(Z)[(m+1):N]-1
+  if(k==1)
+    R = rank(Z)[(m+1):N]
+  else
+    R = rank(Z)[(m+1):N]
 
   if(k>1){ # test statistic Shiraishi (1985)
     if(n==1){
-      Tk_i = (k+1)/((N+1):(N+k))*prod(sapply(1:k, function(l){R+l-1}))
+      Tk_i = (k+1)/(prod((N+1):(N+k)))*prod(sapply(1:k, function(l){R+l-1}))
     } else {
-      Tk_i = (k+1)/((N+1):(N+k))*apply(sapply(1:k, function(l){R+l-1}), MARGIN=1, FUN = prod)
+      Tk_i = (k+1)/(prod((N+1):(N+k)))*apply(sapply(1:k, function(l){R+l-1}), MARGIN=1, FUN = prod)
     }
   } else if(k==1){ # classic rank sum Wilcoxon test statistic
     Tk_i = R
@@ -79,7 +82,7 @@ beta_moment.k = function(h,N,k){
 #' @param k : an integer greater than 1, order of the Lehmann's alternative distribution
 #' @param n : test sample size
 #'
-#' @return Asymptotic mean of Shiraishi (1985) test statistic
+#' @return Asymptotic mean of Shiraishi (1985) test statistic under Lehmann's alternative of order k
 #' @export
 #'
 #' @examples
@@ -148,13 +151,14 @@ asymptotic.moments.Tk <- function(m, n, k) {
   N = as.double(n+m)
   if(k==1){
 
-    mean.Tk = m*n/2 + n*(n-1)/2
-    variance.Tk = m*n*(m+n)/12
+    mean.Tk = m*n/2 + n*(n+1)/2
+    variance.Tk = m*n*(m+n+1)/12
 
   } else if(k>1){
     # Asymptotic distribution Shiraishi (1985)
-    mean.Tk = mean_analytical.Lk(N=N,k=k,n=n)
-    variance.Tk = var_analytical.Lk(N=N,k=k,n=n)
+    stats_G = sapply(1:N, function(h) (k+1)*mom_lhk(n,h,k))
+    mean.Tk = meanG(n=n, stats_G_vector=stats_G)
+    variance.Tk = varG(n=n, m=m, stats_G_vector=stats_G)
   }
 
   moments.Tk = list("mean.Tk"=mean.Tk, "variance.Tk"=variance.Tk)

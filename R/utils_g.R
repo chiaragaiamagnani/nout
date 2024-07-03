@@ -178,7 +178,7 @@ estimate_g = function(X1,X2,Y,ker){
 #' stats_G = stats_G_j_MC(N=1000, g=g2, B=10^3)
 #'
 stats_G_j_MC = function(N, g, B){
-  reps = replicate(B, sapply(X=sort(stats::runif(1:N)), FUN=g))
+  reps = replicate(B, sapply(X=sort(stats::runif(N)), FUN=g))
   aN_j = apply(reps,1,mean)
 
   return(aN_j)
@@ -205,7 +205,6 @@ stat.G = function(Z,m,stats_G_vector){
 
   m = as.double(m)
   N = as.double(length(Z))
-  n = as.double(N-m)
 
   R = rank(Z)[(m+1):N]
   T.G_i = stats_G_vector[R]
@@ -264,9 +263,8 @@ varG = function(n, m, stats_G_vector){
   N = m+n
   mm <- mean(stats_G_vector)
   out = (m*n*sum((stats_G_vector - mm)^2))/(N*(N-1))
-
   return(out)
-
+  #(m*h*sum((stats_G[[n-h+1]] - mm)^2))/(N*(N-1))
 }
 
 
@@ -317,5 +315,8 @@ asymptotic.critical.G <- function(m, n, stats_G_vector, alpha=0.1) {
 
 
 
-
-
+mom_lhk = function(l,h,k){
+  den = m+l+1+(0:(k-1))
+  num = h+(0:(k-1))
+  return(prod(num/den))
+}

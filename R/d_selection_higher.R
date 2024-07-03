@@ -33,7 +33,7 @@
 #'
 #' X = runif(50)
 #' Y = replicate(50, rg2(rnull=runif))
-#' res = d_selection_higher(S_X=X, S_Y=Y, local.test="WMW", B=100)
+#' res = d_selection_higher(S_X=X, S_Y=Y, local.test="WMW", n_perm=0, B=100)
 #' res = d_selection_higher(S_X=X, S_Y=Y, local.test="higher", k=2, S = c(1:40), B=100)
 d_selection_higher = function(S_X, S_Y, S=NULL, local.test="wmw", k=NULL, alpha=0.1, n_perm=10, B=10^3, critical_values=NULL, seed=123){
 
@@ -54,7 +54,7 @@ d_selection_higher = function(S_X, S_Y, S=NULL, local.test="wmw", k=NULL, alpha=
     # S = [n]
     s = n
     Y.S = sort(S_Y, decreasing = F)
-    Z = sapply(length(Y.S):1, function(h) c(S_X, Y.S[1:h]))
+    ZZ = sapply(length(Y.S):1, function(h) c(S_X, Y.S[1:h]))
 
   } else {
     s = length(S)
@@ -63,19 +63,18 @@ d_selection_higher = function(S_X, S_Y, S=NULL, local.test="wmw", k=NULL, alpha=
     Y.notS = sort(S_Y[notS], decreasing = F)
     Z.up = sapply(length(Y.notS):1, function(h) c(S_X, Y.S, Y.notS[1:h]))
     Z.down = sapply(length(Y.S):1, function(h) c(S_X, Y.S[1:h]))
-    Z = c(Z.up, Z.down)
+    ZZ = c(Z.up, Z.down)
   }
 
   ## Closed-testing shortcut: sort the test points based on their individual statistics
   ## For each k in {1,...,n} consider the worst-case subset of test points with cardinality k
-  R = sapply(length(Z):1, function(h) stat.Tk(Z=Z[[h]], m=m, k=k))
+  R = sapply(length(ZZ):1, function(h) stat.Tk(Z=ZZ[[h]], m=m, k=k))
 
   # Compute all critical values for (m,k) from k in {1,...,n}
   crit = as.double(compute.critical.values(m=m, n=n, local.test=local.test,
                                            alpha=alpha, k=k, n_perm=n_perm, B=B, critical_values=critical_values, seed=seed))
 
   T_wc = sapply(1:length(R), function(h) sum(R[[h]]))
-
 
   ## Compare the worst-case statistics to the critical values for k in {n,...,1}, starting from the max cardinality
   tentative.d = as.double(sum(cumsum(rev(T_wc) >= rev(crit)) == 1:n))-n+s

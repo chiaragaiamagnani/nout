@@ -14,7 +14,7 @@ mean_analytical.Lk(N, k, n)
 \item{n}{: test sample size}
 }
 \value{
-Asymptotic mean of Shiraishi (1985) test statistic
+Asymptotic mean of Shiraishi (1985) test statistic under Lehmann's alternative of order k
 }
 \description{
 mean_analytical.Lk

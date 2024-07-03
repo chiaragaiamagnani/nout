@@ -36,7 +36,7 @@
 #' Y = replicate(50, rg2(rnull=runif))
 #' res = d_selection_G(S_Y=Y, S_X=X, B=100)
 #' res = d_selection_G(S_Y=Y, S_X=X, S = c(1:40), g.hat = g2, monotonicity=TRUE, B=100)
-d_selection_G <- function(S_Y, S_X, S=NULL, g.hat=NULL, monotonicity=NULL, prop.F=0.5, alpha=0.1, n_perm=10, B=10^3, B_MC=10^3, seed=123){
+d_selection_G <- function(S_Y, S_X, S=NULL, k=NULL, g.hat=NULL, monotonicity=NULL, prop.F=0.5, alpha=0.1, n_perm=10, B=10^3, B_MC=10^3, seed=123){
 
   n = as.double(length(S_Y))
   m = as.double(length(S_X))
@@ -54,19 +54,30 @@ d_selection_G <- function(S_Y, S_X, S=NULL, g.hat=NULL, monotonicity=NULL, prop.
     stats_G = sapply(n:1, function(h) stats_G_j_MC(N=m+h, g=g.hat, B=B_MC))
     monotonicity = NULL
 
+  } else if(is.character(g.hat)){
+    if(g.hat=="analytical"){
+      # WMW
+      # stats_G = sapply(n:1, function(h) 2*(1:(m+h))/(m+h+1))
+      stats_G = sapply(n:1, function(l){sapply(1:(l+m), function(h) (k+1)*mom_lhk(l,h,k))})
+      monotonicity = monotonicity
+    }
   } else {
 
     stats_G = sapply(n:1, function(h) stats_G_j_MC(N=m+h, g=g.hat, B=B_MC))
+    # stats_G1 = sapply(n:1, function(h) stat.G(N=m+h, g=g.hat, B=B_MC))
+    # stats_G = stats_G1*((m+n+1):(m+2))/2 # WMW
     monotonicity = monotonicity
 
   }
 
+
   if(is.null(monotonicity)){
-    res = d_G_bias(S_X=S_X, S_Y=S_Y, S=S, stats_G_vector=stats_G, alpha=alpha, n_perm=n_perm, B=B, seed=seed)
+    res = d_G_cons(S_X=S_X, S_Y=S_Y, S=S, stats_G_vector=stats_G, alpha=alpha, n_perm=n_perm, B=B, seed=seed)
   } else if(monotonicity==FALSE){
-    res = d_G_bias(S_X=S_X, S_Y=S_Y, S=S, stats_G_vector=stats_G, alpha=alpha, n_perm=n_perm, B=B, seed=seed)
+    res = d_G_cons(S_X=S_X, S_Y=S_Y, S=S, stats_G_vector=stats_G, alpha=alpha, n_perm=n_perm, B=B, seed=seed)
   } else if(monotonicity==TRUE){
     res = d_G_monotone(S_X=S_X, S_Y=S_Y, S=S, stats_G_vector=stats_G, alpha=alpha, n_perm=n_perm, B=B, seed=seed)
+    # res = d_selection_higher(S_X=X, S_Y=Y, local.test="wmw", B=100)
   }
 
   return(res)
@@ -76,7 +87,7 @@ d_selection_G <- function(S_Y, S_X, S=NULL, g.hat=NULL, monotonicity=NULL, prop.
 
 
 
-#' d_G_bias
+#' d_G_cons
 #'
 #' @param S_Y : test score vector
 #' @param S_X :  calibration score vector
@@ -106,8 +117,8 @@ d_selection_G <- function(S_Y, S_X, S=NULL, g.hat=NULL, monotonicity=NULL, prop.
 #' X = runif(m)
 #' Y = replicate(n, rg2(rnull=runif))
 #' stats_G = sapply(length(Y):1, function(h) stats_G_j_MC(N=m+h, g=g2, B=300))
-#' res = d_G_bias(S_Y=Y, S_X=X, stats_G_vector=stats_G, B=100)
-d_G_bias = function(S_X, S_Y, S=NULL, stats_G_vector, alpha=0.1, n_perm=10, B=10^3, seed=123){
+#' res = d_G_cons(S_Y=Y, S_X=X, stats_G_vector=stats_G, B=100)
+d_G_cons = function(S_X, S_Y, S=NULL, stats_G_vector, alpha=0.1, n_perm=10, B=10^3, seed=123){
 
   m = as.double(length(S_X))
   n = as.double(length(S_Y))
@@ -117,19 +128,19 @@ d_G_bias = function(S_X, S_Y, S=NULL, stats_G_vector, alpha=0.1, n_perm=10, B=10
   if(is.null(S)){
 
     Rx = sapply(1:n, function(i) rank(c(S_X, S_Y[i]))[m+1]-1)
-    range_test_ranks_n = sapply(1:n, function(h) (min(Rx)+1):(max(Rx)+n-h+1))
-    R = sapply(1:n, function(h) stats_G_vector[[n-h+1]][range_test_ranks_n[[n-h+1]]])
+    range_test_ranks_n = sapply(n:1, function(h) (min(Rx)+1):(max(Rx)+h))
+    R = sapply(n:1, function(h) stats_G_vector[[h]][range_test_ranks_n[[h]]])
 
   } else {
     Rx = sapply(1:n, function(i) rank(c(S_X, S_Y[i]))[m+1]-1)
     Rx.S = Rx[S]
-    range_test_ranks_subS = sapply(1:s, function(h) (min(Rx.S)+1):(max(Rx.S)+s-h+1))
+    range_test_ranks_subS = sapply(s:n, function(h) (min(Rx.S)+1):(max(Rx.S)+n-h+1))
     range_test_ranks_supS = sapply(1:s, function(h) (min(Rx)+1):(max(Rx)+n-h+1))
     range_test_ranks_S = c(range_test_ranks_supS, range_test_ranks_subS)
-    R = sapply(1:n, function(h) stats_G_vector[[n-h+1]][range_test_ranks_S[[n-h+1]]])
+    R = sapply(n:1, function(h) stats_G_vector[[h]][range_test_ranks_S[[h]]])
   }
 
-  crit = as.double(sapply(1:n, function(h) asymptotic.critical.G (m=m, n=h, stats_G_vector[[h]], alpha=alpha)))
+  crit = as.double(sapply(1:n, function(h) asymptotic.critical.G(m=m, n=n-h+1, stats_G_vector[[h]], alpha=alpha)))
   T_wc = sapply(1:length(R), function(h) sum(R[[h]]))
 
   ## Compare the worst-case statistics to the critical values for k in {n,...,1}, starting from the max cardinality
@@ -200,6 +211,66 @@ d_G_monotone = function(S_X, S_Y, S=NULL, stats_G_vector, alpha=0.1, n_perm=10, 
     # S = [n]
     s = n
     Y.S = sort(S_Y, decreasing = F)
+    ZZ = sapply(length(Y.S):1, function(h) c(S_X, Y.S[1:h]))
+
+  } else {
+    s = length(S)
+    Y.S = sort(S_Y[S], decreasing = F)
+    notS = setdiff(1:n, S)
+    Y.notS = sort(S_Y[notS], decreasing = F)
+    Z.up = sapply(length(Y.notS):1, function(h) c(S_X, Y.S, Y.notS[1:h]))
+    Z.down = sapply(length(Y.S):1, function(h) c(S_X, Y.S[1:h]))
+    ZZ = c(Z.up, Z.down)
+  }
+
+  #stats_G_test = sapply(length(ZZ):1, function(h) stat.G(Z=ZZ[[h]], m=m, stats_G_vector=stats_G_vector[[h]]))
+  ## Closed-testing shortcut: sort the test points based on their individual statistics
+  ## For each k in {1,...,n} consider the worst-case subset of test points with cardinality k
+  R = sapply(length(ZZ):1, function(h) stat.G(Z=ZZ[[h]], m=m, stats_G_vector=stats_G_vector[[h]]))
+
+  # Compute all critical values for (m,k) from k in {1,...,n}
+  crit = as.double(sapply(1:n, function(h) asymptotic.critical.G (m=m, n=n-h+1, stats_G_vector=stats_G_vector[[h]], alpha=alpha)))
+
+  T_wcG = sapply(1:length(R), function(h) sum(R[[h]]))
+
+
+  ## Compare the worst-case statistics to the critical values for k in {n,...,1}, starting from the max cardinality
+  tentative.d = as.double(sum(cumsum(rev(T_wcG) >= critG) == 1:n))-n+s
+  d = ifelse(tentative.d>0, tentative.d, 0)
+
+  ## Compute p-value for the global null
+  T.global = T_wc[s]
+  pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=s, local.test="g", stats_G_vector=stats_G_vector[[n-s+1]],
+                                      n_perm=n_perm, B=B, seed=seed)
+  ## Compute p-value for the selected null
+  ## NOTE: this calculation is missing
+  pval.selection = 1
+
+  out = list("lower.bound" = d,
+             "global.pvalue" = pval.global,
+             "S" = S,
+             "selection.p.value" = 1)
+
+}
+
+
+
+
+
+
+
+
+
+
+d_G_monotone_simu = function(S_X, S_Y, S=NULL, g.hat=NULL, stats_G_vector, alpha=0.1, n_perm=10, B=10^3, seed=123){
+
+  n = length(S_Y)
+  m = length(S_X)
+
+  if(is.null(S)){
+    # S = [n]
+    s = n
+    Y.S = sort(S_Y, decreasing = F)
     Z = sapply(length(Y.S):1, function(h) c(S_X, Y.S[1:h]))
 
   } else {
@@ -241,6 +312,7 @@ d_G_monotone = function(S_X, S_Y, S=NULL, stats_G_vector, alpha=0.1, n_perm=10, 
              "selection.p.value" = 1)
 
 }
+
 
 
 

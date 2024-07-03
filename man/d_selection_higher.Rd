@@ -59,6 +59,6 @@ rg2 = function(rnull, k=2) max(rnull(k))
 
 X = runif(50)
 Y = replicate(50, rg2(rnull=runif))
-res = d_selection_higher(S_X=X, S_Y=Y, local.test="WMW", B=100)
+res = d_selection_higher(S_X=X, S_Y=Y, local.test="WMW", n_perm=0, B=100)
 res = d_selection_higher(S_X=X, S_Y=Y, local.test="higher", k=2, S = c(1:40), B=100)
 }
