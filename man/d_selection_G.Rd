@@ -26,6 +26,8 @@ d_selection_G(
 
 \item{S}{: selection set in the index test set}
 
+\item{k}{: order of the generalized Wilcoxon rank sum test. Classic Wilcoxon test corresponds to \eqn{k=1}}
+
 \item{g.hat}{: it denotes the outlier density. If NULL it is estimated from the data}
 
 \item{monotonicity}{: logical value indicating if the outlier density function is monotone (increasing or decreasing) or neither.}

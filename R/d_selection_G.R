@@ -7,6 +7,7 @@
 #' @param S_Y : test score vector
 #' @param S_X :  calibration score vector
 #' @param S : selection set in the index test set
+#' @param k : order of the generalized Wilcoxon rank sum test. Classic Wilcoxon test corresponds to \eqn{k=1}
 #' @param g.hat : it denotes the outlier density. If NULL it is estimated from the data
 #' @param monotonicity : logical value indicating if the outlier density function is monotone (increasing or decreasing) or neither.
 #' @param prop.F  : proportion of inliers used to estimate the inliser distribution while estimating the outlier density.
@@ -58,7 +59,8 @@ d_selection_G <- function(S_Y, S_X, S=NULL, k=NULL, g.hat=NULL, monotonicity=NUL
     if(g.hat=="analytical"){
       # WMW
       # stats_G = sapply(n:1, function(h) 2*(1:(m+h))/(m+h+1))
-      stats_G = sapply(n:1, function(l){sapply(1:(l+m), function(h) (k+1)*mom_lhk(l,h,k))})
+      stats_G = sapply(n:1, function(l){
+        sapply(1:(l+m), function(h) (k+1)*k_mom_beta(a=h, b=m+l-h+1, k=k))})
       monotonicity = monotonicity
     }
   } else {
@@ -231,11 +233,11 @@ d_G_monotone = function(S_X, S_Y, S=NULL, stats_G_vector, alpha=0.1, n_perm=10, 
   # Compute all critical values for (m,k) from k in {1,...,n}
   crit = as.double(sapply(1:n, function(h) asymptotic.critical.G (m=m, n=n-h+1, stats_G_vector=stats_G_vector[[h]], alpha=alpha)))
 
-  T_wcG = sapply(1:length(R), function(h) sum(R[[h]]))
+  T_wc = sapply(1:length(R), function(h) sum(R[[h]]))
 
 
   ## Compare the worst-case statistics to the critical values for k in {n,...,1}, starting from the max cardinality
-  tentative.d = as.double(sum(cumsum(rev(T_wcG) >= critG) == 1:n))-n+s
+  tentative.d = as.double(sum(cumsum(rev(T_wc) >= crit) == 1:n))-n+s
   d = ifelse(tentative.d>0, tentative.d, 0)
 
   ## Compute p-value for the global null

@@ -15,7 +15,7 @@ find_d(
   alpha = 0.1,
   prop.F = 0.5,
   lambda = 0.5,
-  n_perm = 10,
+  n_perm = 0,
   B = 10^3,
   B_MC = 10^3,
   critical_values = NULL,
@@ -48,7 +48,8 @@ Default value is 0.5}
 
 \item{lambda}{: parameter to be specified when computing Storey's estimator. Default value is 0.5}
 
-\item{n_perm}{c}
+\item{n_perm}{: minimum test sample size needed to use the asymptotic distribution of the test statistic when
+local.test is either "higher" or "fisher"}
 
 \item{B}{: number of replications to compute critical values and global \emph{p}-value. Default value is 10^3}
 

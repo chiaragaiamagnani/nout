@@ -141,7 +141,7 @@ compute.global.pvalue <- function(T.obs, m, n, local.test="wmw", k=NULL, stats_G
     if(local.test=="fisher")
       pval.perm = compute.perm.pval(T.obs=T.obs, local.test="fisher", m=m, n=n, k=k, B=B, seed=seed)
     else if(local.test=="g")
-      pval.perm = compute.perm.pval(T.obs=T.obs, local.test=="g", m=m, n=n, k=k, stats_G_vector=stats_G_vector, B=B, seed=seed)
+      pval.perm = compute.perm.pval(T.obs=T.obs, local.test="g", m=m, n=n, k=k, stats_G_vector=stats_G_vector, B=B, seed=seed)
     else if(local.test=="higher" || local.test=="wmw")
       pval.perm = compute.perm.pval(T.obs=T.obs, local.test="higher", m=m, n=n, k=k, B=B, seed=seed)
   }

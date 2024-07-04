@@ -156,7 +156,7 @@ asymptotic.moments.Tk <- function(m, n, k) {
 
   } else if(k>1){
     # Asymptotic distribution Shiraishi (1985)
-    stats_G = sapply(1:N, function(h) (k+1)*mom_lhk(n,h,k))
+    stats_G = sapply(1:N, function(h) (k+1)*k_mom_beta(a=h, b=m+n-h+1, k=k))
     mean.Tk = meanG(n=n, stats_G_vector=stats_G)
     variance.Tk = varG(n=n, m=m, stats_G_vector=stats_G)
   }

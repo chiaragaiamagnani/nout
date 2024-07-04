@@ -314,9 +314,16 @@ asymptotic.critical.G <- function(m, n, stats_G_vector, alpha=0.1) {
 
 
 
-
-mom_lhk = function(l,h,k){
-  den = m+l+1+(0:(k-1))
-  num = h+(0:(k-1))
+#' k_mom_beta
+#' @description This function computes the \eqn{k}th moment of a Beta(a,b)
+#'
+#' @param a : first parameter of Beta distribution
+#' @param b : second parameter of Beta distribution
+#' @param k : order of the moment to be computed
+#'
+#' @return A real number
+k_mom_beta = function(a, b, k){
+  den = a+b+(0:(k-1))
+  num = a+(0:(k-1))
   return(prod(num/den))
 }

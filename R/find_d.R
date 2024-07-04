@@ -20,7 +20,8 @@
 #' @param prop.F : proportion of inliers used to estimate the inliser distribution while estimating the outlier density.
 #' Default value is 0.5
 #' @param lambda : parameter to be specified when computing Storey's estimator. Default value is 0.5
-#' @param n_perm c
+#' @param n_perm : minimum test sample size needed to use the asymptotic distribution of the test statistic when
+#' local.test is either "higher" or "fisher"
 #' @param B : number of replications to compute critical values and global *p*-value. Default value is 10^3
 #' @param B_MC : number of replications to compute the Shiraishi test statistic
 #' @param critical_values : if not \code{NULL}, a vector of precomputed critical values obtained using
@@ -49,7 +50,7 @@
 #' res = find_d(X, Y, B=100)
 #' res = find_d(X, Y, local.test="higher", k=3, B=100)
 #' res = find_d(X, Y, local.test="g", g.hat = g2, monotonicity=TRUE, B=100)
-find_d = function(X, Y, local.test = "wmw", S=NULL, k=NULL, monotonicity=NULL, g.hat=NULL, alpha=0.1, prop.F=0.5, lambda=0.5, n_perm=10, B=10^3, B_MC=10^3, critical_values=NULL, seed=123){
+find_d = function(X, Y, local.test = "wmw", S=NULL, k=NULL, monotonicity=NULL, g.hat=NULL, alpha=0.1, prop.F=0.5, lambda=0.5, n_perm=0, B=10^3, B_MC=10^3, critical_values=NULL, seed=123){
 
   local.test = tolower(local.test)
   stopifnot(local.test %in% c("wmw", "higher", "fisher", "g", "simes", "storey"))
