@@ -45,11 +45,10 @@
 #' g2 = function(x, k=2) ifelse(x<1 & x>0, k*x^(k-1), 0)
 #' rg2 = function(rnull, k=2) max(rnull(k))
 #'
-#' X = runif(50)
-#' Y = replicate(50, rg2(rnull=runif))
-#' res = find_d(X, Y, B=100)
+#' X = runif(10)
+#' Y = replicate(10, rg2(rnull=runif))
 #' res = find_d(X, Y, local.test="higher", k=3, B=100)
-#' res = find_d(X, Y, local.test="g", g.hat = g2, monotonicity=TRUE, B=100)
+#' res = find_d(X, Y, local.test="g", g.hat = g2, monotonicity="increasing", B=100)
 find_d = function(X, Y, local.test = "wmw", S=NULL, k=NULL, monotonicity=NULL, g.hat=NULL, alpha=0.1, prop.F=0.5, lambda=0.5, n_perm=0, B=10^3, B_MC=10^3, critical_values=NULL, seed=123){
 
   local.test = tolower(local.test)
@@ -73,7 +72,7 @@ find_d = function(X, Y, local.test = "wmw", S=NULL, k=NULL, monotonicity=NULL, g
 
   } else if(local.test=="g"){
 
-    res = d_selection_G(S_Y=Y, S_X=X, S=S, g.hat=g.hat, monotonicity=monotonicity, prop.F=prop.F, alpha=alpha, n_perm=n_perm, B=B, B_MC=B_MC, seed=seed)
+    res = d_selection_G2(S_Y=Y, S_X=X, S=S, g.hat=g.hat, monotonicity=monotonicity, prop.F=prop.F, alpha=alpha, n_perm=n_perm, B=B, B_MC=B_MC, seed=seed)
 
   } else if(local.test=="simes"){
 

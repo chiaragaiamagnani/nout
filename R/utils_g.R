@@ -104,24 +104,41 @@ invert_mixture = function(mixture_density, null_density, prop.out){
 }
 
 
-estimate_g = function(X1,X2,Y,ker){
 
-  stopifnot("Error: kernel must be in .kernelsList()"= ker%in%statip::.kernelsList())
+estimate_g = function(X1,X2,Y, constraint=NULL, ker="uniform"){
 
-  F.hat = compute_estimate_null_distr(X=X1)$ecdf
+  if(is.null(constraint)){
+    stopifnot("Error: kernel must be in .kernelsList()"= ker%in%statip::.kernelsList())
 
-  FX2 = F.hat(X2)
+    F.hat = compute_estimate_null_distr(X=X1)$ecdf
 
-  # Estimate the mixture model, without distinguishing each component
-  mixture_hat = KDE_mixture_density(X=X2, Y=Y, null_cdf=F.hat, ker=ker)
+    FX2 = F.hat(X2)
 
-  # Estimate the proportion of outliers in the augmented test set
-  # pi.not = estimate_propOut_Storey(X=X2,Y=Y)
-  pi.not = estimate_mixing_prop(X=X2, Y=Y, F_null=stats::dunif)
+    # Estimate the mixture model, without distinguishing each component
+    mixture_hat = KDE_mixture_density(X=X2, Y=Y, null_cdf=F.hat, ker=ker)
 
-  # Extrapolate estimate of g
-  g_hat = invert_mixture(mixture_density=mixture_hat,
-                         null_density=stats::dunif, prop.out=pi.not)
+    # Estimate the proportion of outliers in the augmented test set
+    # pi.not = estimate_propOut_Storey(X=X2,Y=Y)
+    pi.not = estimate_mixing_prop(X=X2, Y=Y, F_null=stats::dunif)
+
+    # Extrapolate estimate of g
+    g_hat = invert_mixture(mixture_density=mixture_hat,
+                           null_density=stats::dunif, prop.out=pi.not)
+  } else {
+    stopifnot("Error: constraint must be either increasing, decreasing"= constraint%in%c("decreasing", "increasing"))
+
+    pooled = c(X1,X2,Y)
+    F_hat = stats::ecdf(X)
+    est.fixed <- mix.model(F_hat(pooled), method = "fixed", c.n = .05*log(log(length(pooled))), gridsize = 600)
+    dec.dens = ifelse(constraint=="decreasing", TRUE, FALSE)
+    out = mixmodel::den.mix.model(est.fixed, dec.density = dec.dens)
+    out$x[1] <- 0
+    # out$x <- out$x[-length(out$x)]
+    # out$y <- out$y[-length(out$y)]
+
+    g_hat = function(u) sapply(u, function(i)
+      out$y[sum( i >= out$x )] )
+  }
 
   return(g_hat)
 
@@ -178,9 +195,7 @@ estimate_g = function(X1,X2,Y,ker){
 #' stats_G = stats_G_j_MC(N=1000, g=g2, B=10^3)
 #'
 stats_G_j_MC = function(N, g, B){
-  reps = replicate(B, sapply(X=sort(stats::runif(N)), FUN=g))
-  aN_j = apply(reps,1,mean)
-
+  aN_j = apply(replicate(B, sapply(X=sort(stats::runif(N)), FUN=g)), 1, mean)
   return(aN_j)
 }
 

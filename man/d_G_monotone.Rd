@@ -49,9 +49,9 @@ d_G_monotone
 \examples{
 g2 = function(x, k=2) ifelse(x<1 & x>0, k*x^(k-1), 0)
 rg2 = function(rnull, k=2) max(rnull(k))
-m = 50; n=50;
+m = 10; n=10;
 X = runif(m)
 Y = replicate(n, rg2(rnull=runif))
-stats_G = sapply(length(Y):1, function(h) stats_G_j_MC(N=m+h, g=g2, B=300))
-res = d_G_monotone(S_Y=Y, S_X=X, S=c(1:40), stats_G_vector=stats_G, B=100)
+stats_G =  sapply(n:1, function(h) apply(replicate(100, g2(sort(runif(m+h)))) , 1, mean))
+res = d_G_monotone(S_Y=Y, S_X=X, S=c(1:8), stats_G_vector=stats_G, B=100)
 }

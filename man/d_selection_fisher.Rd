@@ -51,8 +51,8 @@ d_selection_fisher
 g2 = function(x, k=2) ifelse(x<1 & x>0, k*x^(k-1), 0)
 rg2 = function(rnull, k=2) max(rnull(k))
 
-X = runif(50)
-Y = replicate(50, rg2(rnull=runif))
+X = runif(10)
+Y = replicate(10, rg2(rnull=runif))
 res = d_selection_fisher(S_Y=Y, S_X=X, B=100)
-res = d_selection_fisher(S_Y=Y, S_X=X, S = c(1:40), B=100)
+res = d_selection_fisher(S_Y=Y, S_X=X, S = c(1:8), B=100)
 }

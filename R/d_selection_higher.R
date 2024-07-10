@@ -31,10 +31,10 @@
 #' g2 = function(x, k=2) ifelse(x<1 & x>0, k*x^(k-1), 0)
 #' rg2 = function(rnull, k=2) max(rnull(k))
 #'
-#' X = runif(50)
-#' Y = replicate(50, rg2(rnull=runif))
+#' X = runif(10)
+#' Y = replicate(10, rg2(rnull=runif))
 #' res = d_selection_higher(S_X=X, S_Y=Y, local.test="WMW", n_perm=0, B=100)
-#' res = d_selection_higher(S_X=X, S_Y=Y, local.test="higher", k=2, S = c(1:40), B=100)
+#' res = d_selection_higher(S_X=X, S_Y=Y, local.test="higher", k=2, S = c(1:7), B=100)
 d_selection_higher = function(S_X, S_Y, S=NULL, local.test="wmw", k=NULL, alpha=0.1, n_perm=10, B=10^3, critical_values=NULL, seed=123){
 
   local.test=tolower(local.test)

@@ -2,8 +2,11 @@
 
 export(beta_moment.k)
 export(d_G_cons)
+export(d_G_cons2)
 export(d_G_monotone)
+export(d_G_monotone2)
 export(d_selection_G)
+export(d_selection_G2)
 export(d_selection_fisher)
 export(d_selection_higher)
 export(d_selection_simes)

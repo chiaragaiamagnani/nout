@@ -214,7 +214,7 @@ compute.critical.values <- function(m, n, local.test="wmw", alpha, k=NULL, stats
       if(local.test=="fisher"){
         critical.value = as.double(asymptotic.critical.Fisher(m=m, n=h, alpha=alpha))
       } else if(local.test=="g"){
-        critical.value = as.double(asymptotic.critical.G(m=m, n=h, stats_G_vector=stats_G_vector, alpha=alpha)) # QUI
+        critical.value = as.double(asymptotic.critical.G(m=m, n=h, stats_G_vector=stats_G_vector, alpha=alpha))
       } else if(local.test=="higher" || local.test=="wmw"){
         critical.value = as.double(asymptotic.critical.Tk(m=m, n=h, k=k, alpha=alpha))
       }

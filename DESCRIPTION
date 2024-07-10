@@ -5,6 +5,8 @@ Authors@R:
     c(person("Chiara Gaia", "Magnani", , "c.magnani9@campus.unimib.it", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID")),
       person("Aldo", "Solari", , "aldo.solari@unimib.it", role = c("aut"),
+           comment = c(ORCID = "YOUR-ORCID-ID")),
+      person("Matteo", "Sesia", , "sesia@marshall.usc.edu", role = c("aut"),
            comment = c(ORCID = "YOUR-ORCID-ID")))
 Description: [to be updated] Compute a lower (1-alpha)-confidence bound for the number of true discoveries in closed testing procedure using three different local tests: Simes, Simes with Storey estimator and Wilcoxon-Mann-Whitney test.
 License: MIT + file LICENSE
@@ -18,7 +20,8 @@ Imports:
     stats,
     sumSome,
     Iso,
-    statip
+    statip,
+    mixmodel
 URL: https://github.com/chiaragaiamagnani/nout
 BugReports: https://github.com/chiaragaiamagnani/nout/issues
 Suggests: 

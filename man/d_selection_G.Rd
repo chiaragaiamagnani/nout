@@ -28,9 +28,11 @@ d_selection_G(
 
 \item{k}{: order of the generalized Wilcoxon rank sum test. Classic Wilcoxon test corresponds to \eqn{k=1}}
 
-\item{g.hat}{: it denotes the outlier density. If NULL it is estimated from the data}
+\item{g.hat}{: it can be either a character ("analytical") or a function denoting the outlier density.
+If g.hat=="analytical" the test statistics are computed analytically withuout Monte Carlo estimation.
+If NULL it is estimated from the data}
 
-\item{monotonicity}{: logical value indicating if the outlier density function is monotone (increasing or decreasing) or neither.}
+\item{monotonicity}{: character indicating if the outlier density function is monotone increasing or decreasing or neither. Default value is NULL}
 
 \item{prop.F}{: proportion of inliers used to estimate the inliser distribution while estimating the outlier density.
 Default value is 0.5}
@@ -63,8 +65,7 @@ d_selection_G
 g2 = function(x, k=2) ifelse(x<1 & x>0, k*x^(k-1), 0)
 rg2 = function(rnull, k=2) max(rnull(k))
 
-X = runif(50)
-Y = replicate(50, rg2(rnull=runif))
-res = d_selection_G(S_Y=Y, S_X=X, B=100)
-res = d_selection_G(S_Y=Y, S_X=X, S = c(1:40), g.hat = g2, monotonicity=TRUE, B=100)
+X = runif(10)
+Y = replicate(10, rg2(rnull=runif))
+res = d_selection_G(S_Y=Y, S_X=X, S = c(1:7), g.hat = g2, monotonicity="increasing", B=100)
 }
