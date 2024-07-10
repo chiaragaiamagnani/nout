@@ -129,7 +129,7 @@ estimate_g = function(X1,X2,Y, constraint=NULL, ker="uniform"){
 
     pooled = c(X1,X2,Y)
     F_hat = stats::ecdf(X)
-    est.fixed <- mix.model(F_hat(pooled), method = "fixed", c.n = .05*log(log(length(pooled))), gridsize = 600)
+    est.fixed <- mixmodel::mix.model(F_hat(pooled), method = "fixed", c.n = .05*log(log(length(pooled))), gridsize = 600)
     dec.dens = ifelse(constraint=="decreasing", TRUE, FALSE)
     out = mixmodel::den.mix.model(est.fixed, dec.density = dec.dens)
     out$x[1] <- 0
