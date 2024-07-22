@@ -9,6 +9,7 @@ d_G_monotone2(
   S_Y,
   S = NULL,
   g.hat,
+  decr = F,
   k = NULL,
   alpha = 0.1,
   n_perm = 10,
@@ -25,7 +26,10 @@ d_G_monotone2(
 \item{S}{: selection set in the index test set}
 
 \item{g.hat}{: it can be either a character ("analytical") or a function denoting the outlier density.
-If g.hat=="analytical" the test statistics are computed analytically withuout Monte Carlo estimation.}
+If g.hat=="analytical" the test statistics are computed analytically without Monte Carlo estimation.}
+
+\item{decr}{: logical value indicating whether the outlier distribution is decresing (TRUE)
+or increasing (FALSE). Default value is FALSE}
 
 \item{k}{: order of the LMPI test statistic to be specified when g.hat is "analytical"}
 
@@ -59,5 +63,5 @@ rg2 = function(rnull, k=2) max(rnull(k))
 m = 10; n=10;
 X = runif(m)
 Y = replicate(n, rg2(rnull=runif))
-res = d_G_monotone2(S_Y=Y, S_X=X, S=c(1:7),  g.hat=g2, B=100)
+res = d_G_monotone2(S_Y=Y, S_X=X, S=c(1:7), decr=FALSE,  g.hat=g2, B=100)
 }

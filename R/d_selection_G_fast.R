@@ -38,8 +38,9 @@
 #' res = d_selection_G2(S_Y=Y, S_X=X, S = c(1:40), g.hat = g2, monotonicity="increasing", B=100)
 d_selection_G2 <- function(S_Y, S_X, S=NULL, k=NULL, g.hat=NULL, monotonicity=NULL, prop.F=0.5, alpha=0.1, n_perm=10, B=10^3, B_MC=10^3, seed=123){
 
-  if(!is.null(monotonicity))
+  if(!is.null(monotonicity)){
     stopifnot("Error: monotonicity must be either increasing, decreasing"= monotonicity%in%c("decreasing", "increasing"))
+  }
 
   n = as.double(length(S_Y))
   m = as.double(length(S_X))
@@ -57,8 +58,10 @@ d_selection_G2 <- function(S_Y, S_X, S=NULL, k=NULL, g.hat=NULL, monotonicity=NU
 
   if(is.null(monotonicity))
     res = d_G_cons2(S_X=S_X, S_Y=S_Y, S=S, g.hat=g.hat, k=k, alpha=alpha, n_perm=n_perm, B=B, seed=seed)
-  else
-    res = d_G_monotone2(S_X=S_X, S_Y=S_Y, S=S, g.hat=g.hat, k=k, alpha=alpha, n_perm=n_perm, B=B, seed=seed)
+  else{
+    decr = ifelse(monotonicity=="increasing", FALSE, TRUE)
+    res = d_G_monotone2(S_X=S_X, S_Y=S_Y, S=S, g.hat=g.hat, decr=decr, k=k, alpha=alpha, n_perm=n_perm, B=B, seed=seed)
+  }
 
   return(res)
 
@@ -72,7 +75,9 @@ d_selection_G2 <- function(S_Y, S_X, S=NULL, k=NULL, g.hat=NULL, monotonicity=NU
 #' @param S_X :  calibration score vector
 #' @param S : selection set in the index test set
 #' @param g.hat : it can be either a character ("analytical") or a function denoting the outlier density.
-#' If g.hat=="analytical" the test statistics are computed analytically withuout Monte Carlo estimation.
+#' If g.hat=="analytical" the test statistics are computed analytically without Monte Carlo estimation.
+#' @param decr : logical value indicating whether the outlier distribution is decresing (TRUE)
+#' or increasing (FALSE). Default value is FALSE
 #' @param k : order of the LMPI test statistic to be specified when g.hat is "analytical"
 #' @param alpha : significance level
 #' @param n_perm : minimum test sample size needed to use the asymptotic distribution of the test statistic when
@@ -98,8 +103,8 @@ d_selection_G2 <- function(S_Y, S_X, S=NULL, k=NULL, g.hat=NULL, monotonicity=NU
 #' m = 10; n=10;
 #' X = runif(m)
 #' Y = replicate(n, rg2(rnull=runif))
-#' res = d_G_monotone2(S_Y=Y, S_X=X, S=c(1:7),  g.hat=g2, B=100)
-d_G_monotone2 = function(S_X, S_Y, S=NULL, g.hat, k=NULL, alpha=0.1, n_perm=10, B=10^3, B_MC = 10^3, seed=123){
+#' res = d_G_monotone2(S_Y=Y, S_X=X, S=c(1:7), decr=FALSE,  g.hat=g2, B=100)
+d_G_monotone2 = function(S_X, S_Y, S=NULL, g.hat, decr=F, k=NULL, alpha=0.1, n_perm=10, B=10^3, B_MC = 10^3, seed=123){
 
   n = length(S_Y)
   m = length(S_X)
@@ -107,14 +112,14 @@ d_G_monotone2 = function(S_X, S_Y, S=NULL, g.hat, k=NULL, alpha=0.1, n_perm=10, 
   if(is.null(S)){
     # S = [n]
     s = n
-    Y.S = sort(S_Y, decreasing = F)
+    Y.S = sort(S_Y, decreasing = decr)
     ZZ = sapply(length(Y.S):1, function(h) c(S_X, Y.S[1:h]))
 
   } else {
     s = length(S)
-    Y.S = sort(S_Y[S], decreasing = F)
+    Y.S = sort(S_Y[S], decreasing = decr)
     notS = setdiff(1:n, S)
-    Y.notS = sort(S_Y[notS], decreasing = F)
+    Y.notS = sort(S_Y[notS], decreasing = decr)
     Z.up = sapply(length(Y.notS):1, function(h) c(S_X, Y.S, Y.notS[1:h]))
     Z.down = sapply(length(Y.S):1, function(h) c(S_X, Y.S[1:h]))
     ZZ = c(Z.up, Z.down)
@@ -137,7 +142,7 @@ d_G_monotone2 = function(S_X, S_Y, S=NULL, g.hat, k=NULL, alpha=0.1, n_perm=10, 
 
     } else {
       # stats_G = stats_G_j_MC(N=m+l, g=g.hat, B=B_MC)
-      stats_G = apply(replicate(B, g.hat(sort(stats::runif(m+l)))) , 1, mean)
+      stats_G = apply(replicate(B_MC, g.hat(sort(stats::runif(m+l)))) , 1, mean)
     }
 
     R = stat.G(Z=ZZ[[n-l+1]], m=m, stats_G_vector=stats_G)
@@ -163,9 +168,6 @@ d_G_monotone2 = function(S_X, S_Y, S=NULL, g.hat, k=NULL, alpha=0.1, n_perm=10, 
     }
   }
 
-  # if(check==FALSE){
-  #
-  # }
 
   d = ifelse(tentative.d-n+s>0, tentative.d-n+s, 0)
 
@@ -298,14 +300,14 @@ d_G_cons2 = function(S_X, S_Y, S=NULL, g.hat, k=NULL, alpha=0.1, n_perm=10, B=10
       }
 
     } else {
-      stats_G = stats_G_j_MC(N=m+l, g=g.hat, B=B_MC)
+      stats_G = apply(replicate(B_MC, sapply(X=sort(stats::runif(m+l)), FUN=g.hat)), 1, mean)
     }
 
     if(is.null(S)){
 
       Rx = sapply(1:n, function(i) rank(c(S_X, S_Y[i]))[m+1]-1)
       range_test_ranks_n = (min(Rx)+1):(max(Rx)+l)
-      R = stats_G[range_test_ranks_n]
+      R = sort(stats_G[range_test_ranks_n], decreasing=F)[1:l]
 
     } else {
       Rx = sapply(1:n, function(i) rank(c(S_X, S_Y[i]))[m+1]-1)
@@ -317,7 +319,8 @@ d_G_cons2 = function(S_X, S_Y, S=NULL, g.hat, k=NULL, alpha=0.1, n_perm=10, B=10
         range_test_ranks_subS = (min(Rx.S)+1):(max(Rx.S)+l)
         range_test_ranks_S = range_test_ranks_subS
       }
-      R = stats_G[range_test_ranks_S]
+      # R = stats_G[range_test_ranks_S]
+      R = sort(stats_G[range_test_ranks_n], decreasing = F)[1:l]
     }
 
     T_wc = sum(R)
@@ -334,8 +337,7 @@ d_G_cons2 = function(S_X, S_Y, S=NULL, g.hat, k=NULL, alpha=0.1, n_perm=10, B=10
     if(T_wc >= crit){
       tentative.d = tentative.d+1
       l=l-1
-    }
-    else{
+    } else{
       tentative.d = tentative.d
       cont=FALSE
     }
