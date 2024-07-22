@@ -48,13 +48,15 @@ Comp_2ndDer <- function(dist.alpha, gridsize)
 estimate_mixing_prop = function(X, Y, F_null, gridsize=4000){
 
   n <- length(Y)
-  m <- length(X)
-  pval = sapply(1:n, function(i) (1+sum(X >= Y[i]))/(m+1))
-  dist.alpha <- EstMixMdl(pval,F_null,gridsize)
+  # m <- length(X)
+  # pval = sapply(1:n, function(i) (1+sum(X >= Y[i]))/(m+1))
+  # dist.alpha <- EstMixMdl(Y,F_null,gridsize)
   c.n<-0.1*log(log(n))
-  Est<- sum(dist.alpha>c.n/sqrt(n))/gridsize
+  # Est<- sum(dist.alpha>c.n/sqrt(n))/gridsize
 
-  return(Est)
+  dist.out = mixmodel::dist.calc(data = Y, gridsize = 2000)
+  alp.hat <- sum(dist.out$distance > c.n/ sqrt(n))/gridsize
+  return(alp.hat)
 
 }
 
@@ -110,16 +112,18 @@ estimate_g = function(X1,X2,Y, constraint=NULL, ker="uniform"){
   if(is.null(constraint)){
     stopifnot("Error: kernel must be in .kernelsList()"= ker%in%statip::.kernelsList())
 
-    F.hat = compute_estimate_null_distr(X=X1)$ecdf
+    # F.hat = compute_estimate_null_distr(X=X1)$ecdf
+    F.hat = stats::ecdf(X1)
 
     FX2 = F.hat(X2)
-
+    FY = F.hat(Y)
     # Estimate the mixture model, without distinguishing each component
     mixture_hat = KDE_mixture_density(X=X2, Y=Y, null_cdf=F.hat, ker=ker)
 
     # Estimate the proportion of outliers in the augmented test set
     # pi.not = estimate_propOut_Storey(X=X2,Y=Y)
-    pi.not = estimate_mixing_prop(X=X2, Y=Y, F_null=stats::dunif)
+    pi.not = estimate_mixing_prop(X=FX2, Y=FY, F_null=stats::punif)
+    pi.not = estimate_mixing_prop(X=X2, Y=Y, F_null=F.hat)
 
     # Extrapolate estimate of g
     g_hat = invert_mixture(mixture_density=mixture_hat,
@@ -127,47 +131,35 @@ estimate_g = function(X1,X2,Y, constraint=NULL, ker="uniform"){
   } else {
     stopifnot("Error: constraint must be either increasing, decreasing"= constraint%in%c("decreasing", "increasing"))
 
-    pooled = c(X1,X2,Y)
-    F_hat = stats::ecdf(X)
+    # pooled = c(X2,Y)
+    # F_hat = stats::ecdf(X1)
+    # est.fixed <- mixmodel::mix.model(F_hat(pooled), method = "fixed", c.n = .05*log(log(length(pooled))), gridsize = 600)
+    # dec.dens = ifelse(constraint=="decreasing", TRUE, FALSE)
+    # out = mixmodel::den.mix.model(est.fixed, dec.density = dec.dens)
+    # out$x[1] <- 0
+    # out$x <- out$x[-length(out$x)]
+    # out$y <- out$y[-length(out$y)]
+    # g_hat = function(u) sapply(u, function(i)
+    #   out$y[sum( i >= out$x )] )
+
+    pooled = c(X2,Y)
+    F_hat = stats::ecdf(X1)
     est.fixed <- mixmodel::mix.model(F_hat(pooled), method = "fixed", c.n = .05*log(log(length(pooled))), gridsize = 600)
     dec.dens = ifelse(constraint=="decreasing", TRUE, FALSE)
     out = mixmodel::den.mix.model(est.fixed, dec.density = dec.dens)
-    out$x[1] <- 0
-    # out$x <- out$x[-length(out$x)]
-    # out$y <- out$y[-length(out$y)]
+    x = out$x[-length(out$x)]
+    y = out$y[-length(out$y)]
+    ind.min = which(x==min(x))
+    ind.max = which(x==max(x))
+    yleft = y[ind.min[length(ind.min)]]
+    yright = y[ind.max[1]]
 
-    g_hat = function(u) sapply(u, function(i)
-      out$y[sum( i >= out$x )] )
+    g_hat = stats::approxfun(out$x[-length(out$x)],out$y[-length(out$y)], yleft=yleft, yright=yright)
   }
 
   return(g_hat)
 
 }
-
-
-
-# estimate_mixt = function(X1,X2,Y,ker){
-#
-#   stopifnot("Error: kernel must be in .kernelsList()"= ker%in%statip::.kernelsList())
-#
-#   F.hat = compute_estimate_null_distr(X=X1)$ecdf
-#
-#   FX2 = F.hat(X2)
-#
-#   # Estimate the mixture model, without distinguishing each component
-#   mixture_hat = KDE_mixture_density(X=X2, Y=Y, null_cdf=F.hat, ker=ker)
-#
-#   # Estimate the proportion of outliers in the augmented test set
-#   # pi.not = estimate_propOut_Storey(X=X2,Y=Y)
-#   model_est = mixmodel::mix.model(data = c(X,Y), method="fixed", gridsize = 4000)
-#   pi.not = model_est$alp.hat
-#
-#   # Extrapolate estimate of g
-#   g_hat = mixmodel::den.mix.model(model_est)
-#
-#   return(g_hat)
-#
-# }
 
 
 
