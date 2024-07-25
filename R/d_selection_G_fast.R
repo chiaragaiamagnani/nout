@@ -46,7 +46,6 @@ d_selection_G2 <- function(S_Y, S_X, S=NULL, k=NULL, g.hat=NULL, monotonicity=NU
   m = as.double(length(S_X))
   N = as.double(m+n)
   s = ifelse(is.null(S), n, length(S))
-  S_Z = c(S_X, S_Y)
 
   if(is.null(g.hat)){
     # Compute the individual statistics for each test point using the input data
@@ -181,68 +180,68 @@ d_G_monotone2 = function(S_X, S_Y, S=NULL, g.hat, decr=F, k=NULL, alpha=0.1, n_p
 
 
 
-d_G_monotone_fast = function(S_X, S_Y, S=NULL, g.hat, k=NULL, alpha=0.1, n_perm=10, B=10^3, B_MC = 10^3, seed=123){
-
-  n = length(S_Y)
-  m = length(S_X)
-
-  if(is.null(S)){
-    # S = [n]
-    s = n
-    Y.S = sort(S_Y, decreasing = F)
-    ZZ = sapply(length(Y.S):1, function(h) c(S_X, Y.S[1:h]))
-    R = rank(ZZ)
-  } else {
-    s = length(S)
-    Y.S = sort(S_Y[S], decreasing = F)
-    notS = setdiff(1:n, S)
-    Y.notS = sort(S_Y[notS], decreasing = F)
-    Z.up = sapply(length(Y.notS):1, function(h) c(S_X, Y.S, Y.notS[1:h]))
-    Z.down = sapply(length(Y.S):1, function(h) c(S_X, Y.S[1:h]))
-    ZZ = c(Z.up, Z.down)
-    R = rank(ZZ)
-  }
-
-  ## Closed-testing shortcut: sort the test points based on their individual statistics
-  ## For each k in {1,...,n} consider the worst-case subset of test points with cardinality k
-  tentative.d = 0; pval.global = 1
-
-  for (l in n:1){
-    if(is.character(g.hat)){
-      if(g.hat=="analytical"){
-        stats_G_v = sapply(1:(l+m), function(h) (k+1)*k_mom_beta(a=h, b=m+l-h+1, k=k))
-      } else{
-        cat("Error: g.hat must be either a density function or the string analytical.")
-      }
-    } else {
-      # stats_G_v = stats_G_j_MC(N=m+l, g=g.hat, B=B_MC)
-      stats_G_v = apply(replicate(B, g.hat(sort(stats::runif(m+l)))) , 1, mean)
-
-    }
-
-    T_wc = sum(  stats_G_v[ R[(m+1):(m+l)] ]  )
-    crit_l = asymptotic.critical.G(m=m, n=l, stats_G_vector=stats_G_v, alpha=alpha)
-    tentative.d = tentative.d  + ( T_wc > crit_l )
-
-    if(l==s){
-      T.global = T_wc
-      pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=s, local.test="g", stats_G_vector=stats_G_v,
-                                          n_perm=n_perm, B=B, seed=seed)
-    } else {
-      pval.global = pval.global
-    }
-
-    if (tentative.d < n - l + 1){ break }
-  }
-
-  d = ifelse(tentative.d-n+s>0, tentative.d-n+s, 0)
-
-  out = list("lower.bound" = d,
-             "global.pvalue" = pval.global,
-             "S" = S,
-             "selection.p.value" = 1)
-
-}
+# d_G_monotone_fast = function(S_X, S_Y, S=NULL, g.hat, k=NULL, alpha=0.1, n_perm=10, B=10^3, B_MC = 10^3, seed=123){
+#
+#   n = length(S_Y)
+#   m = length(S_X)
+#
+#   if(is.null(S)){
+#     # S = [n]
+#     s = n
+#     Y.S = sort(S_Y, decreasing = F)
+#     ZZ = sapply(length(Y.S):1, function(h) c(S_X, Y.S[1:h]))
+#     R = rank(ZZ)
+#   } else {
+#     s = length(S)
+#     Y.S = sort(S_Y[S], decreasing = F)
+#     notS = setdiff(1:n, S)
+#     Y.notS = sort(S_Y[notS], decreasing = F)
+#     Z.up = sapply(length(Y.notS):1, function(h) c(S_X, Y.S, Y.notS[1:h]))
+#     Z.down = sapply(length(Y.S):1, function(h) c(S_X, Y.S[1:h]))
+#     ZZ = c(Z.up, Z.down)
+#     R = rank(ZZ)
+#   }
+#
+#   ## Closed-testing shortcut: sort the test points based on their individual statistics
+#   ## For each k in {1,...,n} consider the worst-case subset of test points with cardinality k
+#   tentative.d = 0; pval.global = 1
+#
+#   for (l in n:1){
+#     if(is.character(g.hat)){
+#       if(g.hat=="analytical"){
+#         stats_G_v = sapply(1:(l+m), function(h) (k+1)*k_mom_beta(a=h, b=m+l-h+1, k=k))
+#       } else{
+#         cat("Error: g.hat must be either a density function or the string analytical.")
+#       }
+#     } else {
+#       # stats_G_v = stats_G_j_MC(N=m+l, g=g.hat, B=B_MC)
+#       stats_G_v = apply(replicate(B, g.hat(sort(stats::runif(m+l)))) , 1, mean)
+#
+#     }
+#
+#     T_wc = sum(  stats_G_v[ R[(m+1):(m+l)] ]  )
+#     crit_l = asymptotic.critical.G(m=m, n=l, stats_G_vector=stats_G_v, alpha=alpha)
+#     tentative.d = tentative.d  + ( T_wc > crit_l )
+#
+#     if(l==s){
+#       T.global = T_wc
+#       pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=s, local.test="g", stats_G_vector=stats_G_v,
+#                                           n_perm=n_perm, B=B, seed=seed)
+#     } else {
+#       pval.global = pval.global
+#     }
+#
+#     if (tentative.d < n - l + 1){ break }
+#   }
+#
+#   d = ifelse(tentative.d-n+s>0, tentative.d-n+s, 0)
+#
+#   out = list("lower.bound" = d,
+#              "global.pvalue" = pval.global,
+#              "S" = S,
+#              "selection.p.value" = 1)
+#
+# }
 
 
 

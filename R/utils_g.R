@@ -115,16 +115,16 @@ estimate_g = function(X1,X2,Y, constraint=NULL, ker="uniform"){
     # F.hat = compute_estimate_null_distr(X=X1)$ecdf
     F.hat = stats::ecdf(X1)
 
-    FX2 = F.hat(X2)
-    FY = F.hat(Y)
     # Estimate the mixture model, without distinguishing each component
     mixture_hat = KDE_mixture_density(X=X2, Y=Y, null_cdf=F.hat, ker=ker)
 
     # Estimate the proportion of outliers in the augmented test set
     # pi.not = estimate_propOut_Storey(X=X2,Y=Y)
-    pi.not = estimate_mixing_prop(X=FX2, Y=FY, F_null=stats::punif)
-    pi.not = estimate_mixing_prop(X=X2, Y=Y, F_null=F.hat)
-
+    # pi.not = estimate_mixing_prop(X=FX2, Y=FY, F_null=stats::punif)
+    # pi.not = estimate_mixing_prop(X=X2, Y=Y, F_null=F.hat)
+    pooled = c(X2,Y)
+    pi.not = mixmodel::mix.model(F.hat(pooled), method = "fixed",
+                        c.n = .05*log(log(length(pooled))), gridsize = 600)$alp.hat
     # Extrapolate estimate of g
     g_hat = invert_mixture(mixture_density=mixture_hat,
                            null_density=stats::dunif, prop.out=pi.not)
