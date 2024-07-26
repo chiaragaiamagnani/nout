@@ -54,13 +54,50 @@ for(i in 1:length(g_alt_list)){
 }
 
 
-# 120 seconds
+# 10 seconds
 tic()
 res = sim_pow(B=B, B_MC=B_MC, m=m, n=n, theta=theta,
                rg_null=runif, rg=rg1, g=g1,
                g_hat=g_KDE, g_hat_monotone=g_mono,
                alpha=alpha)
 toc()
+
+
+
+
+# Generate the data
+n.out = as.double(round(theta*n))
+n.in = n-n.out
+N = as.double(m+n)
+
+X <- rg_null(m)
+Y.in <- rg_null(n.in)
+if(n.out>0){
+  Y.out <- rg(n.out)
+  Y <- c(Y.in, Y.out)
+} else {
+  Y <- Y.in
+}
+Z <- c(X,Y)
+
+stats_G_N_oracle =  apply(replicate(B_MC, sapply(X=sort(stats::runif(N)), FUN=g)), 1, mean)
+
+T_oracle <- calc.stat.G(Z=Z, m=m, stats_G_vector=stats_G_N_oracle)
+T_WMW <- calc.Tk(Z=Z, m=m, k=1)
+
+crit_oracle <-  as.double(stats::qnorm(alpha, mean=meanG(n=n, stats_G_vector=stats_G_N_oracle),
+                                       sd = sqrt(varG(n=n, m=m, stats_G_vector=stats_G_N_oracle)), lower.tail = F))
+crit_WMW <-  as.double(compute.critical.value.global(m=m, n=n, alpha=alpha, local.test="wmw", k=1, n_perm=0, B=B, seed=123))
+
+
+T_oracle*(N+1)/2
+T_WMW
+
+as.double(stats::qnorm(alpha, mean=(N+1)/2*meanG(n=n, stats_G_vector=stats_G_N_oracle),
+                       sd = (N+1)/2*sqrt(varG(n=n, m=m, stats_G_vector=stats_G_N_oracle)), lower.tail = F))
+crit_WMW
+
+
 
 
 

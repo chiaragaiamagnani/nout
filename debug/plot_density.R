@@ -84,11 +84,11 @@ sim_Tk = function(m,n,k){
 
 m=100
 n=100
-k=10
+k=1
 stats=replicate(5000, sim_Tk(m=m, n=n, k=k))
 
 hist(stats, freq = F)
-mom=asymptotic.moments.Tk(m=m, n=n, k=k)
+mom = asymptotic.moments.Tk(m=m, n=n, k=k)
 curve(dnorm(x, mean=mom$mean.Tk, sd = sqrt(mom$variance.Tk)), add=T, col="red")
 
 
