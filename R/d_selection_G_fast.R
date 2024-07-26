@@ -174,24 +174,24 @@ d_G_monotone2 = function(S_X, S_Y, S=NULL, g.hat, decr=F, k=NULL, alpha=0.1, pva
 
     s = n
     Y.S = sort(S_Y, decreasing = decr)
-    ZZ = sapply(length(Y.S):1, function(h) c(S_X, Y.S[1:h]))
+    ZZ = c(S_X, Y.S)
 
     if(is.character(g.hat)){
       if(g.hat=="analytical"){
-        stats_G = sapply(1:(l+m), function(h) (k+1)*k_mom_beta(a=h, b=m+l-h+1, k=k))
+        stats_G = sapply(1:(n+m), function(h) (k+1)*k_mom_beta(a=h, b=m+n-h+1, k=k))
       } else{
         cat("Error: g.hat must be either a density function or the string analytical.")
       }
 
     } else {
-      stats_G = apply(replicate(B_MC, g.hat(sort(stats::runif(m+l)))) , 1, mean)
+      stats_G = apply(replicate(B_MC, g.hat(sort(stats::runif(m+n)))) , 1, mean)
     }
 
-    R = stat.G(Z=ZZ[[n-l+1]], m=m, stats_G_vector=stats_G)
+    R = stat.G(Z=ZZ, m=m, stats_G_vector=stats_G)
     T.global = sum(R)
     pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=s, local.test="g", stats_G_vector=stats_G,
                                         n_perm=n_perm, B=B, seed=seed)
-    lower.bound=0
+    d=0
   }
 
 
@@ -373,13 +373,13 @@ d_G_cons2 = function(S_X, S_Y, S=NULL, g.hat, k=NULL, alpha=0.1, pvalue_only=FAL
 
   } else {
     Rx = sapply(1:n, function(i) rank(c(S_X, S_Y[i]))[m+1]-1)
-    range_test_ranks_n = (min(Rx)+1):(max(Rx)+l)
-    R = sort(stats_G[range_test_ranks_n], decreasing=F)[1:l]
+    range_test_ranks_n = (min(Rx)+1):(max(Rx)+n)
+    R = sort(stats_G[range_test_ranks_n], decreasing=F)[1:n]
 
     T.global = sum(R)
     pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=n, local.test="g", stats_G_vector=stats_G,
                                         n_perm=n_perm, B=B, seed=seed)
-    lower.bound=0
+    d=0
   }
 
   out = list("lower.bound" = d,

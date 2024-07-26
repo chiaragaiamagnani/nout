@@ -53,17 +53,14 @@ g_mono = list()
 
 tic()
 for(i in 1:length(g_alt_list)){
-  Y = rg_null(x=75) #x=2000
-  # Y = rg_alt_list[[i]](x=150)
+  Y = rg_null(x=75) # sotto H0
+  # Y = rg_alt_list[[i]](x=150) # sotto alternativa
   g_mono[[i]] = estimate_g(X1=X1, X2=X2, Y=Y, constraint="increasing", ker="uniform")
   g_KDE[[i]] = estimate_g(X1=X1, X2=X2, Y=Y, ker="uniform")
 
 }
 toc()
 
-
-u = runif(5000)
-plot(u, g_KDE[[1]](u))
 
 # Run simulation
 

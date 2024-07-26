@@ -52,7 +52,6 @@ d_selection_higher = function(S_X, S_Y, S=NULL, local.test="wmw", k=NULL, alpha=
   N = as.double(n+m)
 
 
-
   if(!pvalue_only){
 
     if(is.null(S)){
@@ -101,8 +100,8 @@ d_selection_higher = function(S_X, S_Y, S=NULL, local.test="wmw", k=NULL, alpha=
 
     R = stat.Tk(Z=ZZ, m=m, k=k)
     T.global = sum(R)
-    pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=s, local.test="higher", k=k, n_perm=n_perm, B=B, seed=seed)
-    lower.bound=0
+    pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=n, local.test="higher", k=k, n_perm=n_perm, B=B, seed=seed)
+    d=0
   }
 
   out = list("lower.bound" = d,
