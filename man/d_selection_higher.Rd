@@ -11,6 +11,7 @@ d_selection_higher(
   local.test = "wmw",
   k = NULL,
   alpha = 0.1,
+  pvalue_only = FALSE,
   n_perm = 10,
   B = 10^3,
   critical_values = NULL,
@@ -29,6 +30,8 @@ d_selection_higher(
 \item{k}{: order of the generalized Wilcoxon rank sum test. Classic Wilcoxon test corresponds to \eqn{k=1}}
 
 \item{alpha}{: significance level}
+
+\item{pvalue_only}{: logical value. If TRUE, only the global test is performed}
 
 \item{n_perm}{: minimum test sample size needed to use the asymptotic distribution of the test statistic when
 local.test is either "higher" or "fisher"}

@@ -9,6 +9,7 @@ d_selection_fisher(
   S_Y,
   S = NULL,
   alpha = 0.1,
+  pvalue_only = FALSE,
   n_perm = 10,
   B = 10^3,
   critical_values = NULL,
@@ -23,6 +24,8 @@ d_selection_fisher(
 \item{S}{: selection set in the index test set}
 
 \item{alpha}{: significance level}
+
+\item{pvalue_only}{: logical value. If TRUE, only the global test is performed}
 
 \item{n_perm}{: minimum test sample size needed to use the asymptotic distribution of the test statistic when
 local.test is either "higher" or "fisher"}

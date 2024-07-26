@@ -8,6 +8,7 @@
 #' @param S_X :  calibration score vector
 #' @param S : selection set in the index test set
 #' @param alpha : significance level
+#' @param pvalue_only : logical value. If TRUE, only the global test is performed
 #' @param n_perm : minimum test sample size needed to use the asymptotic distribution of the test statistic when
 #' local.test is either "higher" or "fisher"
 #' @param B : number of replications to compute critical values and global *p*-value. Default value is 10^3
@@ -33,7 +34,7 @@
 #' Y = replicate(10, rg2(rnull=runif))
 #' res = d_selection_fisher(S_Y=Y, S_X=X, B=100)
 #' res = d_selection_fisher(S_Y=Y, S_X=X, S = c(1:8), B=100)
-d_selection_fisher = function(S_X, S_Y, S=NULL, alpha=0.1, n_perm=10, B=10^3, critical_values=NULL, seed=123){
+d_selection_fisher = function(S_X, S_Y, S=NULL, alpha=0.1, pvalue_only=FALSE, n_perm=10, B=10^3, critical_values=NULL, seed=123){
 
   n = as.double(length(S_Y))
   m = as.double(length(S_X))
@@ -43,27 +44,41 @@ d_selection_fisher = function(S_X, S_Y, S=NULL, alpha=0.1, n_perm=10, B=10^3, cr
 
   # Compute the individual statistics for each test point using the input data
   R = stat.Fisher(Z=S_Z, m=m)
-  # Compute all critical values for (m,k) from k in {1,...,n}
-  crit = as.double(compute.critical.values(m=m, n=n, local.test="fisher", alpha=alpha, n_perm=n_perm, B=B,
-                                           critical_values=critical_values,
-                                           seed=seed))
 
-  if(!is.null(S)) S = as.vector(S)
+  if(!pvalue_only){
+    # Compute all critical values for (m,k) from k in {1,...,n}
+    crit = as.double(compute.critical.values(m=m, n=n, local.test="fisher", alpha=alpha, n_perm=n_perm, B=B,
+                                             critical_values=critical_values,
+                                             seed=seed))
 
-  # Compute lower bound for S
-  res = sumSome::sumStatsPar(g = R, S = S, alpha = alpha, cvs = crit)
+    if(!is.null(S)) S = as.vector(S)
 
-  ## Compute p-value for the global null
-  T.global = sum(R)
+    # Compute lower bound for S
+    res = sumSome::sumStatsPar(g = R, S = S, alpha = alpha, cvs = crit)
+    lower.bound = res$TD
 
-  pval.global = compute.global.pvalue(T.obs=T.global, local.test="fisher", m=m, n=n,
-                                      n_perm=n_perm, B=B, seed=seed)
+    ## Compute p-value for the global null
+    T.global = sum(R)
 
-  ## Compute p-value for the selected null
-  ## NOTE: this calculation is missing
-  pval.selection = 1
+    pval.global = compute.global.pvalue(T.obs=T.global, local.test="fisher", m=m, n=n,
+                                        n_perm=n_perm, B=B, seed=seed)
 
-  out = list("lower.bound" = res$TD,
+    ## Compute p-value for the selected null
+    ## NOTE: this calculation is missing
+    pval.selection = 1
+
+  } else {
+
+    T.global = sum(R)
+
+    pval.global = compute.global.pvalue(T.obs=T.global, local.test="fisher", m=m, n=n,
+                                        n_perm=n_perm, B=B, seed=seed)
+    pval.selection = 1
+    lower.bound = 0
+  }
+
+
+  out = list("lower.bound" = lower.bound,
              "global.pvalue" = pval.global,
              "S" = S,
              "selection.p.value" = 1)

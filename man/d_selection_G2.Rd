@@ -13,6 +13,7 @@ d_selection_G2(
   monotonicity = NULL,
   prop.F = 0.5,
   alpha = 0.1,
+  pvalue_only = FALSE,
   n_perm = 10,
   B = 10^3,
   B_MC = 10^3,
@@ -38,6 +39,8 @@ If NULL it is estimated from the data}
 Default value is 0.5}
 
 \item{alpha}{: significance level}
+
+\item{pvalue_only}{: logical value. If TRUE, only the global test is performed}
 
 \item{n_perm}{: minimum test sample size needed to use the asymptotic distribution of the test statistic when
 local.test is either "higher" or "fisher"}

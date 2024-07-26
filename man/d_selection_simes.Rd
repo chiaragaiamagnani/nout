@@ -4,7 +4,7 @@
 \alias{d_selection_simes}
 \title{d_selection_simes}
 \usage{
-d_selection_simes(S_Y, S_X, S = NULL, alpha = 0.1)
+d_selection_simes(S_Y, S_X, S = NULL, alpha = 0.1, pvalue_only = FALSE)
 }
 \arguments{
 \item{S_Y}{: score vector of test observations}
@@ -15,6 +15,8 @@ d_selection_simes(S_Y, S_X, S = NULL, alpha = 0.1)
 If S is missing, dthe global null hypothesis is used}
 
 \item{alpha}{: significance level of the local test. Default value is set equal to 0.1.}
+
+\item{pvalue_only}{: logical value. If TRUE, only the global test is performed}
 }
 \value{
 A list:

@@ -4,7 +4,14 @@
 \alias{d_selection_storey}
 \title{d_selection_storey}
 \usage{
-d_selection_storey(S_Y, S_X, S = NULL, alpha = 0.1, lambda = 0.5)
+d_selection_storey(
+  S_Y,
+  S_X,
+  S = NULL,
+  alpha = 0.1,
+  lambda = 0.5,
+  pvalue_only = FALSE
+)
 }
 \arguments{
 \item{S_Y}{: score vector of test observations}
@@ -17,6 +24,8 @@ If S is missing, dthe global null hypothesis is used}
 \item{alpha}{: significance level of the local test. Default value is set equal to 0.1}
 
 \item{lambda}{: parameter involved in the computation of Storey estimator. Default value is set equal to 0.5}
+
+\item{pvalue_only}{: logical value. If TRUE, only the global test is performed}
 }
 \value{
 An integer which is the \eqn{(1 − \alpha)}-confidence lower bound for the

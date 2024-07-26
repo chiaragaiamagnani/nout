@@ -12,6 +12,7 @@
 #' @param prop.F  : proportion of inliers used to estimate the inliser distribution while estimating the outlier density.
 #' Default value is 0.5
 #' @param alpha : significance level
+#' @param pvalue_only : logical value. If TRUE, only the global test is performed
 #' @param n_perm : minimum test sample size needed to use the asymptotic distribution of the test statistic when
 #' local.test is either "higher" or "fisher"
 #' @param B : number of replications to compute critical values and global *p*-value. Default value is 10^3
@@ -36,7 +37,7 @@
 #' Y = replicate(50, rg2(rnull=runif))
 #' res = d_selection_G2(S_Y=Y, S_X=X, B=100)
 #' res = d_selection_G2(S_Y=Y, S_X=X, S = c(1:40), g.hat = g2, monotonicity="increasing", B=100)
-d_selection_G2 <- function(S_Y, S_X, S=NULL, k=NULL, g.hat=NULL, monotonicity=NULL, prop.F=0.5, alpha=0.1, n_perm=10, B=10^3, B_MC=10^3, seed=123){
+d_selection_G2 <- function(S_Y, S_X, S=NULL, k=NULL, g.hat=NULL, monotonicity=NULL, prop.F=0.5, alpha=0.1, pvalue_only=FALSE, n_perm=10, B=10^3, B_MC=10^3, seed=123){
 
   if(!is.null(monotonicity)){
     stopifnot("Error: monotonicity must be either increasing, decreasing"= monotonicity%in%c("decreasing", "increasing"))
@@ -56,10 +57,10 @@ d_selection_G2 <- function(S_Y, S_X, S=NULL, k=NULL, g.hat=NULL, monotonicity=NU
   }
 
   if(is.null(monotonicity))
-    res = d_G_cons2(S_X=S_X, S_Y=S_Y, S=S, g.hat=g.hat, k=k, alpha=alpha, n_perm=n_perm, B=B, seed=seed)
+    res = d_G_cons2(S_X=S_X, S_Y=S_Y, S=S, g.hat=g.hat, k=k, alpha=alpha, pvalue_only=pvalue_only, n_perm=n_perm, B=B, seed=seed)
   else{
     decr = ifelse(monotonicity=="increasing", FALSE, TRUE)
-    res = d_G_monotone2(S_X=S_X, S_Y=S_Y, S=S, g.hat=g.hat, decr=decr, k=k, alpha=alpha, n_perm=n_perm, B=B, seed=seed)
+    res = d_G_monotone2(S_X=S_X, S_Y=S_Y, S=S, g.hat=g.hat, decr=decr, k=k, alpha=alpha, pvalue_only=pvalue_only, n_perm=n_perm, B=B, seed=seed)
   }
 
   return(res)
@@ -79,6 +80,7 @@ d_selection_G2 <- function(S_Y, S_X, S=NULL, k=NULL, g.hat=NULL, monotonicity=NU
 #' or increasing (FALSE). Default value is FALSE
 #' @param k : order of the LMPI test statistic to be specified when g.hat is "analytical"
 #' @param alpha : significance level
+#' @param pvalue_only : logical value. If TRUE, only the global test is performed
 #' @param n_perm : minimum test sample size needed to use the asymptotic distribution of the test statistic when
 #' local.test is either "higher" or "fisher"
 #' @param B : number of replications to compute critical values and global *p*-value. Default value is 10^3
@@ -103,7 +105,7 @@ d_selection_G2 <- function(S_Y, S_X, S=NULL, k=NULL, g.hat=NULL, monotonicity=NU
 #' X = runif(m)
 #' Y = replicate(n, rg2(rnull=runif))
 #' res = d_G_monotone2(S_Y=Y, S_X=X, S=c(1:7), decr=FALSE,  g.hat=g2, B=100)
-d_G_monotone2 = function(S_X, S_Y, S=NULL, g.hat, decr=F, k=NULL, alpha=0.1, n_perm=10, B=10^3, B_MC = 10^3, seed=123){
+d_G_monotone2 = function(S_X, S_Y, S=NULL, g.hat, decr=F, k=NULL, alpha=0.1, pvalue_only=FALSE, n_perm=10, B=10^3, B_MC = 10^3, seed=123){
 
   n = length(S_Y)
   m = length(S_X)
@@ -124,14 +126,56 @@ d_G_monotone2 = function(S_X, S_Y, S=NULL, g.hat, decr=F, k=NULL, alpha=0.1, n_p
     ZZ = c(Z.up, Z.down)
   }
 
-  ## Closed-testing shortcut: sort the test points based on their individual statistics
-  ## For each k in {1,...,n} consider the worst-case subset of test points with cardinality k
-  tentative.d = 0; l = n
-  cont = TRUE
-  pval.global = 1
-  check = F
+  if(!pvalue_only){
+    ## Closed-testing shortcut: sort the test points based on their individual statistics
+    ## For each k in {1,...,n} consider the worst-case subset of test points with cardinality k
+    tentative.d = 0; l = n
+    cont = TRUE
+    pval.global = 1
 
-  while(cont == TRUE & l>0){
+    while(cont == TRUE & l>0){
+      if(is.character(g.hat)){
+        if(g.hat=="analytical"){
+          stats_G = sapply(1:(l+m), function(h) (k+1)*k_mom_beta(a=h, b=m+l-h+1, k=k))
+        } else{
+          cat("Error: g.hat must be either a density function or the string analytical.")
+        }
+
+      } else {
+        # stats_G = stats_G_j_MC(N=m+l, g=g.hat, B=B_MC)
+        stats_G = apply(replicate(B_MC, g.hat(sort(stats::runif(m+l)))) , 1, mean)
+      }
+
+      R = stat.G(Z=ZZ[[n-l+1]], m=m, stats_G_vector=stats_G)
+      T_wc = sum(R)
+      crit = asymptotic.critical.G(m=m, n=l, stats_G_vector=stats_G, alpha=alpha)
+
+      if(l==s){
+        T.global = T_wc
+        pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=s, local.test="g", stats_G_vector=stats_G,
+                                            n_perm=n_perm, B=B, seed=seed)
+      } else {
+        pval.global = pval.global
+      }
+
+      if(T_wc >= crit){
+        tentative.d = tentative.d+1
+        l=l-1
+      }
+      else{
+        tentative.d = tentative.d
+        cont=FALSE
+      }
+    }
+
+    d = ifelse(tentative.d-n+s>0, tentative.d-n+s, 0)
+
+  } else {
+
+    s = n
+    Y.S = sort(S_Y, decreasing = decr)
+    ZZ = sapply(length(Y.S):1, function(h) c(S_X, Y.S[1:h]))
+
     if(is.character(g.hat)){
       if(g.hat=="analytical"){
         stats_G = sapply(1:(l+m), function(h) (k+1)*k_mom_beta(a=h, b=m+l-h+1, k=k))
@@ -140,35 +184,16 @@ d_G_monotone2 = function(S_X, S_Y, S=NULL, g.hat, decr=F, k=NULL, alpha=0.1, n_p
       }
 
     } else {
-      # stats_G = stats_G_j_MC(N=m+l, g=g.hat, B=B_MC)
       stats_G = apply(replicate(B_MC, g.hat(sort(stats::runif(m+l)))) , 1, mean)
     }
 
     R = stat.G(Z=ZZ[[n-l+1]], m=m, stats_G_vector=stats_G)
-    T_wc = sum(R)
-    crit = asymptotic.critical.G(m=m, n=l, stats_G_vector=stats_G, alpha=alpha)
-
-    if(l==s){
-      T.global = T_wc
-      pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=s, local.test="g", stats_G_vector=stats_G,
-                                          n_perm=n_perm, B=B, seed=seed)
-      check = T
-    } else {
-      pval.global = pval.global
-    }
-
-    if(T_wc >= crit){
-      tentative.d = tentative.d+1
-      l=l-1
-    }
-    else{
-      tentative.d = tentative.d
-      cont=FALSE
-    }
+    T.global = sum(R)
+    pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=s, local.test="g", stats_G_vector=stats_G,
+                                        n_perm=n_perm, B=B, seed=seed)
+    lower.bound=0
   }
 
-
-  d = ifelse(tentative.d-n+s>0, tentative.d-n+s, 0)
 
   out = list("lower.bound" = d,
              "global.pvalue" = pval.global,
@@ -255,6 +280,7 @@ d_G_monotone2 = function(S_X, S_Y, S=NULL, g.hat, decr=F, k=NULL, alpha=0.1, n_p
 #' If g.hat=="analytical" the test statistics are computed analytically withuout Monte Carlo estimation.
 #' @param k : order of the LMPI test statistic to be specified when g.hat is "analytical"
 #' @param alpha : significance level
+#' @param pvalue_only : logical value. If TRUE, only the global test is performed
 #' @param n_perm : minimum test sample size needed to use the asymptotic distribution of the test statistic when
 #' local.test is either "higher" or "fisher"
 #' @param B : number of replications to compute critical values and global *p*-value. Default value is 10^3
@@ -279,70 +305,82 @@ d_G_monotone2 = function(S_X, S_Y, S=NULL, g.hat, decr=F, k=NULL, alpha=0.1, n_p
 #' X = runif(m)
 #' Y = replicate(n, rg2(rnull=runif))
 #' res = d_G_cons2(S_Y=Y, S_X=X, g.hat=g2, k=1, B=100)
-d_G_cons2 = function(S_X, S_Y, S=NULL, g.hat, k=NULL, alpha=0.1, n_perm=10, B=10^3, B_MC=10^3, seed=123){
+d_G_cons2 = function(S_X, S_Y, S=NULL, g.hat, k=NULL, alpha=0.1, pvalue_only=FALSE, n_perm=10, B=10^3, B_MC=10^3, seed=123){
 
   m = as.double(length(S_X))
   n = as.double(length(S_Y))
   N = as.double(n+m)
   s = ifelse(is.null(S), n, length(S))
 
-  tentative.d = 0; l = n
-  cont = TRUE
-  pval.global = 1
+  if(!pvalue_only){
+    tentative.d = 0; l = n
+    cont = TRUE
+    pval.global = 1
 
-  while(cont == TRUE & l>0){
-    if(is.character(g.hat)){
-      if(g.hat=="analytical"){
-        stats_G = sapply(1:(l+m), function(h) (k+1)*k_mom_beta(a=h, b=m+l-h+1, k=k))
-      } else{
-        cat("Error: g.hat must be either a density function or the string analytical.")
-      }
+    while(cont == TRUE & l>0){
+      if(is.character(g.hat)){
+        if(g.hat=="analytical"){
+          stats_G = sapply(1:(l+m), function(h) (k+1)*k_mom_beta(a=h, b=m+l-h+1, k=k))
+        } else{
+          cat("Error: g.hat must be either a density function or the string analytical.")
+        }
 
-    } else {
-      stats_G = apply(replicate(B_MC, sapply(X=sort(stats::runif(m+l)), FUN=g.hat)), 1, mean)
-    }
-
-    if(is.null(S)){
-
-      Rx = sapply(1:n, function(i) rank(c(S_X, S_Y[i]))[m+1]-1)
-      range_test_ranks_n = (min(Rx)+1):(max(Rx)+l)
-      R = sort(stats_G[range_test_ranks_n], decreasing=F)[1:l]
-
-    } else {
-      Rx = sapply(1:n, function(i) rank(c(S_X, S_Y[i]))[m+1]-1)
-      Rx.S = Rx[S]
-      if(l>=(n-s+1)){
-        range_test_ranks_supS = (min(Rx)+1):(max(Rx)+l)
-        range_test_ranks_S = range_test_ranks_supS
       } else {
-        range_test_ranks_subS = (min(Rx.S)+1):(max(Rx.S)+l)
-        range_test_ranks_S = range_test_ranks_subS
+        stats_G = apply(replicate(B_MC, sapply(X=sort(stats::runif(m+l)), FUN=g.hat)), 1, mean)
       }
-      # R = stats_G[range_test_ranks_S]
-      R = sort(stats_G[range_test_ranks_n], decreasing = F)[1:l]
+
+      if(is.null(S)){
+
+        Rx = sapply(1:n, function(i) rank(c(S_X, S_Y[i]))[m+1]-1)
+        range_test_ranks_n = (min(Rx)+1):(max(Rx)+l)
+        R = sort(stats_G[range_test_ranks_n], decreasing=F)[1:l]
+
+      } else {
+        Rx = sapply(1:n, function(i) rank(c(S_X, S_Y[i]))[m+1]-1)
+        Rx.S = Rx[S]
+        if(l>=(n-s+1)){
+          range_test_ranks_supS = (min(Rx)+1):(max(Rx)+l)
+          range_test_ranks_S = range_test_ranks_supS
+        } else {
+          range_test_ranks_subS = (min(Rx.S)+1):(max(Rx.S)+l)
+          range_test_ranks_S = range_test_ranks_subS
+        }
+        # R = stats_G[range_test_ranks_S]
+        R = sort(stats_G[range_test_ranks_n], decreasing = F)[1:l]
+      }
+
+      T_wc = sum(R)
+      crit = asymptotic.critical.G(m=m, n=l, stats_G_vector=stats_G, alpha=alpha)
+
+      if(l==s){
+        T.global = T_wc
+        pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=s, local.test="g", stats_G_vector=stats_G,
+                                            n_perm=n_perm, B=B, seed=seed)
+      } else {
+        pval.global = pval.global
+      }
+
+      if(T_wc >= crit){
+        tentative.d = tentative.d+1
+        l=l-1
+      } else{
+        tentative.d = tentative.d
+        cont=FALSE
+      }
     }
 
-    T_wc = sum(R)
-    crit = asymptotic.critical.G(m=m, n=l, stats_G_vector=stats_G, alpha=alpha)
+    d = ifelse(tentative.d-n+s>0, tentative.d-n+s, 0)
 
-    if(l==s){
-      T.global = T_wc
-      pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=s, local.test="g", stats_G_vector=stats_G,
-                                          n_perm=n_perm, B=B, seed=seed)
-    } else {
-      pval.global = pval.global
-    }
+  } else {
+    Rx = sapply(1:n, function(i) rank(c(S_X, S_Y[i]))[m+1]-1)
+    range_test_ranks_n = (min(Rx)+1):(max(Rx)+l)
+    R = sort(stats_G[range_test_ranks_n], decreasing=F)[1:l]
 
-    if(T_wc >= crit){
-      tentative.d = tentative.d+1
-      l=l-1
-    } else{
-      tentative.d = tentative.d
-      cont=FALSE
-    }
+    T.global = sum(R)
+    pval.global = compute.global.pvalue(T.obs=T.global, m=m, n=n, local.test="g", stats_G_vector=stats_G,
+                                        n_perm=n_perm, B=B, seed=seed)
+    lower.bound=0
   }
-
-  d = ifelse(tentative.d-n+s>0, tentative.d-n+s, 0)
 
   out = list("lower.bound" = d,
              "global.pvalue" = pval.global,
