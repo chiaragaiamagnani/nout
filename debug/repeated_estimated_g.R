@@ -14,10 +14,9 @@ library(fitdistrplus)
 
 library(nout)
 source("~/nout/R/utils_g.R")
-source("~/nout/mynotes/PowerComparison/utils_simu_g.R")
 source("~/nout/R/utils_higher.R")
 source("~/nout/R/utils_global_functions.R")
-source("~/nout/simulations/utils_g_simu_one.R")
+source("~/nout/debug/utils_g_simu_repeated.R")
 source("~/nout/R/utils_LehmannAlt.R")
 
 
@@ -25,9 +24,8 @@ source("~/nout/R/utils_LehmannAlt.R")
 
 
 B=100; B_MC=500 # number of repetitions
-sizes = c(10,100,1000) # m=n
-sizes = 150
-thetas = seq(from=0, to=0.2, by=0.05) # proportion of outliers in the test set
+sizes = c(150) # m=n
+thetas = seq(from=0, to=1, by=0.05) # proportion of outliers in the test set
 alpha = 0.1 # significance level
 
 
@@ -42,37 +40,11 @@ g_alt_list = list(function(x){ g1(x) },
                   function(x){ g2(x) },
                   function(x){ g9(x) })
 
-# Add a for loop so that for each alternative distribution g is estimated
-
-X = rg_null(x=4000)
-X1 = X[1:2000]
-X2 = X[2001:4000]
-
-g_hat = list()
-g_hat_monotone = list()
-
-tic()
-for(i in 1:length(g_alt_list)){
-  Y = rg_alt_list[[i]](x=2000)
-  g_hat_monotone[[i]] = estimate_g(X1=X1, X2=X2, Y=Y, constraint="increasing", ker="uniform")
-}
-toc()
-
-
-tic()
-for(i in 1:length(g_alt_list)){
-  Y = rg_null(x=2000)
-  g_hat[[i]] = estimate_g(X1=X1, X2=X2, Y=Y, ker="uniform")
-}
-toc()
-
-u = runif(5000)
-plot(u, g_hat[[1]](u))
 
 # Run simulation
 
 tic()
-res = sapply(1:length(rg_alt_list),
+res = lapply(1:length(rg_alt_list),
              function(ll){
                cat("k=",ks[ll],"\n")
                res3 = lapply(1:length(sizes), function(s){
@@ -80,19 +52,19 @@ res = sapply(1:length(rg_alt_list),
                  res2 = sapply(1:length(thetas),
                                function(j){
                                  cat("theta=",thetas[j],"\n")
-                                 res1 = sim_pow(B=B, B_MC=B_MC, m=sizes[s], n=sizes[s], theta=thetas[j],
+                                 res1 = sim_pow_rep(B=B, B_MC=B_MC, m=sizes[s], n=sizes[s], theta=thetas[j],
                                                 rg_null=rg_null, rg=rg_alt_list[[ll]], g=g_alt_list[[ll]],
-                                                g_hat=g_hat[[ll]], g_hat_monotone=g_hat_monotone[[ll]],
                                                 alpha=alpha)
                                  out1 = tibble(k=ks[ll],theta=thetas[j],res1)
                                })
 
                })
-               # out2 = res3[[1]]
+               out2 = res3[[1]]
+               # To be commented if length(sizes) = 1
                # for(i in 2:length(res3)){
                #   out2 = cbind(out2,res3[[i]])
                # }
-               return(res3)
+               return(out2)
 
              })
 toc()
@@ -123,15 +95,15 @@ save(pow_LehmannAlt_B100_B_MC500,
 # out = paper_pow_v2_LehmannAlt_B500_B_MC100
 
 
-method.values <- c("WMW","Fisher","oracle", "estG", "estGmono")
-method.labels <- c("WMW","Fisher","oracle", "estG", "estGmono")
+method.values <- c("WMW","Fisher","oracle", "KDE", "mono")
+method.labels <- c("WMW","Fisher","oracle", "KDE", "mono")
 my_colors <- c("#377EB8","#37b8b2", "#F3C608","#91099e", "#A87AAD") # "#984EA3"  EA5B17
 
 df = as_tibble(out) %>%
   as.data.frame %>%
   mutate(n = factor(n)) %>%
-  pivot_longer(c("power_oracle", "power_WMW", "power_Fisher", "power_estG", "power_estGmono",
-                 "std.error_oracle", "std.error_WMW", "std.error_Fisher", "std.error_estG", "std.error_estGmono"),
+  pivot_longer(c("power_oracle", "power_WMW", "power_Fisher", "power_KDE", "power_mono",
+                 "std.error_oracle", "std.error_WMW", "std.error_Fisher", "std.error_KDE", "std.error_mono"),
                names_to = c(".value", "Method"), names_sep = "_") %>%
   mutate(power = as.double(power))  %>%
   mutate(Method = factor(Method, method.values, method.labels))#%>%
@@ -147,7 +119,7 @@ pp <- df %>%
                 width = 0.02,
                 position = position_dodge(width = 0.013),
                 alpha = 0.9) +
-  facet_grid(k ~ n,
+  facet_grid(n ~ k,
              labeller = labeller(n = label_both, k = label_both),
              scales = "free")+
   # facet_wrap(~n+k, labeller=labeller(n=label_both,k = label_both), scales="free")+
@@ -229,7 +201,7 @@ res = lapply(1:length(rg_alt_list),
                  res2 = sapply(1:length(thetas),
                                function(j){
                                  cat("theta=",thetas[j],"\n")
-                                 res1 = sim_pow(B=B, B_MC=B_MC, m=sizes[s], n=sizes[s], theta=thetas[j],
+                                 res1 = sim_pow_rep(B=B, B_MC=B_MC, m=sizes[s], n=sizes[s], theta=thetas[j],
                                                 rg_null=rg_null, rg=rg_alt_list[[ll]], g=g_alt_list[[ll]],
                                                 g_hat=g_hat[[ll]], g_hat_monotone=g_hat_monotone[[ll]],
                                                 alpha=alpha)
@@ -378,7 +350,7 @@ res = lapply(1:length(rg_alt_list),
                  res2 = sapply(1:length(thetas),
                                function(j){
                                  cat("theta=",thetas[j],"\n")
-                                 res1 = sim_pow(B=B, B_MC=B_MC, m=sizes[s], n=sizes[s], theta=thetas[j],
+                                 res1 = sim_pow_rep(B=B, B_MC=B_MC, m=sizes[s], n=sizes[s], theta=thetas[j],
                                                 rg_null=rg_null, rg=rg_alt_list[[ll]], g=g_alt_list[[ll]],
                                                 g_hat=g_hat[[ll]], g_hat_monotone=g_hat_monotone[[ll]],
                                                 alpha=alpha)
@@ -541,7 +513,7 @@ res = lapply(1:length(rg_alt_list),
                  res2 = sapply(1:length(thetas),
                                function(j){
                                  cat("theta=",thetas[j],"\n")
-                                 res1 = sim_pow(B=B, B_MC=B_MC, m=sizes[s], n=sizes[s], theta=thetas[j],
+                                 res1 = sim_pow_rep(B=B, B_MC=B_MC, m=sizes[s], n=sizes[s], theta=thetas[j],
                                                 rg_null=rg_null, rg=rg_alt_list[[ll]], g=g_alt_list[[ll]],
                                                 g_hat=g_hat[[ll]], g_hat_monotone=g_hat_monotone[[ll]],
                                                 alpha=alpha)

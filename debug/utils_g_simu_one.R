@@ -85,7 +85,7 @@ asymptotic.critical.Tk <- function(m, n, k, alpha=0.1) {
 }
 
 
-compute.critical.value.upR <- function(m, n, alpha, local.test, k=NULL, n_perm=10, B=10^3, seed=123){
+compute.critical.value.global <- function(m, n, alpha, local.test, k=NULL, n_perm=10, B=10^3, seed=123){
 
   # For small values of m and n compute critical values via permutation
   if(min(m,n)<=n_perm) {
@@ -117,8 +117,8 @@ sim_pow = function(B, B_MC, m, n, theta, rg_null, rg, g, g_hat, g_hat_monotone, 
   N = as.double(m+n)
 
   stats_G_N_oracle =  apply(replicate(B, sapply(X=sort(stats::runif(N)), FUN=g)), 1, mean)
-  stats_G_N_est = apply(replicate(B, sapply(X=sort(stats::runif(N)), FUN=g_hat)), 1, mean)
-  stats_G_N_est_mono = apply(replicate(B, sapply(X=sort(stats::runif(N)), FUN=g_hat_monotone)), 1, mean)
+  stats_G_N_KDE = apply(replicate(B, sapply(X=sort(stats::runif(N)), FUN=g_hat)), 1, mean)
+  stats_G_N_mono = apply(replicate(B, sapply(X=sort(stats::runif(N)), FUN=g_hat_monotone)), 1, mean)
 
   stats <- sapply(1:B, function(b) {
 
@@ -134,52 +134,52 @@ sim_pow = function(B, B_MC, m, n, theta, rg_null, rg, g, g_hat, g_hat_monotone, 
     Z <- c(X,Y)
 
     # Compute test statistics
-    T_oracle <- calc.stat.G(Z=Z, m=m, stats_G_vector=stats_G_N_oracle)
-    T_G_est <- calc.stat.G(Z=Z, m=m, stats_G_vector=stats_G_N_est)
-    T_G_est_mono <- calc.stat.G(Z=Z, m=m, stats_G_vector=stats_G_N_est_mono)
-    T_WMW <- calc.Tk(Z=Z, m=m, k=1)
-    T_Fisher <- sum(stat.Fisher(Z=Z, m=m))
+    T_oracle <-  as.double(calc.stat.G(Z=Z, m=m, stats_G_vector=stats_G_N_oracle))
+    T_G_KDE <-  as.double(calc.stat.G(Z=Z, m=m, stats_G_vector=stats_G_N_KDE))
+    T_G_mono <-  as.double(calc.stat.G(Z=Z, m=m, stats_G_vector=stats_G_N_mono))
+    T_WMW <-  as.double(sum(stat.Tk(Z=Z, m=m, k=1)))
+    T_Fisher <-  as.double(sum(stat.Fisher(Z=Z, m=m)))
 
     res = matrix(data=cbind("T_oracle"=T_oracle, "T_WMW"=T_WMW,
-                            "T_Fisher"=T_Fisher, "T_G_est"=T_G_est, "T_G_est_mono"=T_G_est_mono
+                            "T_Fisher"=T_Fisher, "T_G_KDE"=T_G_KDE, "T_G_mono"=T_G_mono
     ), ncol=5, byrow = T)
     return(res)
   })
 
-  rownames(stats) = c("T_oracle", "T_WMW", "T_Fisher","T_estG", "T_estG_mono")
+  rownames(stats) = c("T_oracle", "T_WMW", "T_Fisher","T_G_KDE", "T_G_mono")
 
   T_oracle = stats["T_oracle",]
-  T_estG = stats["T_estG",]
-  T_estG_mono= stats["T_estG_mono",]
+  T_G_KDE = stats["T_G_KDE",]
+  T_G_mono= stats["T_G_mono",]
   T_WMW = stats["T_WMW",]
   T_Fisher = stats["T_Fisher",]
 
   # Compute critical values
-  crit_oracle <- stats::qnorm(alpha, mean=meanG(n=n, stats_G_vector=stats_G_N_oracle),
-                              sd = sqrt(varG(n=n, m=m, stats_G_vector=stats_G_N_oracle)), lower.tail = F)
-  crit_estG <- stats::qnorm(alpha, mean=meanG(n=n, stats_G_vector=stats_G_N_est),
-                            sd = sqrt(varG(n=n, m=m, stats_G_vector=stats_G_N_est)), lower.tail = F)
-  crit_estG_mono <- stats::qnorm(alpha, mean=meanG(n=n, stats_G_vector=stats_G_N_est_mono),
-                                 sd = sqrt(varG(n=n, m=m, stats_G_vector=stats_G_N_est_mono)), lower.tail = F)
-  crit_WMW <- compute.critical.value.upR(m=m, n=n, alpha=alpha, local.test="wmw", k=1, n_perm=10, B=10^3, seed=123)
-  crit_Fisher <- compute.critical.value.upR(m=m, n=n, alpha=alpha, local.test="fisher", k=NULL, n_perm=10, B=10^3, seed=123)
+  crit_oracle <- as.double(stats::qnorm(alpha, mean=meanG(n=n, stats_G_vector=stats_G_N_oracle),
+                              sd = sqrt(varG(n=n, m=m, stats_G_vector=stats_G_N_oracle)), lower.tail = F))
+  crit_KDE <-  as.double(stats::qnorm(alpha, mean=meanG(n=n, stats_G_vector=stats_G_N_KDE),
+                            sd = sqrt(varG(n=n, m=m, stats_G_vector=stats_G_N_KDE)), lower.tail = F))
+  crit_mono <-  as.double(stats::qnorm(alpha, mean=meanG(n=n, stats_G_vector=stats_G_N_mono),
+                                 sd = sqrt(varG(n=n, m=m, stats_G_vector=stats_G_N_mono)), lower.tail = F))
+  crit_WMW <-  as.double(compute.critical.value.global(m=m, n=n, alpha=alpha, local.test="wmw", k=1, n_perm=10, B=10^3, seed=123))
+  crit_Fisher <-  as.double(compute.critical.value.global(m=m, n=n, alpha=alpha, local.test="fisher", k=NULL, n_perm=10, B=10^3, seed=123))
 
 
   # Perform the tests
   rej.oracle = ifelse(T_oracle >= crit_oracle, 1, 0)
-  rej.estG = ifelse(T_estG >= crit_estG, 1, 0)
-  rej.estG_mono = ifelse(T_estG_mono >= crit_estG_mono, 1, 0)
+  rej.KDE = ifelse(T_G_KDE >= crit_KDE, 1, 0)
+  rej.mono = ifelse(T_G_mono >= crit_mono, 1, 0)
   rej.WMW = ifelse(T_WMW >= crit_WMW, 1, 0)
   rej.Fisher = ifelse(T_Fisher >= crit_Fisher, 1, 0)
 
   power.oracle = mean(rej.oracle)
   std_err.oracle = (sd(rej.oracle)/sqrt(B))*qnorm(1-q)
 
-  power.estG = mean(rej.estG)
-  std_err.estG = (sd(rej.estG)/sqrt(B))*qnorm(1-q)
+  power.KDE = mean(rej.KDE)
+  std_err.KDE = (sd(rej.KDE)/sqrt(B))*qnorm(1-q)
 
-  power.estG_mono = mean(rej.estG_mono)
-  std_err.estG_mono = (sd(rej.estG_mono)/sqrt(B))*qnorm(1-q)
+  power.mono = mean(rej.mono)
+  std_err.mono = (sd(rej.mono)/sqrt(B))*qnorm(1-q)
 
   power.WMW = mean(rej.WMW)
   std_err.WMW = (sd(rej.WMW)/sqrt(B))*qnorm(1-q)
@@ -190,10 +190,10 @@ sim_pow = function(B, B_MC, m, n, theta, rg_null, rg, g, g_hat, g_hat_monotone, 
   out = tibble(n = n,
                power_oracle = power.oracle,
                std.error_oracle = std_err.oracle,
-               power_estGmono = power.estG_mono,
-               std.error_estGmono = std_err.estG_mono,
-               power_estG = power.estG,
-               std.error_estG = std_err.estG,
+               power_mono = power.mono,
+               std.error_mono = std_err.mono,
+               power_KDE = power.KDE,
+               std.error_KDE = std_err.KDE,
                power_WMW = power.WMW,
                std.error_WMW = std_err.WMW,
                power_Fisher = power.Fisher,

@@ -143,7 +143,7 @@ asymptotic.critical.Tk <- function(m, n, k, alpha=0.1) {
 # }
 
 
-compute.critical.value.upR <- function(m, n, alpha, local.test, k=NULL, n_perm=10, B=10^3, seed=123){
+compute.critical.value.global <- function(m, n, alpha, local.test, k=NULL, n_perm=10, B=10^3, seed=123){
 
   # For small values of m and n compute critical values via permutation
   if(min(m,n)<=n_perm) {
@@ -170,7 +170,7 @@ compute.critical.value.upR <- function(m, n, alpha, local.test, k=NULL, n_perm=1
 
 # Simulation comparing the power of the oracle test, WMW test, Fisher's method and Shiraishi test
 
-sim_pow = function(B, B_MC, m, n, theta, rg_null, rg, g, constraint="increasing", propF = 0.5, alpha, q=0.05){
+sim_pow_rep = function(B, B_MC, m, n, theta, rg_null, rg, g, constraint="increasing", propF = 0.5, alpha, q=0.05){
 
   m = as.double(m)
   n = as.double(n)
@@ -207,14 +207,14 @@ sim_pow = function(B, B_MC, m, n, theta, rg_null, rg, g, constraint="increasing"
     T_WMW <- calc.Tk(Z=Z, m=m, k=1)
     T_Fisher <- sum(stat.Fisher(Z=Z, m=m))
 
-    crit_oracle <- stats::qnorm(alpha, mean=meanG(n=n, stats_G_vector=stats_G_N_oracle),
-                                sd = sqrt(varG(n=n, m=m, stats_G_vector=stats_G_N_oracle)), lower.tail = F)
-    crit_estG <- stats::qnorm(alpha, mean=meanG(n=n, stats_G_vector=stats_G_N_KDE),
-                              sd = sqrt(varG(n=n, m=m, stats_G_vector=stats_G_N_KDE)), lower.tail = F)
-    crit_estG_mono <- stats::qnorm(alpha, mean=meanG(n=n, stats_G_vector=stats_G_N_mono),
-                                   sd = sqrt(varG(n=n, m=m, stats_G_vector=stats_G_N_mono)), lower.tail = F)
-    crit_WMW <- compute.critical.value.upR(m=m, n=n, alpha=alpha, local.test="wmw", k=1, n_perm=0, B=B, seed=123)
-    crit_Fisher <- compute.critical.value.upR(m=m, n=n, alpha=alpha, local.test="fisher", k=NULL, n_perm=0, B=B, seed=123)
+    crit_oracle <-  as.double(stats::qnorm(alpha, mean=meanG(n=n, stats_G_vector=stats_G_N_oracle),
+                                sd = sqrt(varG(n=n, m=m, stats_G_vector=stats_G_N_oracle)), lower.tail = F))
+    crit_estG <-  as.double(stats::qnorm(alpha, mean=meanG(n=n, stats_G_vector=stats_G_N_KDE),
+                              sd = sqrt(varG(n=n, m=m, stats_G_vector=stats_G_N_KDE)), lower.tail = F))
+    crit_estG_mono <-  as.double(stats::qnorm(alpha, mean=meanG(n=n, stats_G_vector=stats_G_N_mono),
+                                   sd = sqrt(varG(n=n, m=m, stats_G_vector=stats_G_N_mono)), lower.tail = F))
+    crit_WMW <-  as.double(compute.critical.value.global(m=m, n=n, alpha=alpha, local.test="wmw", k=1, n_perm=0, B=B, seed=123))
+    crit_Fisher <-  as.double(compute.critical.value.global(m=m, n=n, alpha=alpha, local.test="fisher", k=NULL, n_perm=0, B=B, seed=123))
 
     rej.oracle = ifelse(T_oracle >= crit_oracle, 1, 0)
     rej.estG = ifelse(T_G_KDE >= crit_estG, 1, 0)
