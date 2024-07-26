@@ -54,13 +54,14 @@ for(i in 1:length(g_alt_list)){
 }
 
 
-# 80 secondi circa
+# 120 seconds
 tic()
 res = sim_pow(B=B, B_MC=B_MC, m=m, n=n, theta=theta,
                rg_null=runif, rg=rg1, g=g1,
                g_hat=g_KDE, g_hat_monotone=g_mono,
                alpha=alpha)
 toc()
+
 
 
 
@@ -76,14 +77,16 @@ theta = 0
 alpha = 0.1
 
 
-# 3.5 min
+# 480 seconds
+tic()
 res_rep = sim_pow_rep(B=B, B_MC=B_MC, m=m, n=n, theta=theta,
                       rg_null=runif, rg=rg1, g=g1,
                       alpha=alpha)
+toc()
+
 
 
 res
-
 res_rep
 
 

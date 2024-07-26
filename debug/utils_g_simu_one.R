@@ -116,9 +116,9 @@ sim_pow = function(B, B_MC, m, n, theta, rg_null, rg, g, g_hat, g_hat_monotone, 
   n.in = n-n.out
   N = as.double(m+n)
 
-  stats_G_N_oracle =  apply(replicate(B, sapply(X=sort(stats::runif(N)), FUN=g)), 1, mean)
-  stats_G_N_KDE = apply(replicate(B, sapply(X=sort(stats::runif(N)), FUN=g_hat)), 1, mean)
-  stats_G_N_mono = apply(replicate(B, sapply(X=sort(stats::runif(N)), FUN=g_hat_monotone)), 1, mean)
+  stats_G_N_oracle =  apply(replicate(B_MC, sapply(X=sort(stats::runif(N)), FUN=g)), 1, mean)
+  stats_G_N_KDE = apply(replicate(B_MC, sapply(X=sort(stats::runif(N)), FUN=g_hat)), 1, mean)
+  stats_G_N_mono = apply(replicate(B_MC, sapply(X=sort(stats::runif(N)), FUN=g_hat_monotone)), 1, mean)
 
   stats <- sapply(1:B, function(b) {
 
@@ -203,6 +203,11 @@ sim_pow = function(B, B_MC, m, n, theta, rg_null, rg, g, g_hat, g_hat_monotone, 
   return(out)
 
 }
+
+
+
+
+
 
 
 
