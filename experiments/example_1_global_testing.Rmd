@@ -1,0 +1,200 @@
+---
+title: "example_1_global_testing"
+output: pdf_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r }
+library(tidyverse)
+library(progress)
+library(nout)
+
+source("../R/utils_data.R")
+source("../R/utils_experiments.R")
+```
+
+## Generate scores and plot them
+
+You can also embed plots, for example:
+
+```{r }
+
+set.seed(123) # For reproducibility
+
+# Choose alternative distribution
+#alternative <- "uniform"      # The Shirashi test seems invalid in this special case
+alternative <- "lehmann-k2"  # This seems to work OK
+
+
+# Generate a calibration set of inliers from a uniform distribution 
+# and a test set containing a mixture of inliers and outliers from a different distribution.
+data <- generate_cal_test_scores(n_cal = 1000, n_test = 1000, prop_out = 0.25, alternative = alternative)
+
+# Prepare the data for plotting with an additional column for inliers/outliers
+calibration_df <- tibble(score = data$scores.cal, set = "Calibration", type = "Inlier")
+test_df <- tibble(score = data$scores.test, set = "Test", type = ifelse(data$outlier.test == 1, "Outlier", "Inlier"))
+plot_data <- bind_rows(calibration_df, test_df)
+
+# Adjust plot size
+options(repr.plot.width = 16, repr.plot.height = 6)
+
+# Create side-by-side histograms
+ggplot(plot_data, aes(x = score, fill = type)) +
+  geom_histogram(alpha = 0.5, bins=15) +
+  facet_wrap(. ~ set, scales = "free_y") +
+  theme_minimal(base_size = 18) +  # Increase base font size
+  labs(title = "Histograms of Calibration and Test Scores",
+       x = "Score",
+       y = "Count",
+       fill = "Type") +
+  scale_fill_manual(values = c("Inlier" = "blue", "Outlier" = "red"))
+
+
+
+```
+
+## Plot the oracle density g
+
+```{r }
+
+# Define the function to plot another function between 0 and 1
+plot_density <- function(my_function) {
+  # Generate a sequence of values between 0 and 1
+  x_values <- c(-1e-6, seq(0, 1, length.out = 100), 1+1e-6)
+  
+  # Evaluate the function at these points
+  y_values <- sapply(x_values, my_function)
+  
+  # Create a data frame for plotting
+  plot_data <- data.frame(x = x_values, y = y_values)
+  
+  # Plot the function
+  ggplot(plot_data, aes(x = x, y = y)) +
+    geom_line() +
+    ylim(0,NA) +
+    theme_minimal(base_size = 15) +
+    labs(title = "Plot of density function from 0 to 1",
+         x = "x",
+         y = "Probability density")
+}
+
+density_oracle <- function(x) density_scores(x, alternative)
+plot_density(density_oracle)
+
+
+
+
+
+```
+
+
+
+
+
+## Apply different global tests
+
+```{ r }
+run_global_testing(data, alternative=alternative)
+
+
+```
+
+
+
+
+
+
+## Run repeated experiments
+
+
+```{ r }
+# Define function to run a single experiment
+run_experiment <- function(seed, prop_out, alternative) {
+  set.seed(seed) # For reproducibility
+  # Generate data
+  data <- generate_cal_test_scores(n_cal = 500, n_test = 100, prop_out = prop_out, alternative = alternative)
+  # Apply different methods for global testing
+  res <- run_global_testing(data, alternative=alternative)
+  # Store results
+  results <- tibble(Seed = seed, Prop_Out = prop_out) %>% cbind(res)
+  return(results)
+}
+
+
+# Define function to run multiple experiments and assemble results
+run_multiple_experiments <- function(n_exp, prop_out_values, alternative) {
+  results_list <- list()
+  
+  # Print progress bar header
+  cat("Running experiments\n")
+  pb <- txtProgressBar(min = 0, max = length(prop_out_values) * n_exp, style = 3)
+  
+  counter <- 1
+  for (prop_out in prop_out_values) {
+    for (i in 1:n_exp) {
+      results_list[[counter]] <- run_experiment(i, prop_out, alternative)
+      setTxtProgressBar(pb, counter)
+      counter <- counter + 1
+    }
+  }
+  
+  close(pb)
+  
+  results_df <- bind_rows(results_list)
+  return(results_df)
+}
+
+
+# Choose alternative distribution
+alternative <- "uniform"
+
+# List of values for proportion of outliers
+prop_out_values <- c(0,0.25,0.5)
+
+# Number of repetitions for each experiment
+n_exp <- 10
+
+# Run the experiments
+results <- run_multiple_experiments(n_exp, prop_out_values, alternative)
+
+
+
+
+# Significance level
+alpha <- 0.1
+
+# Calculate power for different methods and prop_out values
+power_results <- results %>%
+  group_by(Method, Prop_Out) %>%
+  summarize(
+    Power = mean(p.value < alpha),
+    SE = sqrt((Power * (1 - Power)) / n())
+  )
+
+# Plot the power for different methods and prop_out values
+power_results |>
+  #filter(! Method %in% c("WMW","WMW_k2")) |>
+  ggplot(aes(x = Prop_Out, y = Power, color = Method, shape=Method)) +
+  geom_line() +
+  geom_point() +
+  geom_errorbar(aes(ymin = Power - 2*SE, ymax = Power + 2*SE), width = 0.02) +
+  geom_hline(yintercept=alpha, linetype=2) +
+  theme_minimal(base_size = 15) +
+  labs(title = "Power of Different Methods for Various Proportions of Outliers",
+       x = "Proportion of Outliers",
+       y = "Power",
+       color = "Method") +
+  ylim(0, 1)
+
+
+
+```
+
+
+
+
